@@ -30,6 +30,7 @@ from .poller import Poller
 from .rates import Rates
 from .sources import REGISTRY, Source, build_sources
 from .storage import Storage
+from .describe import describe
 from .view import car_view, fmt_int
 from .vin.decoder import VinDecoded, decode
 from .vin.report import VinReport, build_report, build_report_for_plate, looks_like_plate
@@ -293,7 +294,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             jsonld["offers"] = {"@type": "Offer", "price": v.price_rub, "priceCurrency": "RUB",
                                 "availability": "https://schema.org/InStock", "url": settings.site_url + v.path}
         return render(
-            request, "car.html", v=v, similar=similar, history=storage.history(source, external_id),
+            request, "car.html", v=v, similar=similar, desc=describe(v, settings.company_name), history=storage.history(source, external_id),
             jsonld=json.dumps(jsonld, ensure_ascii=False).replace("</", "<\\/"),
         )
 

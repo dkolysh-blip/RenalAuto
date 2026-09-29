@@ -2,7 +2,7 @@
 {% from "_macros.html" import card, lead_form, pill %}
 {% set l = v.listing %}
 {% block title %}{{ v.seo_title }}{% if v.price_rub %} — ≈ {{ fmt(v.price_rub) }} ₽{% endif %} | {{ company }}{% endblock %}
-{% block description %}{{ v.title }}{% if l.year %}, {{ l.year }} г.{% endif %}{% if l.mileage_km is not none %}, пробег {{ fmt(l.mileage_km) }} км{% endif %}. Цена в {{ 'Корее' if l.country == 'KR' else 'Китае' }} ≈ {{ fmt(v.price_rub) }} ₽. Проверка истории и VIN, расчёт доставки под ключ в {{ company }}.{% endblock %}
+{% block description %}{{ desc.meta }}{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}{{ v.path }}">{% endblock %}
 {% block og %}{% if v.photos %}<meta property="og:image" content="{{ v.photos[0] }}">{% endif %}{% endblock %}
 {% block body_class %}has-cta{% endblock %}
@@ -19,6 +19,7 @@
 <div class="car-head">
   <h1>{{ v.title }}{% if l.year %}, {{ l.year }}{% endif %}</h1>
   <div class="muted">{{ v.subtitle }}</div>
+  {% if desc.highlights %}<div class="chips">{% for h in desc.highlights %}<span>{{ h }}</span>{% endfor %}</div>{% endif %}
   <div class="mobile-only mobile-price">
     <span class="big">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% else %}Цена по запросу{% endif %}</span>
     <span class="muted small"> в {{ 'Корее' if l.country == 'KR' else 'Китае' }}, без доставки и растаможки</span>
@@ -37,7 +38,12 @@
       {% endif %}
     </div>
 
-    <div class="panel" style="margin-top:12px">
+    <div class="panel description" style="margin-top:12px">
+      <h2>Описание</h2>
+      {% for p in desc.paragraphs %}<p>{{ p }}</p>{% endfor %}
+    </div>
+
+    <div class="panel">
       <h2>Характеристики</h2>
       <table class="specs">
         {% for k, val in v.specs %}<tr><th>{{ k }}</th><td>{{ val }}</td></tr>{% endfor %}
