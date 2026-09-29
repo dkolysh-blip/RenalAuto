@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 
 import httpx
@@ -185,8 +186,42 @@ def step3() -> None:
             print(f"{method} {url} -> ERROR {exc}")
 
 
+def step4() -> None:
+    """K Car: сам вызов API списка и перебор вариантов тела запроса."""
+    c = httpx.Client(headers={"User-Agent": UA, "Accept-Language": "ko,en;q=0.8"}, timeout=25, follow_redirects=True)
+    page = get(c, "https://www.kcar.com/bc/search")
+    if isinstance(page, Exception):
+        print("ERROR", page)
+        return
+    scripts = list(dict.fromkeys(re.findall(r'src="(/_nuxt/[\w.-]+\.js)"', page.text)))
+    for src in scripts:
+        js = get(c, "https://www.kcar.com" + src)
+        if isinstance(js, Exception):
+            continue
+        for m in list(re.finditer(r"list/drct", js.text))[:3]:
+            print(f"\n[{src}] …{squeeze(js.text[max(0, m.start() - 700): m.start() + 500])}…")
+
+    print("\n=== K CAR варианты запроса")
+    headers = {"Referer": "https://www.kcar.com/", "Origin": "https://www.kcar.com",
+               "Accept": "application/json, text/plain, */*", "Content-Type": "application/json;charset=UTF-8"}
+    order = "time_deal_yn:desc|time_deal_end_dt:asc|promo_ordr:asc|event_ordr:asc|sort_ordr:asc"
+    bodies = [
+        {"pageno": 1, "limit": 3},
+        {"wr_eq_sell_dcd": "ALL", "pageno": 1, "limit": 3, "orderFlag": True, "orderBy": order},
+        {"wr_eq_sell_dcd": "ALL", "wr_not_eq_csgmt_yn": "B", "pageno": 1, "limit": 3, "orderFlag": True, "orderBy": order},
+        {"wr_eq_sell_dcd": "ALL", "pageno": 1, "limit": 3, "orderFlag": True, "orderBy": "sort_ordr:asc"},
+    ]
+    for url in ("https://api.kcar.com/bc/search/list/drct", "https://api.kcar.com/bc/search/list/acm"):
+        for body in bodies:
+            try:
+                r = c.post(url, json=body, headers=headers)
+                print(f"POST {url.rsplit('/', 1)[-1]} {json.dumps(body)[:120]} -> {r.status_code} :: {squeeze(r.text)[:500]}")
+            except Exception as exc:  # noqa: BLE001
+                print(f"POST {url} -> ERROR {exc}")
+
+
 if __name__ == "__main__":
     import sys
 
     args = sys.argv[1:]
-    step3() if "step3" in args else step2() if "step2" in args else main()
+    step4() if "step4" in args else step3() if "step3" in args else step2() if "step2" in args else main()
