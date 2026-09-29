@@ -8,7 +8,7 @@ import logging
 import httpx
 
 from .config import Settings
-from .models import Lead, ListingEvent, SavedFilter
+from .models import LEAD_KIND_LABELS, Lead, ListingEvent, SavedFilter
 
 log = logging.getLogger(__name__)
 
@@ -68,7 +68,8 @@ class TelegramNotifier:
         chat_id = self.manager_chat or self.default_chat
         if not self.token or not chat_id:
             return False
-        lines = [f"🔥 <b>Заявка #{lead.id}</b>"]
+        kind = LEAD_KIND_LABELS.get(lead.kind or "", "Заявка")
+        lines = [f"🔥 <b>{kind} — заявка #{lead.id}</b>"]
         if lead.listing_title:
             car = html.escape(lead.listing_title)
             if site_url and lead.source and lead.external_id:
@@ -76,6 +77,8 @@ class TelegramNotifier:
             lines.append(f"🚗 {car}")
             if lead.listing_url:
                 lines.append(f'Оригинал: <a href="{html.escape(lead.listing_url)}">{html.escape(lead.source or "")}</a>')
+            if lead.kind == "history" and lead.plate:
+                lines.append(f"🔎 Госномер для CarHistory: <code>{html.escape(lead.plate)}</code>")
         else:
             lines.append("🚗 Подбор под бюджет")
         lines.append(f"👤 {html.escape(lead.name)}")

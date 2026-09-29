@@ -63,6 +63,27 @@
       <form class="check-row" data-vin-form><input name="vin" maxlength="25" placeholder="17 символов VIN" required><button class="btn ghost">Проверить</button></form>
       {% endif %}
       <div class="report" id="report"></div>
+      {% if not h %}
+      <div class="history-offer">
+        <b>📄 Официальный отчёт об истории — бесплатно</b>
+        <p class="small">{% if l.country == 'KR' %}Данные страховых компаний Кореи (CarHistory): все ДТП и суммы выплат с 1996 года, смены владельцев и номеров,
+          тотал, утопление, угон, работа в такси или прокате.{% else %}История обслуживания у дилеров и страховые случаи по VIN (查博士): ДТП, пожар, утопление, реальный пробег.{% endif %}
+          Менеджер закажет отчёт и пришлёт его вам вместе с расчётом цены под ключ.</p>
+        <form class="lead-form compact" data-lead>
+          <input type="hidden" name="kind" value="history">
+          <input type="hidden" name="source" value="{{ l.source }}">
+          <input type="hidden" name="external_id" value="{{ l.external_id }}">
+          <div class="row3">
+            <input name="name" required maxlength="100" placeholder="Имя" autocomplete="name">
+            <input name="phone" type="tel" maxlength="40" placeholder="Телефон" autocomplete="tel">
+            <input name="telegram" maxlength="64" placeholder="или @telegram">
+          </div>
+          <div class="hp"><input name="website" tabindex="-1" autocomplete="off"></div>
+          <button class="btn block" type="submit">Получить отчёт</button>
+          <div class="form-msg"></div>
+        </form>
+      </div>
+      {% endif %}
       {% if history|length > 1 %}
       <h2 style="margin-top:16px">История цены</h2>
       <table class="specs">

@@ -277,6 +277,8 @@ class Storage:
             if listing:
                 data["listing_title"] = listing.title
                 data["listing_url"] = listing.url
+                data["plate"] = listing.plate
+                data["vin"] = listing.vin
             cur = self._conn.execute(
                 "INSERT INTO leads (created_at, status, data) VALUES (?, 'new', ?)", (now, json.dumps(data, ensure_ascii=False))
             )

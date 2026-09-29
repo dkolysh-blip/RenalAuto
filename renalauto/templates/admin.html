@@ -18,7 +18,9 @@
     <td>{{ lead.id }}</td>
     <td class="small">{{ lead.created_at[:16]|replace('T', ' ') }}</td>
     <td><b>{{ lead.name }}</b><br>{{ lead.phone or '' }} {{ lead.telegram or '' }}<br><span class="muted small">{{ lead.city or '' }}</span></td>
-    <td>{% if lead.listing_title %}<a href="/car/{{ lead.source }}/{{ lead.external_id }}" target="_blank">{{ lead.listing_title }}</a>{% else %}Подбор{% if lead.budget_rub %} до {{ fmt(lead.budget_rub) }} ₽{% endif %}{% endif %}
+    <td><span class="kind {{ lead.kind or '' }}">{{ lead_kinds.get(lead.kind or '', 'Заявка') }}</span><br>
+      {% if lead.listing_title %}<a href="/car/{{ lead.source }}/{{ lead.external_id }}" target="_blank">{{ lead.listing_title }}</a>{% else %}Подбор{% if lead.budget_rub %} до {{ fmt(lead.budget_rub) }} ₽{% endif %}{% endif %}
+      {% if lead.plate or lead.vin %}<div class="small">{% if lead.plate %}Госномер: <code>{{ lead.plate }}</code> {% endif %}{% if lead.vin %}VIN: <code>{{ lead.vin }}</code>{% endif %}</div>{% endif %}
       {% if lead.comment %}<div class="small muted">{{ lead.comment }}</div>{% endif %}</td>
     <td>
       <select data-lead-status="{{ lead.id }}">

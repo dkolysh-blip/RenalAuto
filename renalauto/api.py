@@ -24,7 +24,7 @@ from . import __version__
 from .config import Settings
 from .eligibility import RULES_AS_OF
 from .events import EventHub
-from .models import Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter
+from .models import LEAD_KIND_LABELS, Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter
 from .notify import TelegramNotifier
 from .poller import Poller
 from .rates import Rates
@@ -179,6 +179,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         return response
     templates = Jinja2Templates(directory=HERE / "templates")
     templates.env.globals.update(
+        lead_kinds=LEAD_KIND_LABELS,
         company=settings.company_name,
         company_phone=settings.company_phone,
         company_telegram=settings.company_telegram,
@@ -439,6 +440,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         hits.append(now)
         storage = storage_of(request)
         listing = storage.get(lead.source, lead.external_id) if lead.source and lead.external_id else None
+        if lead.kind is None:
+            lead = lead.model_copy(update={"kind": "calc" if listing else "pick"})
         saved = storage.add_lead(lead, listing)
         if listing:
             saved.listing_title = car_view(listing, rates).title + (f", {listing.year}" if listing.year else "")

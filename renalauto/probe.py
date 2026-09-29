@@ -147,7 +147,46 @@ def step2() -> None:
         print("\n".join(sorted(found)[:60]) or "не найдено")
 
 
+def step3() -> None:
+    """K Car: как сайт вызывает API списка машин и что оно отвечает."""
+    c = httpx.Client(headers={"User-Agent": UA, "Accept-Language": "ko,en;q=0.8"}, timeout=25, follow_redirects=True)
+    page = get(c, "https://www.kcar.com/bc/search")
+    if isinstance(page, Exception):
+        print("ERROR", page)
+        return
+    scripts = list(dict.fromkeys(re.findall(r'src="(/_nuxt/[\w.-]+\.js)"', page.text)))
+    markers = ("search/list/drct", "IntgSearchList", "search/carList", "api.kcar.com", "baseURL", "wr_", "pageno", "pageNo")
+    shown = 0
+    for src in scripts:
+        js = get(c, "https://www.kcar.com" + src)
+        if isinstance(js, Exception):
+            continue
+        text = js.text
+        for marker in markers:
+            for m in list(re.finditer(re.escape(marker), text))[:2]:
+                if shown >= 14:
+                    break
+                shown += 1
+                print(f"\n[{src} :: {marker}] …{squeeze(text[max(0, m.start() - 250): m.start() + 450])}…")
+
+    print("\n=== K CAR пробные запросы к API")
+    headers = {"Referer": "https://www.kcar.com/bc/search", "Origin": "https://www.kcar.com", "Accept": "application/json, text/plain, */*"}
+    body = {"wr_eq_sell_dcd": "ALL", "wr_in_multi_columns": "cntr_rgn_cd|cntr_cd", "wr_in_cntr_rgn_cd": "", "pageno": 1, "limit": 3, "sort": "car_prce"}
+    for method, url in [
+        ("POST", "https://api.kcar.com/bc/search/list/drct"),
+        ("POST", "https://api.kcar.com/bc/search/list"),
+        ("GET", "https://api.kcar.com/bc/search/list/drct?pageno=1&limit=3"),
+        ("POST", "https://www.kcar.com/bc/search/list/drct"),
+    ]:
+        try:
+            r = c.request(method, url, json=body if method == "POST" else None, headers=headers)
+            print(f"{method} {url} -> {r.status_code} {r.headers.get('content-type', '')} :: {squeeze(r.text)[:400]}")
+        except Exception as exc:  # noqa: BLE001
+            print(f"{method} {url} -> ERROR {exc}")
+
+
 if __name__ == "__main__":
     import sys
 
-    step2() if "step2" in sys.argv[1:] else main()
+    args = sys.argv[1:]
+    step3() if "step3" in args else step2() if "step2" in args else main()

@@ -91,6 +91,9 @@ class ListingEvent(BaseModel):
 
 
 LeadStatus = Literal["new", "in_work", "deal", "lost"]
+# calc — расчёт под ключ конкретной машины, pick — подбор под бюджет, history — отчёт об истории (CarHistory)
+LeadKind = Literal["calc", "pick", "history"]
+LEAD_KIND_LABELS = {"calc": "Расчёт под ключ", "pick": "Подбор под бюджет", "history": "Отчёт об истории"}
 
 
 class LeadIn(BaseModel):
@@ -105,6 +108,7 @@ class LeadIn(BaseModel):
     source: str | None = Field(default=None, max_length=32)
     external_id: str | None = Field(default=None, max_length=64)
     page: str | None = Field(default=None, max_length=500)
+    kind: LeadKind | None = None
     website: str | None = None  # ловушка для ботов: поле скрыто, люди его не заполняют
 
 
@@ -114,4 +118,6 @@ class Lead(LeadIn):
     status: LeadStatus = "new"
     listing_title: str | None = None
     listing_url: str | None = None
+    plate: str | None = None
+    vin: str | None = None
     manager_note: str | None = None

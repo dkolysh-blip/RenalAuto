@@ -13,7 +13,7 @@ def kb(**kw):
     base = dict(source="kbchachacha", external_id="1", country="KR", url="https://kb/1",
                 title="현대 팰리세이드 3.8 가솔린 8인승 프레스티지", make="현대", model="팰리세이드",
                 year=2022, mileage_km=50_000, price=30_000_000, currency="KRW", price_usd=21_600,
-                fuel="가솔린", location="경기", photo="https://img/1.jpg")
+                fuel="가솔린", location="경기", photo="https://img/1.jpg", plate="12가3456")
     base.update(kw)
     return Listing(**base)
 
@@ -97,13 +97,21 @@ def test_leads_flow(settings):
         assert r.status_code == 201
         assert sent and "Hyundai Palisade" in sent[0].listing_title
 
+        # заявка на отчёт об истории: тип и госномер сохраняются, менеджер видит их в /admin
+        r = client.post("/api/leads", json={"name": "Пётр", "telegram": "@petr", "kind": "history",
+                                             "source": "kbchachacha", "external_id": "1"})
+        assert r.status_code == 201
+        assert sent[-1].kind == "history" and sent[-1].plate == "12가3456"
+
         # бот заполнил скрытое поле — заявка не сохраняется
         assert client.post("/api/leads", json={"name": "bot", "phone": "1", "website": "x"}).status_code == 201
         assert client.get("/api/leads").status_code == 403
         leads = client.get("/api/leads", headers=ADMIN).json()
-        assert len(leads) == 1 and leads[0]["listing_url"] == "https://kb/1"
+        assert len(leads) == 2 and leads[-1]["listing_url"] == "https://kb/1" and leads[-1]["kind"] == "calc"
+        assert "Отчёт об истории" in client.get("/admin", params={"token": "secret"}).text
+        assert "Получить отчёт" in client.get("/car/kbchachacha/1").text
 
-        lead_id = leads[0]["id"]
+        lead_id = leads[-1]["id"]
         assert client.patch(f"/api/leads/{lead_id}", json={"status": "deal"}, headers=ADMIN).json()["status"] == "deal"
         assert client.get("/api/leads/stats", headers=ADMIN).json()["deal"] == 1
         assert client.get("/admin", params={"token": "secret"}).status_code == 200
