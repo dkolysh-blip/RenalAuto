@@ -8,6 +8,13 @@
 }
 
 {$DOMAIN:renal-auto.asia}, www.{$DOMAIN:renal-auto.asia} {
+	# Проверку TLS-ALPN Let's Encrypt делает только на порт 443, а он может быть занят
+	# (нода Marzban/Xray) — оставляем только HTTP-01 через порт 80.
+	tls {
+		issuer acme {
+			disable_tlsalpn_challenge
+		}
+	}
 	encode gzip
 	reverse_proxy renalauto:8000 {
 		# поток /api/stream (SSE) отдаём без буферизации
