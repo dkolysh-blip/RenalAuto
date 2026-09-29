@@ -26,6 +26,14 @@ DEFAULT_QUERIES = "(And.Hidden.N._.CarType.Y.);(And.Hidden.N._.CarType.N.)"
 
 MAN_WON = 10_000
 
+DEFAULT_SEARCH_PATHS = "general,premium,mobile"
+# Без этих заголовков api.encar.com может отвечать 404/403
+BROWSER_HEADERS = {
+    "Referer": "https://www.encar.com/",
+    "Origin": "https://www.encar.com",
+    "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+}
+
 
 def _photo_url(path: str | None) -> str | None:
     if not path:
@@ -63,6 +71,10 @@ class EncarSource(Source):
     def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.queries = [q.strip() for q in os.getenv("ENCAR_QUERIES", DEFAULT_QUERIES).split(";") if q.strip()]
+        # Сайт использует несколько вариантов поискового эндпоинта; перебираем, запоминаем рабочий.
+        self.search_paths = [
+            p.strip() for p in os.getenv("ENCAR_SEARCH_PATHS", DEFAULT_SEARCH_PATHS).split(",") if p.strip()
+        ]
 
     async def fetch_latest(self, limit: int = 50, query: str | None = None, **_: Any) -> list[Listing]:
         queries = [query] if query else self.queries
@@ -72,10 +84,22 @@ class EncarSource(Source):
         return listings
 
     async def _search(self, query: str, limit: int) -> list[Listing]:
-        data = await self._get_json(
-            f"{API}/search/car/list/general",
-            params={"count": "false", "q": query, "sr": f"|ModifiedDate|0|{limit}"},
-        )
+        params = {"count": "true", "q": query, "sr": f"|ModifiedDate|0|{limit}"}
+        last_error: SourceError | None = None
+        for path in list(self.search_paths):
+            response = await self.client.get(
+                f"{API}/search/car/list/{path}", params=params, headers=BROWSER_HEADERS
+            )
+            if response.status_code == 404 and len(self.search_paths) > 1:
+                last_error = SourceError(f"encar: HTTP 404 for {response.request.url}")
+                continue
+            data = self._json(response)
+            if path != self.search_paths[0]:
+                self.search_paths.remove(path)
+                self.search_paths.insert(0, path)
+            break
+        else:
+            raise last_error or SourceError("encar: no search endpoint configured")
         results = data.get("SearchResults") if isinstance(data, dict) else None
         if results is None:
             raise SourceError("encar: unexpected search response shape")
@@ -111,7 +135,7 @@ class EncarSource(Source):
         )
 
     async def fetch_detail(self, listing: Listing) -> Listing:
-        data = await self._get_json(f"{API}/v1/readside/vehicle/{listing.external_id}")
+        data = await self._get_json(f"{API}/v1/readside/vehicle/{listing.external_id}", headers=BROWSER_HEADERS)
         return self.apply_detail(listing, data)
 
     def apply_detail(self, listing: Listing, data: dict[str, Any]) -> Listing:
@@ -158,6 +182,7 @@ class EncarSource(Source):
         data = await self._get_json(
             f"{API}/v1/readside/record/vehicle/{listing.external_id}/open",
             params={"vehicleNo": listing.plate},
+            headers=BROWSER_HEADERS,
         )
         return self.parse_history(data)
 

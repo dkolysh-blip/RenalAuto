@@ -72,3 +72,25 @@ def test_dongchedi_parsers():
     assert parse_mileage("8000公里") == 8000
     assert parse_mileage(None) is None
     assert parse_price_wan("12.58万") == 125800
+
+
+@pytest.mark.asyncio
+async def test_encar_falls_back_to_working_search_path(settings, monkeypatch):
+    monkeypatch.setenv("ENCAR_QUERIES", "(And.Hidden.N._.CarType.Y.)")
+    import httpx
+
+    calls = []
+
+    def handler(request):
+        calls.append(request.url.path)
+        if request.url.path.endswith("/premium"):
+            assert request.headers["Referer"] == "https://www.encar.com/"
+            return httpx.Response(200, json=fixture("encar_search.json"))
+        return httpx.Response(404)
+
+    src = EncarSource(settings, httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+    assert len(await src.fetch_latest(limit=2)) == 2
+    assert src.search_paths[0] == "premium"
+    calls.clear()
+    await src.fetch_latest(limit=2)
+    assert calls == ["/search/car/list/premium"]
