@@ -3,7 +3,6 @@ from renalauto.vin.decoder import compute_check_digit, decode, model_year_candid
 
 def test_known_valid_check_digits():
     assert compute_check_digit("1HGCM82633A004352") == "3"
-    assert compute_check_digit("11111111111111111") == "1"
 
 
 def test_decode_valid_chinese_vin():
@@ -43,3 +42,12 @@ def test_model_year_with_hint():
     assert decode("KMHLM41C6AU123457").model_year == 2010
     assert model_year_candidates("Y", max_year=2027) == [2000]
     assert decode("KMHLM41C6MU123457", year_hint=1991).model_year == 1991
+
+
+def test_placeholder_vin_is_rejected():
+    from renalauto.vin.decoder import is_placeholder
+
+    assert is_placeholder("11111111111111111")
+    assert not is_placeholder("KMHLM41C6MU123457")
+    d = decode("11111111111111111")
+    assert not d.valid_format and "заглушка" in d.errors[0]

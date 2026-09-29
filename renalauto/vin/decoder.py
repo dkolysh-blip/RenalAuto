@@ -52,6 +52,14 @@ def normalize(vin: str) -> str:
     return re.sub(r"[\s\-]", "", vin or "").upper()
 
 
+def is_placeholder(vin: str | None) -> bool:
+    """VIN-заглушка, которую продавец вводит вместо настоящего: 11111111111111111, 00000…, 12345678901234567."""
+    v = normalize(vin or "")
+    if len(v) != 17:
+        return False
+    return len(set(v)) <= 2 or v in ("12345678901234567", "01234567890123456", "ABCDEFGHJKLMNPRST")
+
+
 def compute_check_digit(vin: str) -> str:
     total = sum(_TRANSLIT[ch] * w for ch, w in zip(vin, _WEIGHTS))
     remainder = total % 11
@@ -79,6 +87,10 @@ def decode(raw: str, year_hint: int | None = None) -> VinDecoded:
         return result
     if not VIN_RE.match(vin):
         result.errors.append("VIN содержит недопустимые символы")
+        return result
+
+    if is_placeholder(vin):
+        result.errors.append("Это не настоящий VIN, а заглушка — продавец не указал номер. Его нужно запросить")
         return result
 
     result.valid_format = True

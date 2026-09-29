@@ -65,7 +65,8 @@ TERMS: dict[str, str] = {
     "인스퍼레이션": "Inspiration", "캘리그래피": "Calligraphy", "익스클루시브": "Exclusive", "모던": "Modern",
     "스마트": "Smart", "럭셔리": "Luxury", "트렌디": "Trendy", "스타일": "Style", "스페셜": "Special",
     "그래비티": "Gravity", "블랙": "Black", "에디션": "Edition", "스포츠": "Sport", "초장축": "long",
-    "킹캡": "King Cab", "톤": "t", "밴": "Van",
+    "킹캡": "King Cab", "톤": "t", "밴": "Van", "세대": "-го пок.", "캘리그래피": "Calligraphy",
+    "AMG 라인": "AMG Line", "4매틱": "4MATIC",
     # Китайские
     "款": " г.", "改款": "рестайлинг", "豪华型": "Luxury", "舒适型": "Comfort", "精英型": "Elite",
     "尊贵型": "Premium", "旗舰型": "Flagship", "进取型": "Progressive", "两驱": "2WD", "四驱": "4WD",
@@ -136,6 +137,7 @@ def title(text: str | None) -> str:
     out = _TITLE_RE.sub(lambda m: f" {_ALL_TITLE[m.group()]} ", text)
     out = re.sub(r"\s+", " ", out).strip()
     out = re.sub(r"(\d)\s+мест", r"\1 мест", out)
+    out = re.sub(r"(\d)\s+-го", r"\1-го", out)
     out = re.sub(r"(\d)\s+г\.", r"\1 г.", out)
     out = re.sub(r"\(\s+", "(", re.sub(r"\s+\)", ")", out))
     return out

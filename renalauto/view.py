@@ -9,6 +9,7 @@ from . import i18n
 from .eligibility import Eligibility, evaluate
 from .models import Listing
 from .rates import Rates
+from .vin.decoder import is_placeholder
 
 SOURCE_NAMES = {
     "kbchachacha": "KB Chachacha",
@@ -83,6 +84,9 @@ class CarView:
 
 
 def car_view(listing: Listing, rates: Rates) -> CarView:
+    if listing.vin and is_placeholder(listing.vin):
+        # в базе могла остаться заглушка вида 11111111111111111 — не показываем её как VIN
+        listing = listing.model_copy(update={"vin": None})
     extra = listing.extra
     title = i18n.title(listing.title) or listing.external_id
     photos = list(extra.get("photos") or [])

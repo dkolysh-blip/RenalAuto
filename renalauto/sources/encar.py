@@ -19,6 +19,7 @@ from typing import Any
 import httpx
 
 from ..models import Listing
+from ..vin.decoder import is_placeholder
 from .base import Source, SourceError, to_float, to_int
 
 API = "https://api.encar.com"
@@ -115,6 +116,11 @@ def _photo_url(path: str | None) -> str | None:
     if path.endswith("_"):
         path += "001.jpg"
     return PHOTO_HOST + path
+
+
+def _real_vin(value: Any) -> str | None:
+    vin = (str(value or "")).strip().upper()
+    return None if not vin or is_placeholder(vin) else vin
 
 
 def _item_photos(item: dict[str, Any]) -> list[str]:
@@ -285,7 +291,7 @@ class EncarSource(Source):
         photos = data.get("photos") or []
 
         update: dict[str, Any] = {
-            "vin": (data.get("vin") or "").strip().upper() or None,
+            "vin": _real_vin(data.get("vin")),
             "plate": data.get("vehicleNo") or None,
             "make": category.get("manufacturerName") or listing.make,
             "model": category.get("modelName") or listing.model,
