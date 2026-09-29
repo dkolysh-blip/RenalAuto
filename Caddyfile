@@ -1,0 +1,9 @@
+# HTTPS-прокси: сертификат Let's Encrypt выпускается автоматически.
+# Домен задаётся переменной DOMAIN в .env (по умолчанию renal-auto.asia).
+{$DOMAIN:renal-auto.asia}, www.{$DOMAIN:renal-auto.asia} {
+	encode gzip
+	reverse_proxy renalauto:8000 {
+		# поток /api/stream (SSE) отдаём без буферизации
+		flush_interval -1
+	}
+}

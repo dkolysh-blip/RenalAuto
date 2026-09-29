@@ -2,8 +2,28 @@ services:
   renalauto:
     build: .
     env_file: .env
+    # Наружу сервис доступен только через Caddy (HTTPS); порт 8000 — лишь для локальных проверок
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     volumes:
       - ./data:/data
     restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    env_file: .env
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - renalauto
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
+  caddy_config:
