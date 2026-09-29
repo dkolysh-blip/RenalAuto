@@ -80,6 +80,17 @@
       {% if car %}{{ lead_form(car, 'Полный отчёт и расчёт под ключ', 'Получить бесплатно') }}
       {% else %}{{ lead_form(None, 'Нужен полный отчёт?', 'Связаться с менеджером') }}{% endif %}
     </div>
+    {% if r.vin %}
+    <div class="panel">
+      <h2>Если машина уже в России</h2>
+      <p class="small muted">Официальные бесплатные проверки по VIN <code>{{ r.vin }}</code> (с капчей, открываются на сайтах ведомств):</p>
+      <ul class="small">
+        <li><a href="https://xn--90adear.xn--p1ai/check/auto" target="_blank" rel="noopener nofollow">Госавтоинспекция</a> — регистрации в РФ, ДТП, розыск, ограничения</li>
+        <li><a href="https://portal.elpts.ru/" target="_blank" rel="noopener nofollow">Портал ЭПТС</a> — есть ли электронный ПТС, статус, отметка об утильсборе</li>
+        <li><a href="https://www.reestr-zalogov.ru/search" target="_blank" rel="noopener nofollow">Реестр залогов</a> — не в залоге ли машина</li>
+      </ul>
+    </div>
+    {% endif %}
     <p class="small muted">Проверка по открытым данным площадок и нашей базе объявлений. Это не заменяет официальный отчёт и осмотр.</p>
   </aside>
 </div>
