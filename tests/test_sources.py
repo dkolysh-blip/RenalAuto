@@ -94,3 +94,16 @@ async def test_encar_falls_back_to_working_search_path(settings, monkeypatch):
     calls.clear()
     await src.fetch_latest(limit=2)
     assert calls == ["/search/car/list/premium"]
+
+
+@pytest.mark.asyncio
+async def test_encar_block_page_is_reported(settings, monkeypatch):
+    monkeypatch.setenv("ENCAR_QUERIES", "(And.Hidden.N._.CarType.Y.)")
+    import httpx
+
+    from renalauto.sources.base import SourceError
+
+    blocked = '<meta http-equiv="refresh" content="0; url=https://api.encar.com/has_been_cr_blocked_AWS.html" />'
+    client = httpx.AsyncClient(transport=httpx.MockTransport(lambda r: httpx.Response(404, text=blocked)))
+    with pytest.raises(SourceError, match="заблокирован"):
+        await EncarSource(settings, client).fetch_latest(limit=2)

@@ -14,6 +14,8 @@ import os
 from datetime import datetime
 from typing import Any
 
+import httpx
+
 from ..models import Listing
 from .base import Source, SourceError, to_float, to_int
 
@@ -90,6 +92,7 @@ class EncarSource(Source):
             response = await self.client.get(
                 f"{API}/search/car/list/{path}", params=params, headers=BROWSER_HEADERS
             )
+            self._raise_if_blocked(response)
             if response.status_code == 404 and len(self.search_paths) > 1:
                 last_error = SourceError(f"encar: HTTP 404 for {response.request.url}")
                 continue
@@ -104,6 +107,18 @@ class EncarSource(Source):
         if results is None:
             raise SourceError("encar: unexpected search response shape")
         return [self.parse_search_item(item) for item in results if item.get("Id")]
+
+    @staticmethod
+    def _raise_if_blocked(response: httpx.Response) -> None:
+        if response.status_code >= 400 and "has_been_cr_blocked" in response.text:
+            raise SourceError(
+                "encar: IP сервера заблокирован Encar (запросы из облачных сетей/дата-центров не принимаются). "
+                "Нужен IP вне дата-центра, см. PROXY_KR в README"
+            )
+
+    def _json(self, response: httpx.Response) -> Any:
+        self._raise_if_blocked(response)
+        return super()._json(response)
 
     def parse_search_item(self, item: dict[str, Any]) -> Listing:
         car_id = str(item["Id"])
