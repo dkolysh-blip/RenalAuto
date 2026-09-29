@@ -4,10 +4,12 @@ from ..config import Settings
 from .base import Source, SourceError
 from .dongchedi import DongchediSource
 from .encar import EncarSource
+from .kbchachacha import KbChachachaSource
 
 REGISTRY: dict[str, type[Source]] = {
     EncarSource.name: EncarSource,
     DongchediSource.name: DongchediSource,
+    KbChachachaSource.name: KbChachachaSource,
 }
 
 

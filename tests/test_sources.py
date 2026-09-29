@@ -107,3 +107,44 @@ async def test_encar_block_page_is_reported(settings, monkeypatch):
     client = httpx.AsyncClient(transport=httpx.MockTransport(lambda r: httpx.Response(404, text=blocked)))
     with pytest.raises(SourceError, match="заблокирован"):
         await EncarSource(settings, client).fetch_latest(limit=2)
+
+
+@pytest.mark.asyncio
+async def test_kbchachacha_list_and_detail(settings):
+    import httpx
+
+    from renalauto.sources.kbchachacha import KbChachachaSource
+
+    from .conftest import FIXTURES
+
+    list_html = (FIXTURES / "kbchachacha_list.html").read_text(encoding="utf-8")
+    detail_html = (FIXTURES / "kbchachacha_detail.html").read_text(encoding="utf-8")
+
+    def handler(request):
+        if request.url.path.endswith("list.empty"):
+            body = list_html if request.url.params["page"] == "1" else ""
+            return httpx.Response(200, text=body)
+        assert request.url.params["carSeq"] == "27892372"
+        return httpx.Response(200, text=detail_html)
+
+    src = KbChachachaSource(settings, httpx.AsyncClient(transport=httpx.MockTransport(handler)))
+    bongo, sonata = await src.fetch_latest(limit=10)
+
+    assert bongo.external_id == "27892372"
+    assert bongo.make == "기아" and bongo.model == "봉고3"
+    assert bongo.price == 10_400_000 and bongo.currency == "KRW"
+    assert bongo.photo.startswith("https://img.kbchachacha.com/IMG/carimg/l/img09/img2789/27892372_")
+    assert bongo.url == "https://www.kbchachacha.com/public/car/detail.kbc?carSeq=27892372"
+    assert bongo.extra["section"] == "KB스타픽"
+
+    assert sonata.price == 23_500_000
+    assert sonata.year == 2024 and sonata.mileage_km == 31_200
+
+    detailed = await src.fetch_detail(bongo)
+    assert detailed.plate == "83루1615"
+    assert detailed.year == 2019
+    assert detailed.mileage_km == 195_945
+    assert detailed.fuel == "디젤" and detailed.transmission == "수동"
+    assert detailed.location == "인천"
+    assert detailed.extra["displacement"] == "2,497cc"
+    assert detailed.vin is None
