@@ -161,3 +161,26 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .kind { font-size: 12px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--unk-bg); white-space: nowrap; }
 .kind.history { background: var(--warn-bg); color: var(--warn); }
 .kind.calc { background: var(--ok-bg); color: var(--ok); }
+
+/* отчёт проверки */
+.report-head { display: flex; gap: 18px; align-items: center; margin: 12px 0 16px; }
+.report-head h1 { font-size: clamp(20px, 3vw, 26px); margin: 4px 0 8px; }
+.score { width: 92px; height: 92px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 0 0 92px; border: 6px solid var(--line); }
+.score b { font-size: 30px; line-height: 1; }
+.score span { font-size: 11px; color: var(--muted); }
+.score.ok { border-color: var(--ok); } .score.warning { border-color: var(--warn); } .score.danger { border-color: var(--bad); }
+.verdict-title.ok { color: var(--ok); } .verdict-title.warning { color: var(--warn); } .verdict-title.danger { color: var(--bad); }
+.counts { display: flex; gap: 8px; flex-wrap: wrap; }
+.checks { display: flex; flex-direction: column; gap: 10px; }
+.check { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 12px; border-radius: 12px; border: 1px solid var(--line); }
+.check-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+.check.bad { background: var(--bad-bg); border-color: transparent; } .check.bad .check-icon { color: #fff; background: var(--bad); }
+.check.warn { background: var(--warn-bg); border-color: transparent; } .check.warn .check-icon { color: #fff; background: var(--warn); }
+.check.ok .check-icon { color: #fff; background: var(--ok); }
+.check.unknown .check-icon { color: var(--unk); background: var(--unk-bg); }
+.check .small { margin-top: 3px; }
+.advice { font-weight: 600; }
+.big-diff { font-size: 34px; font-weight: 800; color: var(--warn); }
+.big-diff.good { color: var(--ok); }
+@media (max-width: 700px) { .report-head { flex-direction: column; align-items: flex-start; } }
+.big-diff.bad { color: var(--bad); }

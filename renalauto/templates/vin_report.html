@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card, lead_form %}
+{% set r = report %}
+{% block title %}Проверка {{ 'госномера' if r.query_type == 'plate' else 'VIN' }} {{ r.query }}{% if car %} — {{ car.title }}{% endif %} | {{ company }}{% endblock %}
+{% block description %}Результат проверки {{ r.query }}: {{ r.headline }}. Оценка {{ r.score }}/100.{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="crumbs"><a href="/">Все авто</a> › <a href="/vin">Проверка VIN</a></div>
+<div class="report-head panel">
+  <div class="score {{ r.verdict }}"><b>{{ r.score }}</b><span>из 100</span></div>
+  <div>
+    <div class="muted small">Проверка {{ 'по госномеру' if r.query_type == 'plate' else 'по VIN' }}: <code>{{ r.query }}</code>{% if r.vin and r.query_type == 'plate' %} · VIN <code>{{ r.vin }}</code>{% endif %}</div>
+    <h1 class="verdict-title {{ r.verdict }}">{{ r.headline }}</h1>
+    <div class="counts">
+      {% set d = r.checks|selectattr('severity', 'equalto', 'danger')|list|length %}
+      {% set w = r.checks|selectattr('severity', 'equalto', 'warning')|list|length %}
+      {% set ok = r.checks|selectattr('ok')|list|length %}
+      {% if d %}<span class="pill bad">✕ Серьёзных проблем: {{ d }}</span>{% endif %}
+      {% if w %}<span class="pill warn">⚠ Замечаний: {{ w }}</span>{% endif %}
+      <span class="pill ok">✓ Пройдено проверок: {{ ok }}</span>
+    </div>
+  </div>
+</div>
+
+<div class="car-grid">
+  <div>
+    <div class="panel">
+      <h2>Расшифровка результатов</h2>
+      <div class="checks">
+        {% for c in r.checks %}
+        {% set cls = 'bad' if c.severity == 'danger' else ('warn' if c.severity == 'warning' else ('ok' if c.ok else 'unknown')) %}
+        {% set icon = '✕' if c.severity == 'danger' else ('⚠' if c.severity == 'warning' else ('✓' if c.ok else 'ℹ')) %}
+        <div class="check {{ cls }}">
+          <div class="check-icon">{{ icon }}</div>
+          <div>
+            <b>{{ c.title or c.detail }}</b>
+            {% if c.title %}<div class="small">{{ c.detail }}</div>{% endif %}
+            {% if c.explain %}<div class="small muted">{{ c.explain }}</div>{% endif %}
+            {% if c.advice %}<div class="small advice">Что делать: {{ c.advice }}</div>{% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if r.observations|length > 1 %}
+    <div class="panel">
+      <h2>Хронология: цена и пробег</h2>
+      <p class="small muted">Каждый раз, когда машина появлялась или менялась на площадках.</p>
+      <table class="specs">
+        <tr><th>Дата</th><td><b>Площадка · цена · пробег</b></td></tr>
+        {% for o in r.observations %}<tr><th>{{ o.seen_at[:10] }}</th><td>{{ o.source }} · {% if o.price %}{{ fmt(o.price) }} {{ o.currency }}{% else %}—{% endif %} · {% if o.mileage_km is not none %}{{ fmt(o.mileage_km) }} км{% else %}—{% endif %}</td></tr>{% endfor %}
+      </table>
+    </div>
+    {% endif %}
+
+    {% if cars %}
+    <h2>Объявления с этой машиной</h2>
+    <div class="grid">{% for v in cars %}{{ card(v) }}{% endfor %}</div>
+    {% endif %}
+  </div>
+
+  <aside class="sticky">
+    {% if r.identity %}
+    <div class="panel">
+      <h2>Паспорт автомобиля</h2>
+      <table class="specs">{% for k, val in r.identity %}<tr><th>{{ k }}</th><td>{{ val }}</td></tr>{% endfor %}</table>
+    </div>
+    {% endif %}
+    {% if r.market %}
+    <div class="panel">
+      <h2>Цена относительно рынка</h2>
+      {% set mclass = 'bad' if r.market.diff <= -25 else ('good' if r.market.diff < 0 else '') %}
+      <div class="big-diff {{ mclass }}">{{ '%+.0f'|format(r.market.diff) }}%</div>
+      {% if r.market.diff <= -25 %}<p class="small"><b>Подозрительно дёшево</b> — такие цены часто скрывают ДТП, утопление или залог.</p>{% endif %}
+      <p class="small muted">к медиане {{ fmt(r.market.median) }} {{ r.market.currency }} по {{ r.market.count }} похожим машинам в нашей базе</p>
+    </div>
+    {% endif %}
+    <div class="panel">
+      {% if car %}{{ lead_form(car, 'Полный отчёт и расчёт под ключ', 'Получить бесплатно') }}
+      {% else %}{{ lead_form(None, 'Нужен полный отчёт?', 'Связаться с менеджером') }}{% endif %}
+    </div>
+    <p class="small muted">Проверка по открытым данным площадок и нашей базе объявлений. Это не заменяет официальный отчёт и осмотр.</p>
+  </aside>
+</div>
+{% endblock %}

@@ -5,13 +5,13 @@
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/vin">{% endblock %}
 {% block content %}
 <section class="hero">
-  <h1>Проверка авто по VIN</h1>
+  <h1>Проверка авто по VIN или госномеру</h1>
   <p>Расшифруем VIN, проверим контрольный знак (поддельные VIN часто его ломают), найдём машину в нашей базе объявлений Кореи и Китая
     и покажем, не скручивали ли пробег и не перепродают ли её под разными объявлениями.</p>
 </section>
 <div class="car-grid">
   <div class="panel">
-    <form class="check-row" data-vin-form><input name="vin" maxlength="25" placeholder="Например, KMHLM41C6MU123457" value="{{ vin or '' }}" required><button class="btn">Проверить</button></form>
+    <form class="check-row" data-vin-form><input name="vin" maxlength="25" placeholder="VIN (17 символов) или госномер, например 12가3456" required><button class="btn">Проверить</button></form>
     <div class="report" id="report"></div>
     <p class="small muted" style="margin-top:14px">Полный отчёт об истории — ДТП и суммы страховых выплат, смены владельцев, такси/прокат, утопление —
       берём у площадок и платных сервисов (carhistory.or.kr в Корее, 查博士 в Китае). Оставьте заявку — менеджер закажет отчёт по нужной машине.</p>
@@ -19,4 +19,4 @@
   <aside class="panel">{{ lead_form(None, 'Нужен полный отчёт или подбор?', 'Связаться с менеджером') }}</aside>
 </div>
 {% endblock %}
-{% block scripts %}{% if vin %}<script>window.addEventListener('DOMContentLoaded', () => document.querySelector('[data-vin-form] button').click());</script>{% endif %}{% endblock %}
+

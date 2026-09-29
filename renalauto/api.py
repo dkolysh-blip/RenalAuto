@@ -12,10 +12,10 @@ from contextlib import asynccontextmanager, suppress
 from datetime import date
 from pathlib import Path
 from typing import Any, Literal
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, Response, StreamingResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
@@ -32,7 +32,7 @@ from .sources import REGISTRY, Source, build_sources
 from .storage import Storage
 from .view import car_view, fmt_int
 from .vin.decoder import VinDecoded, decode
-from .vin.report import VinReport, build_report
+from .vin.report import VinReport, build_report, build_report_for_plate, looks_like_plate
 
 log = logging.getLogger(__name__)
 HERE = Path(__file__).parent
@@ -314,9 +314,24 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             jsonld=json.dumps(jsonld, ensure_ascii=False).replace("</", "<\\/"),
         )
 
+    async def check_any(request: Request, query: str) -> VinReport:
+        query = query.strip()
+        kwargs = dict(storage=storage_of(request), settings=settings, sources=request.app.state.sources)
+        if looks_like_plate(query):
+            return await build_report_for_plate(query, **kwargs)
+        return await build_report(query, **kwargs)
+
     @app.get("/vin", response_class=HTMLResponse, include_in_schema=False)
-    async def vin_page(request: Request, vin: str | None = None) -> HTMLResponse:
-        return render(request, "vin.html", vin=vin)
+    async def vin_page(request: Request, vin: str | None = None) -> Response:
+        if vin and vin.strip():
+            return RedirectResponse(f"/vin/{quote(vin.strip())}", status_code=303)
+        return render(request, "vin.html", vin=None)
+
+    @app.get("/vin/{query}", response_class=HTMLResponse, include_in_schema=False)
+    async def vin_report_page(request: Request, query: str) -> HTMLResponse:
+        report = await check_any(request, query)
+        cars = [car_view(l, rates) for l in report.listings[:8]]
+        return render(request, "vin_report.html", report=report, cars=cars, car=cars[0] if cars else None)
 
     @app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
     async def admin_page(request: Request, status: str | None = None) -> HTMLResponse:
@@ -417,6 +432,11 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     @app.get("/api/vin/{vin}", response_model=VinReport)
     async def vin_report(request: Request, vin: str) -> VinReport:
         return await build_report(vin, storage=storage_of(request), settings=settings, sources=request.app.state.sources)
+
+    @app.get("/api/check/{query}", response_model=VinReport)
+    async def check_api(request: Request, query: str) -> VinReport:
+        """Проверка по VIN или корейскому госномеру (например, 12가3456)."""
+        return await check_any(request, query)
 
     @app.get("/api/vin/{vin}/decode", response_model=VinDecoded)
     async def vin_decode(vin: str, year: int | None = None) -> VinDecoded:

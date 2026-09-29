@@ -55,9 +55,9 @@
       {% endif %}
       {% if l.vin %}
       <p>VIN: <code>{{ l.vin }}</code></p>
-      <button class="btn ghost" type="button" data-vin-report="/api/listings/{{ l.source }}/{{ l.external_id }}/vin-report">Проверить VIN и историю</button>
+      <a class="btn ghost" href="/vin/{{ l.vin }}">Проверить VIN: полный разбор</a>
       {% else %}
-      <p><b>VIN продавец не публикует</b> — так делают почти все площадки. {% if l.plate %}Госномер: <b>{{ l.plate }}</b>. {% endif %}
+      <p><b>VIN продавец не публикует</b> — так делают почти все площадки. {% if l.plate %}Госномер: <b>{{ l.plate }}</b> — <a href="/vin/{{ l.plate|urlencode }}">проверить по номеру</a>. {% endif %}
         Оставьте заявку — менеджер запросит VIN и отчёт об истории (ДТП, страховые выплаты, владельцы, пробег) и пришлёт вам.</p>
       <p class="small muted">Уже знаете VIN этой машины? Проверьте сами:</p>
       <form class="check-row" data-vin-form><input name="vin" maxlength="25" placeholder="17 символов VIN" required><button class="btn ghost">Проверить</button></form>

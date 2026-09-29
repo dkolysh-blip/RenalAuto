@@ -21,6 +21,12 @@ _TRANSLIT = {
 }
 _WEIGHTS = [8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2]
 
+# 11-й символ — завод. Только коды, в которых мы уверены (Hyundai/Genesis и Kia, Корея).
+PLANTS: dict[str, dict[str, str]] = {
+    "KM": {"U": "Ульсан, Корея", "A": "Асан, Корея", "C": "Чонджу, Корея"},
+    "KN": {"5": "Хвасон, Корея", "6": "Сохари (Кванмён), Корея", "7": "Кванджу, Корея"},
+}
+
 # 10-й символ: A=1980 ... Y=2000, 1=2001 ... 9=2009, далее цикл повторяется с 2010.
 _YEAR_CODES = "ABCDEFGHJKLMNPRSTVWXY123456789"
 
@@ -46,6 +52,7 @@ class VinDecoded(BaseModel):
     model_year: int | None = None
     model_year_candidates: list[int] = Field(default_factory=list)
     serial: str | None = None
+    plant: str | None = None
 
 
 def normalize(vin: str) -> str:
@@ -98,6 +105,7 @@ def decode(raw: str, year_hint: int | None = None) -> VinDecoded:
     result.country = wmi.region(vin)
     result.manufacturer = wmi.manufacturer(vin)
     result.serial = vin[11:]
+    result.plant = PLANTS.get(vin[:2], {}).get(vin[10])
 
     expected = compute_check_digit(vin)
     mandatory = vin[0] in "L12345"

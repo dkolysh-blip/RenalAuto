@@ -192,6 +192,7 @@ class Storage:
         mileage_max: int | None = None,
         price_usd_max: float | None = None,
         vin: str | None = None,
+        plate: str | None = None,
         fuels: list[str] | None = None,
         query: str | None = None,
         sort: str = "new",
@@ -209,6 +210,9 @@ class Storage:
                 aliases = i18n.search_aliases(value)
                 where.append("(" + " OR ".join(f"{column} LIKE ?" for _ in aliases) + ")")
                 params.extend(f"%{a}%" for a in aliases)
+        if plate:
+            where.append("REPLACE(json_extract(data, '$.plate'), ' ', '') = ?")
+            params.append(plate.replace(" ", ""))
         if query:
             aliases = i18n.search_aliases(query)
             where.append("(" + " OR ".join("json_extract(data, '$.title') LIKE ?" for _ in aliases) + ")")

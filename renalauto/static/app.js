@@ -67,8 +67,8 @@
   document.querySelectorAll('[data-vin-report]').forEach(b => b.addEventListener('click', () => showReport(b.dataset.vinReport)));
   document.querySelectorAll('form[data-vin-form]').forEach(f => f.addEventListener('submit', e => {
     e.preventDefault();
-    const vin = new FormData(f).get('vin').trim();
-    if (vin) showReport('/api/vin/' + encodeURIComponent(vin));
+    const q = new FormData(f).get('vin').trim().replace(/\s+/g, '');
+    if (q) location.href = '/vin/' + encodeURIComponent(q);
   }));
 
   // --- живая лента -----------------------------------------------------------
