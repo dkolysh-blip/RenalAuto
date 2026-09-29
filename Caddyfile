@@ -1,5 +1,12 @@
 # HTTPS-прокси: сертификат Let's Encrypt выпускается автоматически.
-# Домен задаётся переменной DOMAIN в .env (по умолчанию renal-auto.asia).
+# Домен и порты задаются в .env: DOMAIN, HTTP_PORT, HTTPS_PORT.
+# Если на сервере 443 занят (например, нодой Marzban/Xray), укажите HTTPS_PORT=8443 —
+# сертификат всё равно выдаётся через порт 80, он должен быть свободен.
+{
+	http_port {$HTTP_PORT:80}
+	https_port {$HTTPS_PORT:443}
+}
+
 {$DOMAIN:renal-auto.asia}, www.{$DOMAIN:renal-auto.asia} {
 	encode gzip
 	reverse_proxy renalauto:8000 {
