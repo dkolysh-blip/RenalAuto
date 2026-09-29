@@ -8,7 +8,8 @@ import threading
 from datetime import datetime, timezone
 from typing import Literal
 
-from .models import Listing, SavedFilter
+from . import i18n
+from .models import Lead, LeadIn, Listing, SavedFilter
 
 UpsertStatus = Literal["new", "price_changed", "updated", "unchanged"]
 
@@ -47,6 +48,14 @@ CREATE TABLE IF NOT EXISTS observations (
 );
 CREATE INDEX IF NOT EXISTS ix_observations_vin ON observations (vin);
 CREATE INDEX IF NOT EXISTS ix_observations_listing ON observations (source, external_id);
+
+CREATE TABLE IF NOT EXISTS leads (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'new',
+    data TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_leads_created ON leads (created_at);
 
 CREATE TABLE IF NOT EXISTS filters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -163,6 +172,14 @@ class Storage:
             row = self._conn.execute("SELECT COUNT(*) FROM listings").fetchone()
         return row[0]
 
+    SORTS = {
+        "new": "first_seen DESC, rowid DESC",
+        "price_asc": "price_usd IS NULL, price_usd ASC",
+        "price_desc": "price_usd DESC",
+        "year_desc": "year IS NULL, year DESC, first_seen DESC",
+        "mileage_asc": "mileage_km IS NULL, mileage_km ASC",
+    }
+
     def search(
         self,
         *,
@@ -175,6 +192,9 @@ class Storage:
         mileage_max: int | None = None,
         price_usd_max: float | None = None,
         vin: str | None = None,
+        fuels: list[str] | None = None,
+        query: str | None = None,
+        sort: str = "new",
         limit: int = 50,
         offset: int = 0,
     ) -> list[Listing]:
@@ -185,8 +205,17 @@ class Storage:
                 params.append(value)
         for column, value in (("make", make), ("model", model)):
             if value:
-                where.append(f"{column} LIKE ?")
-                params.append(f"%{value}%")
+                # «Hyundai» находит и «현대», и «现代»
+                aliases = i18n.search_aliases(value)
+                where.append("(" + " OR ".join(f"{column} LIKE ?" for _ in aliases) + ")")
+                params.extend(f"%{a}%" for a in aliases)
+        if query:
+            aliases = i18n.search_aliases(query)
+            where.append("(" + " OR ".join("json_extract(data, '$.title') LIKE ?" for _ in aliases) + ")")
+            params.extend(f"%{a}%" for a in aliases)
+        if fuels:
+            where.append("(" + " OR ".join("json_extract(data, '$.fuel') LIKE ?" for _ in fuels) + ")")
+            params.extend(f"%{f}%" for f in fuels)
         for clause, value in (
             ("year >= ?", year_from),
             ("year <= ?", year_to),
@@ -199,7 +228,7 @@ class Storage:
         sql = "SELECT data FROM listings"
         if where:
             sql += " WHERE " + " AND ".join(where)
-        sql += " ORDER BY first_seen DESC, rowid DESC LIMIT ? OFFSET ?"
+        sql += f" ORDER BY {self.SORTS.get(sort, self.SORTS['new'])} LIMIT ? OFFSET ?"
         rows = self._conn.execute(sql, (*params, limit, offset)).fetchall()
         return [Listing.model_validate_json(r["data"]) for r in rows]
 
@@ -238,3 +267,58 @@ class Storage:
             cur = self._conn.execute("DELETE FROM filters WHERE id = ?", (filter_id,))
             self._conn.commit()
             return cur.rowcount > 0
+
+    # --- заявки ------------------------------------------------------------
+
+    def add_lead(self, lead: LeadIn, listing: Listing | None = None) -> Lead:
+        with self._lock:
+            now = _now()
+            data = lead.model_dump(exclude={"website"})
+            if listing:
+                data["listing_title"] = listing.title
+                data["listing_url"] = listing.url
+            cur = self._conn.execute(
+                "INSERT INTO leads (created_at, status, data) VALUES (?, 'new', ?)", (now, json.dumps(data, ensure_ascii=False))
+            )
+            self._conn.commit()
+            return Lead(id=cur.lastrowid, created_at=now, **data)
+
+    def _lead_from_row(self, row: sqlite3.Row) -> Lead:
+        return Lead(id=row["id"], created_at=row["created_at"], status=row["status"], **json.loads(row["data"]))
+
+    def list_leads(self, status: str | None = None, limit: int = 200) -> list[Lead]:
+        sql, params = "SELECT id, created_at, status, data FROM leads", []
+        if status:
+            sql += " WHERE status = ?"
+            params.append(status)
+        rows = self._conn.execute(sql + " ORDER BY id DESC LIMIT ?", (*params, limit)).fetchall()
+        return [self._lead_from_row(r) for r in rows]
+
+    def update_lead(self, lead_id: int, status: str | None = None, manager_note: str | None = None) -> Lead | None:
+        with self._lock:
+            row = self._conn.execute("SELECT id, created_at, status, data FROM leads WHERE id = ?", (lead_id,)).fetchone()
+            if row is None:
+                return None
+            data = json.loads(row["data"])
+            if manager_note is not None:
+                data["manager_note"] = manager_note
+            new_status = status or row["status"]
+            self._conn.execute(
+                "UPDATE leads SET status = ?, data = ? WHERE id = ?",
+                (new_status, json.dumps(data, ensure_ascii=False), lead_id),
+            )
+            self._conn.commit()
+            return Lead(id=lead_id, created_at=row["created_at"], status=new_status, **data)
+
+    def lead_stats(self) -> dict[str, int]:
+        rows = self._conn.execute("SELECT status, COUNT(*) AS n FROM leads GROUP BY status").fetchall()
+        stats = {"new": 0, "in_work": 0, "deal": 0, "lost": 0}
+        stats.update({r["status"]: r["n"] for r in rows})
+        stats["total"] = sum(v for k, v in stats.items() if k != "total")
+        return stats
+
+    def recent_listing_keys(self, limit: int = 5000) -> list[tuple[str, str, str]]:
+        rows = self._conn.execute(
+            "SELECT source, external_id, last_seen FROM listings ORDER BY last_seen DESC LIMIT ?", (limit,)
+        ).fetchall()
+        return [(r["source"], r["external_id"], r["last_seen"]) for r in rows]

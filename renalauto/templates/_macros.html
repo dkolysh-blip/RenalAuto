@@ -1,0 +1,43 @@
+{% macro pill(el) -%}
+{% set labels = {'ok': '✓ Проходит в РФ', 'warn': '✓ Проходит, есть нюансы', 'bad': '✕ Не проходит', 'unknown': '? Уточнить'} %}
+<span class="pill {{ el.verdict }}">{{ labels[el.verdict] }}</span>
+{%- endmacro %}
+
+{% macro card(v, fresh=False) -%}
+<a class="card{{ ' fresh' if fresh }}" href="{{ v.path }}" data-key="{{ v.listing.source }}:{{ v.listing.external_id }}">
+  <div class="ph">
+    {% if v.photos %}<img loading="lazy" src="{{ v.photos[0] }}" alt="{{ v.title }}">{% endif %}
+    <span class="src">{{ v.flag }} {{ v.source_name }}</span>
+  </div>
+  <div class="body">
+    <h3>{{ v.title }}</h3>
+    <div class="sub">{{ v.subtitle }}</div>
+    {{ pill(v.eligibility) }}
+    <div class="price">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% else %}Цена по запросу{% endif %}</div>
+    <div class="orig">{% if v.listing.price %}{{ fmt(v.listing.price) }} {{ v.listing.currency }} на площадке{% endif %}</div>
+  </div>
+</a>
+{%- endmacro %}
+
+{% macro lead_form(car=None, title='Рассчитать под ключ', button='Получить расчёт') -%}
+<form class="lead-form" data-lead>
+  <h2>{{ title }}</h2>
+  {% if car %}
+  <p class="muted small">Менеджер пришлёт точную стоимость с доставкой, растаможкой и утильсбором, запросит у продавца VIN и отчёт об истории. Бесплатно.</p>
+  <input type="hidden" name="source" value="{{ car.listing.source }}">
+  <input type="hidden" name="external_id" value="{{ car.listing.external_id }}">
+  {% else %}
+  <p class="muted small">Опишите, что ищете, — подберём варианты из Кореи и Китая с ценой под ключ.</p>
+  <div class="field"><label>Бюджет под ключ, ₽</label><input name="budget_rub" type="number" min="0" step="50000" placeholder="2 500 000"></div>
+  {% endif %}
+  <div class="field"><label>Имя *</label><input name="name" required maxlength="100" autocomplete="name"></div>
+  <div class="field"><label>Телефон</label><input name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+7"></div>
+  <div class="field"><label>Telegram</label><input name="telegram" maxlength="64" placeholder="@username"></div>
+  <div class="field"><label>Город получения</label><input name="city" maxlength="100" placeholder="Москва"></div>
+  <div class="field"><label>Комментарий</label><textarea name="comment" maxlength="2000" placeholder="{{ 'Что важно в этой машине?' if car else 'Марка, модель, год, пробег…' }}"></textarea></div>
+  <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
+  <button class="btn block" type="submit">{{ button }}</button>
+  <p class="muted small">Нужен телефон или Telegram — чтобы менеджер мог ответить.</p>
+  <div class="form-msg"></div>
+</form>
+{%- endmacro %}

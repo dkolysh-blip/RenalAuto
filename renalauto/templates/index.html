@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card, lead_form %}
+{% block title %}{% if f.make %}{{ f.make }} {% endif %}{% if f.country == 'KR' %}Авто из Кореи{% elif f.country == 'CN' %}Авто из Китая{% else %}Авто из Кореи и Китая{% endif %} — свежие объявления, цены в рублях | {{ company }}{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ site_url }}/{% if f.country %}?country={{ f.country }}{% endif %}">{% endblock %}
+{% block content %}
+<section class="hero">
+  <h1>{% if f.country == 'KR' %}Авто из Кореи{% elif f.country == 'CN' %}Авто из Китая{% else %}Авто из Кореи и Китая{% endif %} — новые объявления в реальном времени</h1>
+  <p>Собираем объявления с крупнейших площадок, переводим, считаем цену в рублях и сразу показываем, пройдёт ли машина по правилам ввоза в РФ. Расчёт под ключ и проверку истории делает менеджер {{ company }} — бесплатно.</p>
+  <div class="usp"><span>🔄 Обновление каждую минуту</span><span>✅ Проверка «проходимости»</span><span>🔎 История и VIN</span><span>🚚 Доставка под ключ</span></div>
+</section>
+
+<form class="filters" method="get" action="/">
+  <div><label>Страна</label>
+    <select name="country"><option value="">Корея и Китай</option>
+      <option value="KR" {{ 'selected' if f.country == 'KR' }}>🇰🇷 Корея</option>
+      <option value="CN" {{ 'selected' if f.country == 'CN' }}>🇨🇳 Китай</option></select></div>
+  <div><label>Марка</label>
+    <input name="make" list="makes" value="{{ f.make or '' }}" placeholder="Hyundai, Kia, BYD…">
+    <datalist id="makes">{% for m in makes %}<option value="{{ m }}">{% endfor %}</datalist></div>
+  <div><label>Модель</label><input name="model" value="{{ f.model or '' }}" placeholder="Palisade, K5…"></div>
+  <div><label>Год от</label><input name="year_from" type="number" min="1990" max="2030" value="{{ f.year_from or '' }}"></div>
+  <div><label>Пробег до, км</label><input name="mileage_max" type="number" min="0" step="10000" value="{{ f.mileage_max or '' }}"></div>
+  <div><label>Цена до, ₽</label><input name="price_max" type="number" min="0" step="100000" value="{{ f.price_max or '' }}"></div>
+  <div><label>Топливо</label>
+    <select name="fuel"><option value="">Любое</option>
+      {% for key, label in fuels %}<option value="{{ key }}" {{ 'selected' if f.fuel == key }}>{{ label }}</option>{% endfor %}</select></div>
+  <div><label>Сортировка</label>
+    <select name="sort">
+      {% for key, label in sorts %}<option value="{{ key }}" {{ 'selected' if f.sort == key }}>{{ label }}</option>{% endfor %}</select></div>
+  <label class="check"><input type="checkbox" name="passable" value="1" {{ 'checked' if f.passable }}> Только проходные в РФ</label>
+  <button class="btn" type="submit">Показать</button>
+</form>
+
+<div class="live"><span class="dot" id="live-dot"></span><span id="live-text">Подключаемся к потоку новых объявлений…</span></div>
+
+{% if cars %}
+<div class="grid" id="grid" data-stream="{{ stream_query }}">
+  {% for v in cars %}{{ card(v) }}{% endfor %}
+</div>
+{% if next_url %}<div class="more"><a class="btn ghost" href="{{ next_url }}">Показать ещё</a></div>{% endif %}
+{% else %}
+<div class="grid" id="grid" data-stream="{{ stream_query }}"></div>
+<div class="empty">По этим условиям пока ничего нет. Новые объявления появятся здесь автоматически — или оставьте заявку, и менеджер подберёт варианты.</div>
+{% endif %}
+
+<section id="podbor" class="car-grid">
+  <div class="panel">
+    <h2>Как мы работаем</h2>
+    <ol>
+      <li><b>Вы выбираете</b> машину здесь или описываете, что нужно.</li>
+      <li><b>Менеджер считает</b> цену под ключ: доставка, таможня, утильсбор, оформление.</li>
+      <li><b>Проверяем</b> историю, VIN, страховые случаи и осматриваем машину на месте.</li>
+      <li><b>Выкупаем и привозим</b> — обычно 35–50 дней до получения ключей.</li>
+    </ol>
+    <p class="muted small">«Проходимость» показывает, можно ли легально привезти машину и не попадёт ли она под заградительный утильсбор. Правила меняются — финальную проверку делает менеджер.</p>
+  </div>
+  <div class="panel">{{ lead_form(None, 'Подберём авто под ваш бюджет', 'Оставить заявку') }}</div>
+</section>
+{% endblock %}

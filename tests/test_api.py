@@ -8,7 +8,7 @@ from renalauto.models import ListingEvent
 from renalauto.sources.dongchedi import DongchediSource
 from renalauto.sources.encar import EncarSource
 
-from .conftest import fixture, mock_client
+from .conftest import ADMIN, fixture, mock_client
 
 
 def make_sources(settings, dongchedi_payload):
@@ -39,8 +39,8 @@ def app_env(settings, monkeypatch):
 def test_poll_warmup_then_events_and_vin_report(app_env):
     client, app, payload = app_env
     # Первый опрос — прогрев базы без событий
-    assert client.post("/api/poll/encar").json()["events"] == 0
-    assert client.post("/api/poll/dongchedi").json()["events"] == 0
+    assert client.post("/api/poll/encar", headers=ADMIN).json()["events"] == 0
+    assert client.post("/api/poll/dongchedi", headers=ADMIN).json()["events"] == 0
     assert len(client.get("/api/listings").json()) == 4
     assert len(client.get("/api/listings", params={"country": "CN"}).json()) == 2
 
@@ -49,13 +49,13 @@ def test_poll_warmup_then_events_and_vin_report(app_env):
     assert kr["vin"] == "KMHLM41C6MU123457"
 
     # Фильтр + новое объявление + снижение цены
-    f = client.post("/api/filters", json={"name": "BYD до $25k", "make": "比亚迪", "price_usd_max": 25000}).json()
+    f = client.post("/api/filters", headers=ADMIN, json={"name": "BYD до $25k", "make": "比亚迪", "price_usd_max": 25000}).json()
     items = payload["data"]["search_sh_sku_info_list"]
     items.insert(0, {**items[0], "sku_id": 17799999, "sh_price": "14.9"})
     items[1]["sh_price"] = "14.5"
     received = []
     app.state.hub.publish = received.append  # перехватываем события шины
-    assert client.post("/api/poll/dongchedi").json()["events"] == 2
+    assert client.post("/api/poll/dongchedi", headers=ADMIN).json()["events"] == 2
     types = sorted(e.type for e in received)
     assert types == ["new", "price_changed"]
     assert all(f["id"] in e.matched_filters for e in received)
@@ -67,6 +67,7 @@ def test_poll_warmup_then_events_and_vin_report(app_env):
 
     missing = client.get("/api/listings/dongchedi/17712346/vin-report")
     assert missing.status_code == 404
+    assert "менеджер" in missing.json()["detail"]
 
 
 def test_vin_endpoints(app_env):

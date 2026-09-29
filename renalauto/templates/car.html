@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card, lead_form, pill %}
+{% set l = v.listing %}
+{% block title %}{{ v.seo_title }}{% if v.price_rub %} — ≈ {{ fmt(v.price_rub) }} ₽{% endif %} | {{ company }}{% endblock %}
+{% block description %}{{ v.title }}{% if l.year %}, {{ l.year }} г.{% endif %}{% if l.mileage_km is not none %}, пробег {{ fmt(l.mileage_km) }} км{% endif %}. Цена в {{ 'Корее' if l.country == 'KR' else 'Китае' }} ≈ {{ fmt(v.price_rub) }} ₽. Проверка истории и VIN, расчёт доставки под ключ в {{ company }}.{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ site_url }}{{ v.path }}">{% endblock %}
+{% block og %}{% if v.photos %}<meta property="og:image" content="{{ v.photos[0] }}">{% endif %}{% endblock %}
+{% block body_class %}has-cta{% endblock %}
+{% block head %}
+<script type="application/ld+json">{{ jsonld|safe }}</script>
+{% endblock %}
+{% block content %}
+<div class="crumbs"><a href="/">Все авто</a> › <a href="/?country={{ l.country }}">{{ v.country_name }}</a>{% if v.make %} › <a href="/?make={{ v.make|urlencode }}">{{ v.make }}</a>{% endif %}</div>
+<div class="car-head">
+  <h1>{{ v.title }}{% if l.year %}, {{ l.year }}{% endif %}</h1>
+  <div class="muted">{{ v.subtitle }}</div>
+  <div class="mobile-only mobile-price">
+    <span class="big">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% else %}Цена по запросу{% endif %}</span>
+    <span class="muted small"> в {{ 'Корее' if l.country == 'KR' else 'Китае' }}, без доставки и растаможки</span>
+    <div style="margin-top:6px">{{ pill(v.eligibility) }}</div>
+  </div>
+</div>
+
+<div class="car-grid">
+  <div>
+    <div class="gallery">
+      <div class="main">{% if v.photos %}<img id="main-photo" src="{{ v.photos[0] }}" alt="{{ v.title }}">{% endif %}</div>
+      {% if v.photos|length > 1 %}
+      <div class="thumbs">
+        {% for p in v.photos %}<button type="button" class="{{ 'on' if loop.first }}" data-photo="{{ p }}"><img loading="lazy" src="{{ p }}" alt=""></button>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h2>Характеристики</h2>
+      <table class="specs">
+        {% for k, val in v.specs %}<tr><th>{{ k }}</th><td>{{ val }}</td></tr>{% endfor %}
+      </table>
+      <p class="small muted">Оригинальное объявление: <a href="{{ l.url }}" target="_blank" rel="noopener nofollow">{{ v.source_name }} №{{ l.external_id }}</a>.
+        Данные переведены автоматически — менеджер перепроверит их по документам.</p>
+    </div>
+
+    <div class="panel" id="check">
+      <h2>Проверка авто</h2>
+      {% if l.vin %}
+      <p>VIN: <code>{{ l.vin }}</code></p>
+      <button class="btn ghost" type="button" data-vin-report="/api/listings/{{ l.source }}/{{ l.external_id }}/vin-report">Проверить VIN и историю</button>
+      {% else %}
+      <p><b>VIN продавец не публикует</b> — так делают почти все площадки. {% if l.plate %}Госномер: <b>{{ l.plate }}</b>. {% endif %}
+        Оставьте заявку — менеджер запросит VIN и отчёт об истории (ДТП, страховые выплаты, владельцы, пробег) и пришлёт вам.</p>
+      <p class="small muted">Уже знаете VIN этой машины? Проверьте сами:</p>
+      <form class="check-row" data-vin-form><input name="vin" maxlength="25" placeholder="17 символов VIN" required><button class="btn ghost">Проверить</button></form>
+      {% endif %}
+      <div class="report" id="report"></div>
+      {% if history|length > 1 %}
+      <h2 style="margin-top:16px">История цены</h2>
+      <table class="specs">
+        {% for h in history %}<tr><th>{{ h.seen_at[:10] }}</th><td>{% if h.price %}{{ fmt(h.price) }} {{ h.currency }}{% endif %}{% if h.mileage_km %} · {{ fmt(h.mileage_km) }} км{% endif %}</td></tr>{% endfor %}
+      </table>
+      {% endif %}
+    </div>
+  </div>
+
+  <aside class="sticky">
+    <div class="panel price-box">
+      <div class="muted small">Цена в {{ 'Корее' if l.country == 'KR' else 'Китае' }}</div>
+      <div class="big">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% else %}по запросу{% endif %}</div>
+      {% if l.price %}<div class="muted small">{{ fmt(l.price) }} {{ l.currency }}{% if l.price_usd %} · ≈ ${{ fmt(l.price_usd) }}{% endif %} · {{ 'курс ЦБ РФ' if rates_source == 'ЦБ РФ' else 'курс ориентировочный' }}</div>{% endif %}
+      <p class="small muted">Без доставки, растаможки и утильсбора.</p>
+      <a class="btn block" href="#lead">Рассчитать цену под ключ</a>
+    </div>
+
+    <div class="panel">
+      <h2>Проходимость в РФ</h2>
+      <div class="verdict {{ v.eligibility.verdict }}">{{ v.eligibility.summary }}</div>
+      <div class="badges">
+        {% for b in v.eligibility.badges %}<div class="badge {{ b.status }}"><b>{{ b.title }}</b><span>{{ b.detail }}</span></div>{% endfor %}
+      </div>
+      <p class="small muted">Правила: {{ v.eligibility.rules_as_of }}. Ориентир, не оферта.</p>
+    </div>
+
+    <div class="panel" id="lead">{{ lead_form(v) }}</div>
+  </aside>
+</div>
+
+<div class="cta-bar"><div><b>{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% endif %}</b></div><a class="btn" href="#lead">Рассчитать под ключ</a></div>
+
+{% if similar %}
+<h2>Похожие предложения</h2>
+<div class="grid">{% for s in similar %}{{ card(s) }}{% endfor %}</div>
+{% endif %}
+{% endblock %}

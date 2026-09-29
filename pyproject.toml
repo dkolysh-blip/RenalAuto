@@ -1,6 +1,6 @@
 [project]
 name = "renalauto"
-version = "0.1.0"
+version = "0.2.0"
 description = "Объявления с вторичного авторынка Кореи и Китая в реальном времени + проверка по VIN"
 requires-python = ">=3.11"
 dependencies = [
@@ -8,6 +8,7 @@ dependencies = [
     "uvicorn[standard]>=0.29",
     "httpx>=0.27",
     "pydantic>=2.6",
+    "jinja2>=3.1",
 ]
 
 [project.optional-dependencies]
@@ -21,7 +22,7 @@ build-backend = "setuptools.build_meta"
 include = ["renalauto*"]
 
 [tool.setuptools.package-data]
-renalauto = ["static/*"]
+renalauto = ["static/*", "templates/*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"

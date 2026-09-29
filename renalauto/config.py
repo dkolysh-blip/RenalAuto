@@ -54,6 +54,23 @@ class Settings:
 
     telegram_bot_token: str | None = field(default_factory=lambda: os.getenv("TELEGRAM_BOT_TOKEN") or None)
     telegram_chat_id: str | None = field(default_factory=lambda: os.getenv("TELEGRAM_CHAT_ID") or None)
+    # Куда приходят заявки с сайта (если не задан — в TELEGRAM_CHAT_ID)
+    telegram_manager_chat_id: str | None = field(
+        default_factory=lambda: os.getenv("TELEGRAM_MANAGER_CHAT_ID") or None
+    )
+    # Токен для служебных функций: заявки, фильтры, ручной опрос. Без него они открыты всем!
+    admin_token: str | None = field(default_factory=lambda: os.getenv("ADMIN_TOKEN") or None)
+    # Публичный адрес сайта — для ссылок в Telegram и sitemap.xml
+    site_url: str = field(default_factory=lambda: os.getenv("SITE_URL", "https://renal-auto.asia:8443").rstrip("/"))
+    company_name: str = field(default_factory=lambda: os.getenv("COMPANY_NAME", "Renal Auto"))
+    company_phone: str | None = field(default_factory=lambda: os.getenv("COMPANY_PHONE") or None)
+    company_telegram: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM") or None)
+    # Брать курсы с cbr-xml-daily.ru (иначе — значения RATE_*_RUB ниже)
+    rates_live: bool = field(default_factory=lambda: _bool("RATES_LIVE", True))
+    rate_krw_rub: float = field(default_factory=lambda: float(os.getenv("RATE_KRW_RUB", "0.058")))
+    rate_cny_rub: float = field(default_factory=lambda: float(os.getenv("RATE_CNY_RUB", "11.2")))
+    rate_usd_rub: float = field(default_factory=lambda: float(os.getenv("RATE_USD_RUB", "80")))
+    rate_eur_rub: float = field(default_factory=lambda: float(os.getenv("RATE_EUR_RUB", "93")))
 
     def to_usd(self, amount: float | None, currency: str) -> float | None:
         if amount is None:

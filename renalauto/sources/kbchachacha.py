@@ -37,6 +37,16 @@ _OG_IMAGE_RE = re.compile(r'<meta property="og:image" content="([^"]+)"')
 _BRAND_RE = re.compile(r'"brand"\s*:\s*\{[^}]*"name"\s*:\s*"([^"]+)"')
 _SALE_PRICE_RE = re.compile(r"판매가격</dt>\s*<dd>\s*<strong[^>]*>\s*([\d,]+)\s*만원")
 _TAG_RE = re.compile(r"<[^>]+>")
+_LD_IMAGES_RE = re.compile(r'"image"\s*:\s*\[(.*?)\]', re.S)
+_URL_RE = re.compile(r'"(https?://[^"]+)"')
+MAX_PHOTOS = 30
+
+
+def _unique(urls: list[str]) -> list[str]:
+    seen: dict[str, None] = {}
+    for url in urls:
+        seen.setdefault(url, None)
+    return list(seen)[:MAX_PHOTOS]
 
 
 def _text(fragment: str) -> str:
@@ -121,9 +131,12 @@ class KbChachachaSource(Source):
         price = parse_price_man(info.get("vehicle_price")) or parse_price_man(visible)
         km = _KM_RE.search(visible)
         img = _IMG_RE.search(chunk)
-        extra = {}
+        extra: dict[str, Any] = {}
         if info.get("page_area"):
             extra["section"] = info["page_area"]
+        photos = _unique(_IMG_RE.findall(chunk))
+        if len(photos) > 1:
+            extra["photos"] = photos
         return Listing(
             source=self.name,
             external_id=car_seq,
@@ -183,6 +196,13 @@ class KbChachachaSource(Source):
             update["photo"] = og_image.group(1)
 
         extra = dict(listing.extra)
+        ld_images = _LD_IMAGES_RE.search(text)
+        if ld_images:
+            photos = _unique(_URL_RE.findall(ld_images.group(1)))
+            if photos:
+                extra["photos"] = photos
+                if not listing.photo:
+                    update["photo"] = photos[0]
         for key, field in (("차종", "body"), ("배기량", "displacement"), ("차량색상", "color"), ("연식", "year_raw")):
             if table.get(key):
                 extra[field] = table[key]

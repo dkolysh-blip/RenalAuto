@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ company }} — авто из Кореи и Китая под заказ{% endblock %}</title>
+<meta name="description" content="{% block description %}Свежие объявления с площадок Кореи и Китая в реальном времени: цены в рублях, проверка истории и VIN, расчёт доставки под ключ.{% endblock %}">
+{% block canonical %}{% endblock %}
+<meta property="og:site_name" content="{{ company }}">
+<meta property="og:title" content="{{ self.title() }}">
+<meta property="og:description" content="{{ self.description() }}">
+{% block og %}{% endblock %}
+<link rel="stylesheet" href="/static/app.css?v={{ asset_version }}">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+{% block head %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="/">{{ company.split(' ')[0] }}<span>{{ ' ' ~ company.split(' ', 1)[1] if ' ' in company else '' }}</span></a>
+    <nav>
+      <a href="/?country=KR">Корея</a>
+      <a href="/?country=CN">Китай</a>
+      <a href="/vin">Проверка VIN</a>
+      <a href="/#podbor">Подбор под бюджет</a>
+    </nav>
+    <div class="contacts">
+      {% if company_phone %}<a href="tel:{{ company_phone|replace(' ', '') }}">{{ company_phone }}</a>{% endif %}
+      {% if company_telegram %}<a class="btn ghost" href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener">Telegram</a>{% endif %}
+    </div>
+  </div>
+</header>
+<main class="wrap">
+{% block content %}{% endblock %}
+</main>
+<footer>
+  <div class="wrap">
+    © {{ year }} {{ company }}. Объявления собираются с открытых площадок (KB Chachacha, Encar, Dongchedi, Che168) и обновляются в реальном времени.
+    Цены в рублях — {{ 'по курсу ЦБ РФ' if rates_source == 'ЦБ РФ' else 'по ориентировочному курсу' }}, без доставки, растаможки и утильсбора; стоимость под ключ рассчитывает менеджер.
+    Правила ввоза: {{ rules_as_of }}.
+  </div>
+</footer>
+<script src="/static/app.js?v={{ asset_version }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Заявки | {{ company }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<h1>Заявки</h1>
+<div class="stats">
+  <div><b>{{ stats.total }}</b>всего</div>
+  <div><b>{{ stats.new }}</b>новые</div>
+  <div><b>{{ stats.in_work }}</b>в работе</div>
+  <div><b>{{ stats.deal }}</b>сделки</div>
+  <div><b>{{ stats.lost }}</b>отказ</div>
+</div>
+<div class="panel scroll-x">
+<table class="leads">
+  <tr><th>#</th><th>Когда</th><th>Клиент</th><th>Машина / запрос</th><th>Статус</th></tr>
+  {% for lead in leads %}
+  <tr>
+    <td>{{ lead.id }}</td>
+    <td class="small">{{ lead.created_at[:16]|replace('T', ' ') }}</td>
+    <td><b>{{ lead.name }}</b><br>{{ lead.phone or '' }} {{ lead.telegram or '' }}<br><span class="muted small">{{ lead.city or '' }}</span></td>
+    <td>{% if lead.listing_title %}<a href="/car/{{ lead.source }}/{{ lead.external_id }}" target="_blank">{{ lead.listing_title }}</a>{% else %}Подбор{% if lead.budget_rub %} до {{ fmt(lead.budget_rub) }} ₽{% endif %}{% endif %}
+      {% if lead.comment %}<div class="small muted">{{ lead.comment }}</div>{% endif %}</td>
+    <td>
+      <select data-lead-status="{{ lead.id }}">
+        {% for key, label in [('new','Новая'),('in_work','В работе'),('deal','Сделка'),('lost','Отказ')] %}
+        <option value="{{ key }}" {{ 'selected' if lead.status == key }}>{{ label }}</option>{% endfor %}
+      </select>
+    </td>
+  </tr>
+  {% else %}<tr><td colspan="5" class="muted">Заявок пока нет</td></tr>{% endfor %}
+</table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.querySelectorAll('[data-lead-status]').forEach(sel => sel.addEventListener('change', async () => {
+  const res = await fetch('/api/leads/' + sel.dataset.leadStatus, {method: 'PATCH',
+    headers: {'Content-Type': 'application/json', 'X-Admin-Token': new URLSearchParams(location.search).get('token') || ''},
+    body: JSON.stringify({status: sel.value})});
+  sel.style.outline = res.ok ? '2px solid var(--ok)' : '2px solid var(--bad)';
+}));
+</script>
+{% endblock %}

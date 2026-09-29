@@ -5,6 +5,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field
 
+from . import i18n
+
 
 class Listing(BaseModel):
     """Объявление, приведённое к единому виду независимо от площадки."""
@@ -56,8 +58,9 @@ class SavedFilter(BaseModel):
         def contains(needle: str | None, *haystack: str | None) -> bool:
             if not needle:
                 return True
-            needle = needle.lower()
-            return any(needle in h.lower() for h in haystack if h)
+            # «Hyundai» совпадает и с «현대», и с «现代»
+            needles = [n.lower() for n in i18n.search_aliases(needle)]
+            return any(n in h.lower() for h in haystack if h for n in needles)
 
         if self.source and listing.source != self.source:
             return False
@@ -85,3 +88,30 @@ class ListingEvent(BaseModel):
     listing: Listing
     old_price: float | None = None
     matched_filters: list[int] = Field(default_factory=list)
+
+
+LeadStatus = Literal["new", "in_work", "deal", "lost"]
+
+
+class LeadIn(BaseModel):
+    """Заявка с сайта: расчёт доставки конкретной машины или подбор под бюджет."""
+
+    name: str = Field(min_length=1, max_length=100)
+    phone: str | None = Field(default=None, max_length=40)
+    telegram: str | None = Field(default=None, max_length=64)
+    comment: str | None = Field(default=None, max_length=2000)
+    city: str | None = Field(default=None, max_length=100)
+    budget_rub: int | None = Field(default=None, ge=0, le=1_000_000_000)
+    source: str | None = Field(default=None, max_length=32)
+    external_id: str | None = Field(default=None, max_length=64)
+    page: str | None = Field(default=None, max_length=500)
+    website: str | None = None  # ловушка для ботов: поле скрыто, люди его не заполняют
+
+
+class Lead(LeadIn):
+    id: int
+    created_at: str
+    status: LeadStatus = "new"
+    listing_title: str | None = None
+    listing_url: str | None = None
+    manager_note: str | None = None

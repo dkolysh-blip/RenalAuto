@@ -20,7 +20,12 @@ def settings(tmp_path):
     s.poller_enabled = False
     s.vin_nhtsa = False
     s.telegram_bot_token = None
+    s.admin_token = "secret"
+    s.rates_live = False
     return s
+
+
+ADMIN = {"X-Admin-Token": "secret"}
 
 
 def mock_client(routes: dict[str, object]) -> httpx.AsyncClient:
