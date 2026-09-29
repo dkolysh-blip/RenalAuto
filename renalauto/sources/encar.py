@@ -10,7 +10,9 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import os
+import re
 from datetime import datetime
 from typing import Any
 
@@ -29,6 +31,73 @@ DEFAULT_QUERIES = "(And.Hidden.N._.CarType.Y.);(And.Hidden.N._.CarType.N.)"
 MAN_WON = 10_000
 
 DEFAULT_SEARCH_PATHS = "general,premium,mobile"
+
+# Режим «web»: api.encar.com закрыт для дата-центров, но страницы сайта отдают те же данные в HTML:
+#   список  — car.encar.com/list/car (JSON в __NEXT_DATA__, формат как у поискового API)
+#   карточка — fem.encar.com/cars/detail/{id} (встроенный JSON с VIN, госномером, характеристиками, фото)
+WEB_LIST_URL = "https://car.encar.com/list/car"
+WEB_CARD_URL = "https://fem.encar.com/cars/detail/{id}"
+WEB_PAGE_SIZE = 20
+DEFAULT_WEB_SEARCH = {
+    "type": "car",
+    "action": "(And.Hidden.N._.CarType.A.)",
+    "title": "국산",
+    "toggle": {},
+    "layer": "",
+    "sort": "ModifiedDate",
+}
+_NEXT_DATA_RE = re.compile(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', re.S)
+_DETAIL_KEYS = ("category", "spec", "advertisement", "contact", "photos", "manage", "condition")
+
+
+def find_search_items(node: Any) -> list[dict[str, Any]]:
+    """Все объявления в формате поискового API (Id, Manufacturer, Price…) где угодно в JSON страницы."""
+    found: dict[str, dict[str, Any]] = {}
+
+    def walk(n: Any) -> None:
+        if isinstance(n, list):
+            if n and all(isinstance(i, dict) for i in n) and any("Id" in i and ("Manufacturer" in i or "Model" in i) for i in n):
+                for i in n:
+                    if i.get("Id"):
+                        found.setdefault(str(i["Id"]), i)
+                return
+            for i in n:
+                walk(i)
+        elif isinstance(n, dict):
+            for v in n.values():
+                walk(v)
+
+    walk(node)
+    return list(found.values())
+
+
+def extract_vehicle(html_text: str, car_id: str) -> dict[str, Any] | None:
+    """Данные автомобиля из HTML карточки fem.encar.com (тот же формат, что /v1/readside/vehicle)."""
+    anchor = html_text.find(f'"requestUrl":"/v1/readside/vehicle/{car_id}')
+    if anchor < 0:
+        anchor = html_text.find(f'"vehicleId":{car_id}')
+    if anchor < 0:
+        return None
+    decoder = json.JSONDecoder()
+    start = max(0, anchor - 300_000)
+    data: dict[str, Any] = {"vehicleId": int(car_id) if car_id.isdigit() else car_id}
+    for key in _DETAIL_KEYS:
+        # последнее вхождение ключа перед якорем — поле именно этого автомобиля
+        matches = list(re.compile(rf'"{key}"\s*:\s*').finditer(html_text, start, anchor))
+        if not matches:
+            continue
+        try:
+            data[key], _ = decoder.raw_decode(html_text, matches[-1].end())
+        except ValueError:
+            continue
+    near = html_text[max(0, anchor - 1500): anchor + 300]
+    vin = re.search(r'"vin"\s*:\s*"([A-HJ-NPR-Z0-9]{11,17})"', near)
+    plate = re.search(r'"vehicleNo"\s*:\s*"([^"]{2,20})"', near)
+    if vin:
+        data["vin"] = vin.group(1)
+    if plate:
+        data["vehicleNo"] = plate.group(1)
+    return data
 # Без этих заголовков api.encar.com может отвечать 404/403
 BROWSER_HEADERS = {
     "Referer": "https://www.encar.com/",
@@ -46,6 +115,18 @@ def _photo_url(path: str | None) -> str | None:
     if path.endswith("_"):
         path += "001.jpg"
     return PHOTO_HOST + path
+
+
+def _item_photos(item: dict[str, Any]) -> list[str]:
+    """Фото из элемента выдачи: поле Photo (префикс пути) или список Photos."""
+    urls: list[str] = []
+    for photo in item.get("Photos") or []:
+        if isinstance(photo, dict):
+            for value in photo.values():
+                if isinstance(value, str) and "carpicture" in value and value.lower().endswith((".jpg", ".jpeg", ".png")):
+                    urls.append(value)
+                    break
+    return [u for u in dict.fromkeys(_photo_url(u) for u in urls) if u][:30]
 
 
 def _parse_date(value: Any) -> datetime | None:
@@ -77,8 +158,13 @@ class EncarSource(Source):
         self.search_paths = [
             p.strip() for p in os.getenv("ENCAR_SEARCH_PATHS", DEFAULT_SEARCH_PATHS).split(",") if p.strip()
         ]
+        # web — через страницы сайта (работает с сервера в дата-центре); api — api.encar.com (нужен корейский IP)
+        self.mode = os.getenv("ENCAR_MODE", "web").strip().lower()
+        self.web_search = json.loads(os.getenv("ENCAR_WEB_SEARCH") or json.dumps(DEFAULT_WEB_SEARCH))
 
     async def fetch_latest(self, limit: int = 50, query: str | None = None, **_: Any) -> list[Listing]:
+        if self.mode == "web":
+            return await self._web_latest(limit)
         queries = [query] if query else self.queries
         batches = await asyncio.gather(*(self._search(q, limit) for q in queries))
         listings = [item for batch in batches for item in batch]
@@ -108,6 +194,34 @@ class EncarSource(Source):
             raise SourceError("encar: unexpected search response shape")
         return [self.parse_search_item(item) for item in results if item.get("Id")]
 
+    async def _get_html(self, url: str, **kwargs: Any) -> str:
+        headers = {"Accept": "text/html,application/xhtml+xml", "Accept-Language": "ko-KR,ko;q=0.9", "Referer": "https://car.encar.com/"}
+        response = await self.client.get(url, headers=headers, **kwargs)
+        self._raise_if_blocked(response)
+        if response.status_code >= 400:
+            raise SourceError(f"encar: HTTP {response.status_code} for {response.request.url}")
+        return response.text
+
+    async def _web_latest(self, limit: int) -> list[Listing]:
+        items: dict[str, dict[str, Any]] = {}
+        pages = max(1, min(10, -(-limit // WEB_PAGE_SIZE)))
+        search = json.dumps(self.web_search, ensure_ascii=False, separators=(",", ":"))
+        for page in range(1, pages + 1):
+            text = await self._get_html(WEB_LIST_URL, params={"page": page, "search": search})
+            m = _NEXT_DATA_RE.search(text)
+            if not m:
+                raise SourceError("encar: на странице списка нет __NEXT_DATA__ (разметка сменилась?)")
+            batch = find_search_items(json.loads(m.group(1)))
+            if not batch:
+                if page == 1:
+                    raise SourceError("encar: в __NEXT_DATA__ не найдено объявлений")
+                break
+            for item in batch:
+                items.setdefault(str(item["Id"]), item)
+            if page < pages:
+                await asyncio.sleep(0.5)
+        return [self.parse_search_item(i) for i in list(items.values())[:limit]]
+
     @staticmethod
     def _raise_if_blocked(response: httpx.Response) -> None:
         if response.status_code >= 400 and "has_been_cr_blocked" in response.text:
@@ -127,6 +241,10 @@ class EncarSource(Source):
         year = to_int(item.get("FormYear")) or (to_int(item.get("Year")) // 100 if item.get("Year") else None)
         make, model = item.get("Manufacturer"), item.get("Model")
         trim = " ".join(filter(None, [item.get("Badge"), item.get("BadgeDetail")])) or None
+        photos = _item_photos(item)
+        extra = {k: item[k] for k in ("SellType", "Separation", "Trust", "ServiceMark") if item.get(k)}
+        if len(photos) > 1:
+            extra["photos"] = photos
         return Listing(
             source=self.name,
             external_id=car_id,
@@ -144,12 +262,18 @@ class EncarSource(Source):
             fuel=item.get("FuelType"),
             transmission=item.get("Transmission"),
             location=item.get("OfficeCityState"),
-            photo=_photo_url(item.get("Photo")),
+            photo=_photo_url(item.get("Photo")) or (photos[0] if photos else None),
             listed_at=_parse_date(item.get("ModifiedDate")),
-            extra={k: item[k] for k in ("SellType", "Separation", "Trust", "ServiceMark") if item.get(k)},
+            extra=extra,
         )
 
     async def fetch_detail(self, listing: Listing) -> Listing:
+        if self.mode == "web":
+            text = await self._get_html(WEB_CARD_URL.format(id=listing.external_id))
+            data = extract_vehicle(text, listing.external_id)
+            if data is None:
+                raise SourceError(f"encar: в карточке {listing.external_id} не найдены данные автомобиля")
+            return self.apply_detail(listing, data)
         data = await self._get_json(f"{API}/v1/readside/vehicle/{listing.external_id}", headers=BROWSER_HEADERS)
         return self.apply_detail(listing, data)
 

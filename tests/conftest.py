@@ -14,7 +14,9 @@ def fixture(name: str):
 
 
 @pytest.fixture
-def settings(tmp_path):
+def settings(tmp_path, monkeypatch):
+    # старые тесты Encar проверяют режим API; режим web — в test_encar_web.py
+    monkeypatch.setenv("ENCAR_MODE", "api")
     s = Settings()
     s.db_path = str(tmp_path / "test.db")
     s.poller_enabled = False

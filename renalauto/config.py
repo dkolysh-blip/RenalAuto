@@ -21,7 +21,7 @@ def _list(name: str, default: str) -> list[str]:
 class Settings:
     db_path: str = field(default_factory=lambda: os.getenv("DB_PATH", "renalauto.db"))
     # Какие площадки опрашивать (имена из renalauto.sources.REGISTRY)
-    sources: list[str] = field(default_factory=lambda: _list("SOURCES", "kbchachacha,dongchedi"))
+    sources: list[str] = field(default_factory=lambda: _list("SOURCES", "kbchachacha,encar,dongchedi"))
     # Интервал опроса каждой площадки, секунды
     poll_interval: int = field(default_factory=lambda: int(os.getenv("POLL_INTERVAL", "60")))
     # Сколько свежих объявлений забирать за один опрос
