@@ -48,6 +48,20 @@ python -m renalauto
 
 Разведка площадок с сервера (что отдают, не блокируют ли): `docker compose exec -T renalauto python -m renalauto.probe`.
 
+## Свой сбор Encar (сборщик)
+
+Encar не пускает серверы из дата-центров. Поэтому данные Encar собирает **сборщик** — та же программа
+в режиме `python -m renalauto.collector`, запущенная на машине с корейским домашним/офисным интернетом
+(или с `PROXY_KR`). Он берёт свежие объявления, по каждому новому — карточку (VIN, госномер, все фото)
+и страховую историю (ДТП, выплаты, владельцы, тотал, утопление) и отправляет на сервер в `/api/ingest/encar`.
+Входящие порты у сборщика не нужны.
+
+1. На сервере: задать `INGEST_TOKEN` в `.env` (`openssl rand -hex 24`) и перезапустить.
+2. На машине в Корее: установить Docker, склонировать репозиторий,
+   `cp .env.collector.example .env.collector`, вписать `COLLECTOR_SERVER` и `INGEST_TOKEN`,
+   `docker compose -f docker-compose.collector.yml up -d --build`.
+3. Проверить: в `/health` у `encar` появится `"via": "collector:<имя>"`.
+
 ## API
 
 | Метод | Путь | Что делает |

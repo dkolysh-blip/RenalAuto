@@ -210,10 +210,12 @@ async def build_report(
     # История от площадки (для Encar — страховые записи о ДТП/владельцах/тотале/угоне)
     for item in listings:
         source = sources.get(item.source)
-        if source is None:
+        stored_history = item.extra.get("history")
+        if source is None and not stored_history:
             continue
         try:
-            history = await source.fetch_history(item)
+            # История, которую уже привёз сборщик, — без повторного запроса к площадке
+            history = stored_history or await source.fetch_history(item)
         except Exception as exc:  # noqa: BLE001 — внешний сервис не должен ронять отчёт
             log.warning("history fetch failed for %s: %s", item.key, exc)
             report.external[f"{item.source}_history_error"] = str(exc)

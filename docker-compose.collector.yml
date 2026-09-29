@@ -1,0 +1,13 @@
+# Сборщик Encar для машины с корейским домашним/офисным интернетом (мини-ПК, Raspberry Pi, ноутбук).
+#   cp .env.collector.example .env.collector   # вписать COLLECTOR_SERVER и INGEST_TOKEN
+#   docker compose -f docker-compose.collector.yml up -d --build
+services:
+  collector:
+    build: .
+    command: ["python", "-m", "renalauto.collector"]
+    env_file: .env.collector
+    environment:
+      COLLECTOR_STATE: /data/collector.db
+    volumes:
+      - ./collector-data:/data
+    restart: unless-stopped

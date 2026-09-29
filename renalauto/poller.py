@@ -117,7 +117,9 @@ class Poller:
         if warmup:
             log.info("%s: warm-up, stored %d listings without notifications", source.name, len(fetched))
             return []
+        return await self._publish(source.name, pending)
 
+    async def _publish(self, source_name: str, pending: list[tuple[str, Listing, float | None]]) -> list[ListingEvent]:
         filters = self.storage.list_filters()
         events = []
         for status, listing, old_price in pending:
@@ -133,5 +135,25 @@ class Poller:
             if self.notifier and self.notifier.enabled:
                 for flt in matched:
                     await self.notifier.send(event, flt)
-        st["new_total"] += sum(1 for e in events if e.type == "new")
+        self.status[source_name]["new_total"] += sum(1 for e in events if e.type == "new")
         return events
+
+    async def ingest(self, source_name: str, listings: list[Listing], collector: str | None = None) -> dict[str, int]:
+        """Объявления, присланные удалённым сборщиком (например, Encar с корейского IP)."""
+        st = self.status.setdefault(
+            source_name, {"last_ok": None, "last_error": None, "last_fetched": 0, "new_total": 0, "errors": 0}
+        )
+        warmup = self.storage.count(source_name) == 0
+        pending: list[tuple[str, Listing, float | None]] = []
+        counts = {"new": 0, "price_changed": 0, "updated": 0, "unchanged": 0}
+        for listing in listings:
+            status, merged, old_price = self.storage.upsert(listing)
+            counts[status] += 1
+            if status in ("new", "price_changed"):
+                pending.append((status, merged, old_price))
+        st["last_ok"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        st["last_fetched"] = len(listings)
+        st["via"] = f"collector:{collector}" if collector else "collector"
+        if not warmup:
+            await self._publish(source_name, pending)
+        return counts

@@ -176,8 +176,10 @@ class EncarSource(Source):
         if price_man is not None:
             update["price"] = price_man * MAN_WON
             update["price_usd"] = self.settings.to_usd(update["price"], self.currency)
-        if photos and isinstance(photos[0], dict) and photos[0].get("path"):
-            update["photo"] = _photo_url(photos[0]["path"])
+        urls = [_photo_url(p.get("path")) for p in photos if isinstance(p, dict) and p.get("path")]
+        urls = [u for u in dict.fromkeys(urls) if u][:30]
+        if urls:
+            update["photo"] = urls[0]
         extra = dict(listing.extra)
         if data.get("vehicleId"):
             extra["vehicle_id"] = data["vehicleId"]
@@ -185,8 +187,23 @@ class EncarSource(Source):
             extra["color"] = spec["colorName"]
         if spec.get("displacement"):
             extra["displacement_cc"] = spec["displacement"]
+        if urls:
+            extra["photos"] = urls
         update["extra"] = extra
         return listing.model_copy(update=update)
+
+    async def collect(self, listing: Listing, with_history: bool = True) -> Listing:
+        """Карточка + страховая история в одном объявлении — для удалённого сборщика."""
+        listing = await self.fetch_detail(listing)
+        if with_history and listing.plate:
+            try:
+                history = await self.fetch_history(listing)
+            except SourceError:
+                history = None
+            if history:
+                history = {k: v for k, v in history.items() if k != "raw"}
+                listing = listing.model_copy(update={"extra": {**listing.extra, "history": history}})
+        return listing
 
     async def fetch_history(self, listing: Listing) -> dict[str, Any] | None:
         """Страховая история (аналог carhistory.or.kr), которую Encar показывает в карточке."""

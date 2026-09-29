@@ -94,5 +94,60 @@ def main() -> None:
     show("DONGCHEDI карточка", get(c, "https://www.dongchedi.com/usedcar/1"), ["vin", "VIN", "检测报告"], 300)
 
 
+def _next_data_summary(html: str) -> None:
+    """Что лежит в данных Next.js/Nuxt, которые сайт встраивает в HTML (их можно читать без API)."""
+    m = re.search(r'<script id="__NEXT_DATA__"[^>]*>(.*?)</script>', html, re.S)
+    if not m:
+        print("__NEXT_DATA__ нет")
+        return
+    raw = m.group(1)
+    print(f"__NEXT_DATA__ {len(raw)}b")
+    for key in ("carid", "carId", "vehicleId", "vin", "vehicleNo", "Price", "price", "Mileage", "mileage",
+                "FormYear", "yearMonth", "manufacturerName", "Manufacturer", "photos", "accident"):
+        mm = re.search(r'"%s"\s*:' % key, raw)
+        if mm:
+            print(f"  [{key}] …{squeeze(raw[max(0, mm.start() - 80): mm.start() + 220])}…")
+
+
+def step2() -> None:
+    c = httpx.Client(headers={"User-Agent": UA, "Accept-Language": "ko,en;q=0.8"}, timeout=25, follow_redirects=True)
+
+    home = get(c, "https://car.encar.com/")
+    carids: list[str] = []
+    if not isinstance(home, Exception):
+        carids = list(dict.fromkeys(re.findall(r'carid(?:&quot;|\\?")\s*:\s*(?:&quot;|\\?")(\d+)', home.text)))
+        print("\n=== car.encar.com: ссылки на списки")
+        print(sorted(set(re.findall(r'href="(/list/[^"]{0,120})"', home.text)))[:15])
+        _next_data_summary(home.text)
+    carid = carids[0] if carids else "41867777"
+    print("carid для проверки:", carid)
+
+    for title, url in [
+        ("car.encar.com список отечественных", "https://car.encar.com/list/car?page=1&search=%7B%22type%22%3A%22car%22%2C%22action%22%3A%22(And.Hidden.N._.CarType.A.)%22%2C%22title%22%3A%22%EA%B5%AD%EC%82%B0%22%2C%22toggle%22%3A%7B%7D%2C%22layer%22%3A%22%22%2C%22sort%22%3A%22ModifiedDate%22%7D"),
+        ("fem.encar.com карточка", f"https://fem.encar.com/cars/detail/{carid}"),
+        ("www.encar.com карточка (старая)", f"https://www.encar.com/dc/dc_cardetailview.do?carid={carid}"),
+        ("fem.encar.com отчёт о ДТП", f"https://fem.encar.com/cars/report/accident/{carid}"),
+    ]:
+        r = show(title, get(c, url), ["vin", "vehicleNo", "carid", "Price"], 250)
+        if r:
+            _next_data_summary(r)
+
+    # K Car: ищем адреса API в скриптах сайта
+    page = get(c, "https://www.kcar.com/bc/search")
+    if not isinstance(page, Exception):
+        scripts = list(dict.fromkeys(re.findall(r'src="(/_nuxt/[\w.-]+\.js)"', page.text)))
+        print(f"\n=== K CAR: скриптов {len(scripts)}")
+        found: set[str] = set()
+        for src in scripts[:40]:
+            js = get(c, "https://www.kcar.com" + src)
+            if isinstance(js, Exception):
+                continue
+            found.update(re.findall(r'["\'`](/bc/[\w/-]*(?:search|list|car)[\w/-]*)["\'`]', js.text))
+            found.update(re.findall(r'https?://api[\w.-]*\.kcar\.com[\w/-]*', js.text))
+        print("\n".join(sorted(found)[:60]) or "не найдено")
+
+
 if __name__ == "__main__":
-    main()
+    import sys
+
+    step2() if "step2" in sys.argv[1:] else main()

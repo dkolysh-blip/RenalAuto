@@ -18,7 +18,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from . import __version__
 from .config import Settings
@@ -28,7 +28,7 @@ from .models import Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter
 from .notify import TelegramNotifier
 from .poller import Poller
 from .rates import Rates
-from .sources import Source, build_sources
+from .sources import REGISTRY, Source, build_sources
 from .storage import Storage
 from .view import car_view, fmt_int
 from .vin.decoder import VinDecoded, decode
@@ -63,6 +63,12 @@ POPULAR_MAKES = [
 
 LEADS_PER_WINDOW = 5
 LEADS_WINDOW = 600
+
+
+class IngestBody(BaseModel):
+    collector: str | None = None
+    fetched: int = 0
+    listings: list[Listing] = Field(default_factory=list, max_length=3000)
 
 
 class LeadUpdate(BaseModel):
@@ -455,6 +461,23 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if lead is None:
             raise HTTPException(404, "Заявка не найдена")
         return lead
+
+    # --- API: удалённые сборщики ----------------------------------------------------
+
+    @app.post("/api/ingest/{source}")
+    async def ingest(request: Request, source: str, body: IngestBody) -> dict[str, Any]:
+        """Приём объявлений от сборщика (python -m renalauto.collector)."""
+        if not settings.ingest_token:
+            raise HTTPException(403, "INGEST_TOKEN не задан в .env — приём данных выключен")
+        if request.headers.get("X-Ingest-Token") != settings.ingest_token:
+            raise HTTPException(403, "Неверный токен сборщика")
+        if source not in REGISTRY:
+            raise HTTPException(404, f"Неизвестная площадка {source!r}")
+        wrong = [l.external_id for l in body.listings if l.source != source]
+        if wrong:
+            raise HTTPException(422, f"Объявления другой площадки: {wrong[:5]}")
+        counts = await request.app.state.poller.ingest(source, body.listings, body.collector)
+        return {"ok": True, "counts": counts}
 
     # --- API: служебное ----------------------------------------------------------
 

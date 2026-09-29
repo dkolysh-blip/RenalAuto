@@ -43,6 +43,16 @@
 
     <div class="panel" id="check">
       <h2>Проверка авто</h2>
+      {% set h = l.extra.get('history') %}
+      {% if h %}
+      <div class="badge {{ 'bad' if h.flags else ('warn' if (h.accidents_own or h.accidents_other) else 'ok') }}" style="margin-bottom:12px">
+        <b>Страховая история ({{ v.source_name }})</b>
+        <span>ДТП по своей вине: {{ h.accidents_own }}{% if h.accident_cost_own_krw %} (выплаты {{ fmt(h.accident_cost_own_krw) }} ₩){% endif %} ·
+          по чужой вине: {{ h.accidents_other }}{% if h.accident_cost_other_krw %} ({{ fmt(h.accident_cost_other_krw) }} ₩){% endif %} ·
+          смен владельца: {{ h.owner_changes }}{% if h.plate_changes %} · смен номера: {{ h.plate_changes }}{% endif %}</span>
+        {% for f in h.flags %}<span style="display:block">⚠ {{ f }}</span>{% endfor %}
+      </div>
+      {% endif %}
       {% if l.vin %}
       <p>VIN: <code>{{ l.vin }}</code></p>
       <button class="btn ghost" type="button" data-vin-report="/api/listings/{{ l.source }}/{{ l.external_id }}/vin-report">Проверить VIN и историю</button>

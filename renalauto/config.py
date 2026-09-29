@@ -60,6 +60,8 @@ class Settings:
     )
     # Токен для служебных функций: заявки, фильтры, ручной опрос. Без него они открыты всем!
     admin_token: str | None = field(default_factory=lambda: os.getenv("ADMIN_TOKEN") or None)
+    # Токен удалённых сборщиков (Encar с корейского IP). Пусто — приём данных выключен
+    ingest_token: str | None = field(default_factory=lambda: os.getenv("INGEST_TOKEN") or None)
     # Публичный адрес сайта — для ссылок в Telegram и sitemap.xml
     site_url: str = field(default_factory=lambda: os.getenv("SITE_URL", "https://renal-auto.asia:8443").rstrip("/"))
     company_name: str = field(default_factory=lambda: os.getenv("COMPANY_NAME", "Renal Auto"))
