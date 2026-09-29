@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import logging
 import time
@@ -116,6 +117,14 @@ def page_filters(request: Request) -> PageFilters:
     )
 
 
+def _asset_version() -> str:
+    """Версия статики по содержимому файлов: после обновления браузер сразу берёт новые css/js."""
+    digest = hashlib.sha1(__version__.encode())
+    for path in sorted((HERE / "static").glob("*")):
+        digest.update(path.read_bytes())
+    return digest.hexdigest()[:10]
+
+
 def create_app(settings: Settings | None = None, sources: dict[str, Source] | None = None) -> FastAPI:
     settings = settings or Settings()
     rates = Rates(
@@ -185,7 +194,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         site_url=settings.site_url,
         rules_as_of=RULES_AS_OF,
         fmt=fmt_int,
-        asset_version=__version__,
+        asset_version=_asset_version(),
     )
 
     def render(request: Request, name: str, status_code: int = 200, **context: Any) -> HTMLResponse:
