@@ -55,3 +55,26 @@ async def test_clean_report(settings):
     report = await build_report("KMHLM41C6MU123457", storage=st, settings=settings, sources={})
     assert report.verdict == "ok"
     assert any(c.name == "make_match" and c.ok for c in report.checks)
+
+
+def test_migration_backfills_passable(tmp_path):
+    import sqlite3
+
+    path = str(tmp_path / "old.db")
+    conn = sqlite3.connect(path)
+    conn.executescript("""
+        CREATE TABLE listings (source TEXT NOT NULL, external_id TEXT NOT NULL, country TEXT NOT NULL, make TEXT,
+            model TEXT, year INTEGER, mileage_km INTEGER, price REAL, currency TEXT, price_usd REAL, vin TEXT,
+            data TEXT NOT NULL, first_seen TEXT NOT NULL, last_seen TEXT NOT NULL, PRIMARY KEY (source, external_id));
+    """)
+    big = make_listing(external_id="big", title="현대 팰리세이드 3.8 가솔린")
+    small = make_listing(external_id="small", title="기아 K5 1.6 터보", extra={"displacement": "1,598cc"})
+    for l in (big, small):
+        conn.execute("INSERT INTO listings (source, external_id, country, data, first_seen, last_seen) VALUES (?,?,?,?,?,?)",
+                     (l.source, l.external_id, l.country, l.model_dump_json(), "2026-01-01", "2026-01-01"))
+    conn.commit()
+    conn.close()
+
+    st = Storage(path)  # старая база: колонка passable добавляется и заполняется при открытии
+    assert [l.external_id for l in st.search(passable_only=True)] == ["small"]
+    assert len(st.search()) == 2

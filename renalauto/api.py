@@ -85,7 +85,6 @@ class PageFilters(BaseModel):
     price_max: int | None = None
     fuel: str | None = None
     sort: str = "new"
-    passable: bool = False
     page: int = 1
 
 
@@ -112,7 +111,6 @@ def page_filters(request: Request) -> PageFilters:
         price_max=_int(q.get("price_max")),
         fuel=q.get("fuel") if q.get("fuel") in FUELS else None,
         sort=q.get("sort") if q.get("sort") in dict(SORTS) else "new",
-        passable=q.get("passable") in ("1", "on", "true"),
         page=max(1, _int(q.get("page")) or 1),
     )
 
@@ -216,9 +214,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         return request.client.host if request.client else "?"
 
     def query_cars(f: PageFilters, limit: int, offset: int) -> tuple[list, bool]:
-        """Объявления для витрины. Фильтр «проходные» считается в Python, поэтому выбираем с запасом."""
+        """Объявления для витрины. Непроходные в РФ (объём > 2 л из Кореи, > $50k, гибриды…) не показываем."""
         storage: Storage = app.state.storage
-        kwargs = dict(
+        rows = storage.search(
             country=f.country,
             make=f.make,
             model=f.model,
@@ -227,25 +225,11 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             price_usd_max=(f.price_max / rates.get("USD")) if f.price_max and rates.get("USD") else None,
             fuels=FUELS[f.fuel][1] if f.fuel else None,
             sort=f.sort,
+            passable_only=True,
+            limit=limit + 1,
+            offset=offset,
         )
-        if not f.passable:
-            rows = storage.search(limit=limit + 1, offset=offset, **kwargs)
-            return [car_view(l, rates) for l in rows[:limit]], len(rows) > limit
-        views, skipped, scan_offset, batch = [], 0, 0, 200
-        while len(views) <= limit and scan_offset < 5000:
-            rows = storage.search(limit=batch, offset=scan_offset, **kwargs)
-            for listing in rows:
-                v = car_view(listing, rates)
-                if v.eligibility.verdict == "bad":
-                    continue
-                if skipped < offset:
-                    skipped += 1
-                    continue
-                views.append(v)
-            if len(rows) < batch:
-                break
-            scan_offset += batch
-        return views[:limit], len(views) > limit
+        return [car_view(l, rates) for l in rows[:limit]], len(rows) > limit
 
     def stream_query(f: PageFilters) -> str:
         params = {"country": f.country, "make": f.make, "model": f.model, "year_from": f.year_from,
@@ -274,8 +258,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if listing is None:
             return Response(status_code=204)
         v = car_view(listing, rates)
-        f = page_filters(request)
-        if f.passable and v.eligibility.verdict == "bad":
+        if v.eligibility.verdict == "bad":
             return Response(status_code=204)
         macros = templates.env.get_template("_macros.html").module
         return HTMLResponse(str(macros.card(v, fresh=True)))
@@ -291,7 +274,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         v = car_view(listing, rates)
         similar = [
             car_view(l, rates)
-            for l in storage.search(make=listing.make, model=listing.model, limit=5)
+            for l in storage.search(make=listing.make, model=listing.model, passable_only=True, limit=5)
             if l.key != listing.key
         ][:4]
         jsonld = {

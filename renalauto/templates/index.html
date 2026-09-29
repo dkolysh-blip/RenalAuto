@@ -6,7 +6,7 @@
 <section class="hero">
   <h1>{% if f.country == 'KR' %}Авто из Кореи{% elif f.country == 'CN' %}Авто из Китая{% else %}Авто из Кореи и Китая{% endif %} — новые объявления в реальном времени</h1>
   <p>Собираем объявления с крупнейших площадок, переводим, считаем цену в рублях и сразу показываем, пройдёт ли машина по правилам ввоза в РФ. Расчёт под ключ и проверку истории делает менеджер {{ company }} — бесплатно.</p>
-  <div class="usp"><span>🔄 Обновление каждую минуту</span><span>✅ Проверка «проходимости»</span><span>🔎 История и VIN</span><span>🚚 Доставка под ключ</span></div>
+  <div class="usp"><span>🔄 Обновление каждую минуту</span><span>✅ Только машины, которые можно привезти в РФ</span><span>🔎 История и VIN</span><span>🚚 Доставка под ключ</span></div>
 </section>
 
 <form class="filters" method="get" action="/">
@@ -27,7 +27,6 @@
   <div><label>Сортировка</label>
     <select name="sort">
       {% for key, label in sorts %}<option value="{{ key }}" {{ 'selected' if f.sort == key }}>{{ label }}</option>{% endfor %}</select></div>
-  <label class="check"><input type="checkbox" name="passable" value="1" {{ 'checked' if f.passable }}> Только проходные в РФ</label>
   <button class="btn" type="submit">Показать</button>
 </form>
 

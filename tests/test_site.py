@@ -60,15 +60,18 @@ def test_pages_render_and_filter(settings):
         assert page.headers["cache-control"] == "no-cache"
         assert client.get("/favicon.ico").status_code == 200
         html = page.text
-        assert "Hyundai Palisade" in html and "Kia K5" in html
+        # Palisade 3.8 из Кореи не проходит (объём > 2 л) — на витрине его нет
+        assert "Kia K5" in html and "Hyundai Palisade" not in html
         assert "₽" in html
-        only_ok = client.get("/", params={"passable": "1"}).text
-        assert "Kia K5" in only_ok and "Hyundai Palisade" not in only_ok
-        by_make = client.get("/", params={"make": "Hyundai"}).text
-        assert "Hyundai Palisade" in by_make and "Kia K5" not in by_make
+        by_make = client.get("/", params={"make": "Kia"}).text
+        assert "Kia K5" in by_make
+        assert "Kia K5" not in client.get("/", params={"make": "Hyundai"}).text
+        assert "/car/kbchachacha/1" not in client.get("/sitemap.xml").text
+        assert client.get("/partials/card/kbchachacha/1").status_code == 204
 
         car = client.get("/car/kbchachacha/1")
         assert car.status_code == 200
+        assert "не получится привезти" in car.text and 'content="noindex"' in car.text
         assert "Проходимость в РФ" in car.text and "Рассчитать цену под ключ" in car.text
         assert '"@type": "Car"' in car.text
         assert client.get("/car/kbchachacha/nope").status_code == 404

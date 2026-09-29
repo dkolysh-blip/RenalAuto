@@ -64,6 +64,12 @@ CREATE TABLE IF NOT EXISTS filters (
 """
 
 
+def _passable(listing: Listing) -> int:
+    from .eligibility import evaluate  # локальный импорт: eligibility зависит от models
+
+    return 0 if evaluate(listing).verdict == "bad" else 1
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
 
@@ -75,6 +81,24 @@ class Storage:
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.executescript(SCHEMA)
         self._lock = threading.Lock()
+        self._migrate()
+
+    def _migrate(self) -> None:
+        columns = {r["name"] for r in self._conn.execute("PRAGMA table_info(listings)")}
+        if "passable" not in columns:
+            # 1 — можно привезти в РФ (или нужно уточнить), 0 — не проходит; такие на сайте не показываем
+            self._conn.execute("ALTER TABLE listings ADD COLUMN passable INTEGER")
+        self._conn.execute("CREATE INDEX IF NOT EXISTS ix_listings_passable ON listings (passable, first_seen)")
+        rows = self._conn.execute(
+            "SELECT source, external_id, data FROM listings WHERE passable IS NULL"
+        ).fetchall()
+        for r in rows:
+            listing = Listing.model_validate_json(r["data"])
+            self._conn.execute(
+                "UPDATE listings SET passable = ? WHERE source = ? AND external_id = ?",
+                (_passable(listing), r["source"], r["external_id"]),
+            )
+        self._conn.commit()
 
     def close(self) -> None:
         self._conn.close()
@@ -116,13 +140,13 @@ class Storage:
             self._conn.execute(
                 """
                 INSERT INTO listings (source, external_id, country, make, model, year, mileage_km,
-                                      price, currency, price_usd, vin, data, first_seen, last_seen)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                      price, currency, price_usd, vin, data, first_seen, last_seen, passable)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT (source, external_id) DO UPDATE SET
                     country = excluded.country, make = excluded.make, model = excluded.model,
                     year = excluded.year, mileage_km = excluded.mileage_km, price = excluded.price,
                     currency = excluded.currency, price_usd = excluded.price_usd, vin = excluded.vin,
-                    data = excluded.data, last_seen = excluded.last_seen
+                    data = excluded.data, last_seen = excluded.last_seen, passable = excluded.passable
                 """,
                 (
                     merged.source,
@@ -139,6 +163,7 @@ class Storage:
                     merged.model_dump_json(),
                     now,
                     now,
+                    _passable(merged),
                 ),
             )
             if status != "unchanged":
@@ -194,6 +219,7 @@ class Storage:
         vin: str | None = None,
         plate: str | None = None,
         fuels: list[str] | None = None,
+        passable_only: bool = False,
         query: str | None = None,
         sort: str = "new",
         limit: int = 50,
@@ -210,6 +236,8 @@ class Storage:
                 aliases = i18n.search_aliases(value)
                 where.append("(" + " OR ".join(f"{column} LIKE ?" for _ in aliases) + ")")
                 params.extend(f"%{a}%" for a in aliases)
+        if passable_only:
+            where.append("passable != 0")
         if plate:
             where.append("REPLACE(json_extract(data, '$.plate'), ' ', '') = ?")
             params.append(plate.replace(" ", ""))
@@ -325,6 +353,7 @@ class Storage:
 
     def recent_listing_keys(self, limit: int = 5000) -> list[tuple[str, str, str]]:
         rows = self._conn.execute(
-            "SELECT source, external_id, last_seen FROM listings ORDER BY last_seen DESC LIMIT ?", (limit,)
+            "SELECT source, external_id, last_seen FROM listings WHERE passable != 0 ORDER BY last_seen DESC LIMIT ?",
+            (limit,),
         ).fetchall()
         return [(r["source"], r["external_id"], r["last_seen"]) for r in rows]
