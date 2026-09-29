@@ -1,0 +1,6 @@
+{"vehicleId": 38912345, "vin": "kmhlm41c6mu123457", "vehicleNo": "123가4567",
+ "category": {"manufacturerName": "현대", "modelName": "아반떼 (CN7)", "gradeName": "1.6 인스퍼레이션", "formYear": 2021, "yearMonth": "202103"},
+ "spec": {"mileage": 35210, "fuelName": "가솔린", "transmissionName": "오토", "colorName": "흰색", "displacement": 1598},
+ "advertisement": {"price": 1850},
+ "contact": {"address": "경기 수원시"},
+ "photos": [{"path": "/carpicture07/pic3891/38912345_001.jpg"}]}

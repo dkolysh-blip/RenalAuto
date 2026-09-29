@@ -1,0 +1,9 @@
+{"Count": 2, "SearchResults": [
+ {"Id": "38912345", "Separation": ["A"], "Trust": ["Warranty"], "ServiceMark": ["EncarDiagnosisP0"], "Photo": "/carpicture07/pic3891/38912345_",
+  "Manufacturer": "현대", "Model": "아반떼 (CN7)", "Badge": "1.6 인스퍼레이션", "BadgeDetail": "", "Transmission": "오토", "FuelType": "가솔린",
+  "Year": 202103.0, "FormYear": "2021", "Mileage": 35210.0, "Price": 1890.0, "SellType": "일반", "OfficeCityState": "경기",
+  "ModifiedDate": "2026-09-29 10:15:00.000 +09"},
+ {"Id": "38912001", "Photo": "/carpicture01/pic3891/38912001_", "Manufacturer": "BMW", "Model": "5시리즈 (G30)", "Badge": "520i M 스포츠",
+  "Transmission": "오토", "FuelType": "가솔린", "Year": 201908.0, "FormYear": "2020", "Mileage": 61000.0, "Price": 3350.0,
+  "OfficeCityState": "서울", "ModifiedDate": "2026-09-29 09:00:00.000 +09"}
+]}

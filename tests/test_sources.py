@@ -1,0 +1,74 @@
+import pytest
+
+from renalauto.sources.dongchedi import DongchediSource, parse_mileage, parse_price_wan
+from renalauto.sources.encar import EncarSource
+
+from .conftest import fixture, mock_client
+
+
+@pytest.mark.asyncio
+async def test_encar_search_and_detail(settings, monkeypatch):
+    monkeypatch.setenv("ENCAR_QUERIES", "(And.Hidden.N._.CarType.Y.)")
+    client = mock_client(
+        {
+            "/search/car/list/general": fixture("encar_search.json"),
+            "/readside/vehicle/": fixture("encar_detail.json"),
+        }
+    )
+    src = EncarSource(settings, client)
+    listings = await src.fetch_latest(limit=2)
+    assert [l.external_id for l in listings] == ["38912345", "38912001"]
+    first = listings[0]
+    assert first.price == 18_900_000
+    assert first.currency == "KRW"
+    assert first.year == 2021 and first.mileage_km == 35210
+    assert first.photo == "https://ci.encar.com/carpicture07/pic3891/38912345_001.jpg"
+    assert first.url == "https://fem.encar.com/cars/detail/38912345"
+    assert first.listed_at.utcoffset().total_seconds() == 9 * 3600
+    assert first.vin is None
+
+    detailed = await src.fetch_detail(first)
+    assert detailed.vin == "KMHLM41C6MU123457"
+    assert detailed.plate == "123가4567"
+    assert detailed.price == 18_500_000
+    assert detailed.extra["color"] == "흰색"
+
+
+@pytest.mark.asyncio
+async def test_encar_history(settings):
+    seen = {}
+
+    def record(request):
+        seen["vehicleNo"] = request.url.params["vehicleNo"]
+        return fixture("encar_record.json")
+
+    client = mock_client({"/record/vehicle/": record, "/readside/vehicle/": fixture("encar_detail.json")})
+    src = EncarSource(settings, client)
+    listing = src.parse_search_item(fixture("encar_search.json")["SearchResults"][0])
+    history = await src.fetch_history(listing)
+    assert seen["vehicleNo"] == "123가4567"
+    assert history["accidents_own"] == 1 and history["accidents_other"] == 2
+    assert history["owner_changes"] == 2
+    assert any("5 млн" in f for f in history["flags"])
+
+
+@pytest.mark.asyncio
+async def test_dongchedi_list(settings):
+    client = mock_client({"/sh_sku_list": fixture("dongchedi_list.json")})
+    src = DongchediSource(settings, client)
+    listings = await src.fetch_latest(limit=2)
+    han, camry = listings
+    assert han.external_id == "17712345"
+    assert han.price == 152_800 and han.currency == "CNY"
+    assert han.mileage_km == 35_000
+    assert han.make == "比亚迪" and han.year == 2022
+    assert han.extra["new_price_cny"] == 279_500
+    assert han.url == "https://www.dongchedi.com/usedcar/17712345"
+    assert camry.mileage_km == 8000 and camry.year == 2019
+
+
+def test_dongchedi_parsers():
+    assert parse_mileage("3.5万公里") == 35000
+    assert parse_mileage("8000公里") == 8000
+    assert parse_mileage(None) is None
+    assert parse_price_wan("12.58万") == 125800

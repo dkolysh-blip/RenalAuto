@@ -1,0 +1,7 @@
+{"status": 0, "message": "success", "data": {"has_more": true, "total": 1000, "search_sh_sku_info_list": [
+ {"sku_id": 17712345, "title": "比亚迪 汉 2022款 EV 创世版 715KM", "brand_name": "比亚迪", "series_name": "汉", "car_name": "2022款 EV 创世版 715KM",
+  "car_year": 2022, "car_mileage": "3.5万公里", "sh_price": "15.28", "official_price": "27.95万", "image": "https://p3-dcd.byteimg.com/img/x.jpg",
+  "car_source_city_name": "深圳", "spu_id": 555, "publish_time": 1790000000, "tags": [{"text": "准新车"}]},
+ {"sku_id": 17712346, "title": "丰田 凯美瑞 2019款 2.0G 豪华版", "brand_name": "丰田", "series_name": "凯美瑞", "car_year": "2019",
+  "car_mileage": "8000公里", "sh_price": "11.5", "car_source_city_name": "北京"}
+]}}
