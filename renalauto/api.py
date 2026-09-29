@@ -162,6 +162,15 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         lifespan=lifespan,
     )
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
+
+    @app.middleware("http")
+    async def no_stale_pages(request: Request, call_next):
+        # Страницы всегда перепроверяются у сервера: после обновления сайта браузер не покажет старую версию.
+        # Статика (css/js) версионируется через ?v=, её можно кэшировать.
+        response = await call_next(request)
+        if response.headers.get("content-type", "").startswith("text/html"):
+            response.headers["Cache-Control"] = "no-cache"
+        return response
     templates = Jinja2Templates(directory=HERE / "templates")
     templates.env.globals.update(
         company=settings.company_name,
@@ -307,6 +316,11 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         require_admin(request)
         storage = storage_of(request)
         return render(request, "admin.html", leads=storage.list_leads(status), stats=storage.lead_stats())
+
+    @app.get("/favicon.ico", include_in_schema=False)
+    async def favicon() -> Response:
+        svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>"
+        return Response(svg, media_type="image/svg+xml", headers={"Cache-Control": "public, max-age=604800"})
 
     @app.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
     async def robots() -> str:

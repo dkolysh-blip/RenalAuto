@@ -56,7 +56,10 @@ def test_pages_render_and_filter(settings):
     ok_car = kb(external_id="2", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"})
     client, app = make_client(settings, [kb(), ok_car])
     try:
-        html = client.get("/").text
+        page = client.get("/")
+        assert page.headers["cache-control"] == "no-cache"
+        assert client.get("/favicon.ico").status_code == 200
+        html = page.text
         assert "Hyundai Palisade" in html and "Kia K5" in html
         assert "₽" in html
         only_ok = client.get("/", params={"passable": "1"}).text
