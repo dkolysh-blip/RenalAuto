@@ -30,6 +30,8 @@ class Settings:
     # Подгружать карточку нового объявления (там VIN, госномер и т.п.)
     enrich_details: bool = field(default_factory=lambda: _bool("ENRICH_DETAILS", True))
     enrich_concurrency: int = field(default_factory=lambda: int(os.getenv("ENRICH_CONCURRENCY", "3")))
+    # Максимум загрузок карточек за один опрос (новые + догрузка неудавшихся)
+    enrich_per_poll: int = field(default_factory=lambda: int(os.getenv("ENRICH_PER_POLL", "60")))
 
     http_timeout: float = field(default_factory=lambda: float(os.getenv("HTTP_TIMEOUT", "20")))
     # Прокси для площадок (китайские сайты часто режут зарубежные IP)

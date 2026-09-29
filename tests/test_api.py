@@ -91,3 +91,40 @@ async def test_event_hub_delivers():
         event = await asyncio.wait_for(q.get(), 1)
     assert event.listing.external_id == "1"
     assert hub.subscribers == 0
+
+
+@pytest.mark.asyncio
+async def test_failed_detail_is_retried_on_next_poll(settings):
+    from renalauto.events import EventHub
+    from renalauto.poller import Poller
+    from renalauto.sources.base import Source
+    from renalauto.storage import Storage
+    from renalauto.models import Listing
+
+    class Flaky(Source):
+        name, country, currency = "flaky", "KR", "KRW"
+        fail = True
+        detail_calls = 0
+
+        async def fetch_latest(self, limit=50, **_):
+            return [Listing(source="flaky", external_id=str(i), country="KR", url="u", title="t", currency="KRW")
+                    for i in range(3)]
+
+        async def fetch_detail(self, listing):
+            self.detail_calls += 1
+            if self.fail and listing.external_id == "1":
+                raise RuntimeError("boom")
+            return listing.model_copy(update={"plate": "12가" + listing.external_id})
+
+    src = Flaky(settings)
+    storage = Storage(settings.db_path)
+    poller = Poller(settings, storage, {"flaky": src}, EventHub())
+    await poller.poll_once(src)
+    assert src.detail_calls == 3
+    assert storage.get("flaky", "1").plate is None
+    assert poller.status["flaky"]["detail_errors"] == 1
+
+    src.fail = False
+    await poller.poll_once(src)
+    assert src.detail_calls == 4  # догружена только неудавшаяся карточка
+    assert storage.get("flaky", "1").plate == "12가1"

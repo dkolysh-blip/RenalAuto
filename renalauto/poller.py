@@ -18,6 +18,7 @@ from .storage import Storage
 log = logging.getLogger(__name__)
 
 MAX_BACKOFF = 15 * 60
+DETAIL_MARK = "detail_loaded"
 
 
 class Poller:
@@ -76,10 +77,12 @@ class Poller:
     async def _enrich(self, source: Source, listing: Listing) -> Listing:
         async with self._detail_sem:
             try:
-                return await source.fetch_detail(listing)
+                detailed = await source.fetch_detail(listing)
             except Exception as exc:  # noqa: BLE001
-                log.info("%s detail %s failed: %s", source.name, listing.external_id, exc)
+                log.warning("%s detail %s failed: %s", source.name, listing.external_id, exc)
+                self.status[source.name]["detail_errors"] = self.status[source.name].get("detail_errors", 0) + 1
                 return listing
+            return detailed.model_copy(update={"extra": {**detailed.extra, DETAIL_MARK: True}})
 
     async def poll_once(self, source: Source) -> list[ListingEvent]:
         # Первый запуск по площадке — только наполняем базу, без уведомлений о «новых» старых объявлениях
@@ -90,14 +93,21 @@ class Poller:
         st["last_fetched"] = len(fetched)
 
         pending: list[tuple[str, Listing, float | None]] = []
+        stored: list[tuple[str, Listing]] = []
         for listing in fetched:
             status, merged, old_price = self.storage.upsert(listing)
+            stored.append((status, merged))
             if status in ("new", "price_changed"):
                 pending.append((status, merged, old_price))
 
         if self.settings.enrich_details and self._supports_detail(source):
-            to_enrich = [item for item in pending if item[0] == "new" and not item[1].vin]
-            enriched = await asyncio.gather(*(self._enrich(source, l) for _, l, _ in to_enrich))
+            # Карточку грузим для новых объявлений, а также догружаем те, где прошлая попытка не удалась.
+            # Новые — первыми; за один опрос не больше enrich_per_poll запросов, чтобы не нагружать площадку.
+            missing = [l for s, l in stored if not l.extra.get(DETAIL_MARK)]
+            new_keys = {l.key for s, l, _ in pending if s == "new"}
+            missing.sort(key=lambda l: l.key not in new_keys)
+            to_enrich = missing[: self.settings.enrich_per_poll]
+            enriched = await asyncio.gather(*(self._enrich(source, l) for l in to_enrich))
             by_key = {}
             for listing in enriched:
                 _, merged, _ = self.storage.upsert(listing)
