@@ -3,13 +3,26 @@
 {% block title %}{% if f.make %}{{ f.make }} {% endif %}{% if f.country == 'KR' %}Авто из Кореи{% elif f.country == 'CN' %}Авто из Китая{% else %}Авто из Кореи и Китая{% endif %} — свежие объявления, цены в рублях | {{ company }}{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/{% if f.country %}?country={{ f.country }}{% endif %}">{% endblock %}
 {% block content %}
-<section class="hero">
-  <h1>{% if f.country == 'KR' %}Авто из Кореи{% elif f.country == 'CN' %}Авто из Китая{% else %}Авто из Кореи и Китая{% endif %} — новые объявления в реальном времени</h1>
-  <p>Собираем объявления с крупнейших площадок, переводим, считаем цену в рублях и сразу показываем, пройдёт ли машина по правилам ввоза в РФ. Расчёт под ключ и проверку истории делает менеджер {{ company }} — бесплатно.</p>
-  <div class="usp"><span>🔄 Обновление каждую минуту</span><span>✅ Только машины, которые можно привезти в РФ</span><span>🔎 История и VIN</span><span>🚚 Доставка под ключ</span></div>
+<section class="hero hero-main">
+  <div class="hero-text">
+    <div class="eyebrow"><span class="dot on"></span> Свежие объявления каждую минуту</div>
+    <h1>{% if f.country == 'KR' %}Авто из <em>Кореи</em>{% elif f.country == 'CN' %}Авто из <em>Китая</em>{% else %}Авто из <em>Кореи</em> и <em>Китая</em>{% endif %} — под ключ, с проверкой истории</h1>
+    <p>Собираем объявления с крупнейших площадок, переводим, считаем цену в рублях и сразу показываем, пройдёт ли машина по правилам ввоза в РФ. Расчёт под ключ и проверку истории делает менеджер {{ company }} — бесплатно.</p>
+    <div class="hero-cta">
+      <a class="btn" href="#cars">Смотреть машины</a>
+      <a class="btn ghost" href="#podbor">Подбор под бюджет</a>
+    </div>
+    <ul class="usp">
+      <li><b>1 мин</b><span>обновление ленты</span></li>
+      <li><b>РФ</b><span>только проходные авто</span></li>
+      <li><b>VIN</b><span>история и проверка</span></li>
+      <li><b>35–50</b><span>дней до ключей</span></li>
+    </ul>
+  </div>
+  <div class="hero-art"><img src="/static/hero.webp?v={{ asset_version }}" width="1400" height="1121" alt="Автомобиль под красными воротами-тории — символ {{ company }}" fetchpriority="high"></div>
 </section>
 
-<form class="filters" method="get" action="/">
+<form class="filters" id="cars" method="get" action="/">
   <div><label>Страна</label>
     <select name="country"><option value="">Корея и Китай</option>
       <option value="KR" {{ 'selected' if f.country == 'KR' }}>🇰🇷 Корея</option>

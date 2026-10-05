@@ -11,13 +11,22 @@
 <meta property="og:description" content="{{ self.description() }}">
 {% block og %}{% endblock %}
 <link rel="stylesheet" href="/static/app.css?v={{ asset_version }}">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 48'><g fill='%23e0251f'><path d='M2 3 Q32 9 62 3 L59 10 Q32 14 5 10 Z'/><rect x='9' y='15' width='46' height='4.5'/><rect x='29.5' y='10' width='5' height='6'/><path d='M14.5 14 h5 l.6 30 h-6.2 Z M44.5 14 h5 l.6 30 h-6.2 Z'/></g></svg>">
+<meta name="theme-color" content="#0f1012">
 {% block head %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="/">{{ company.split(' ')[0] }}<span>{{ ' ' ~ company.split(' ', 1)[1] if ' ' in company else '' }}</span></a>
+    <a class="logo" href="/" aria-label="{{ company }} — на главную">
+      <svg class="logo-mark" viewBox="0 0 64 48" aria-hidden="true">
+        <path d="M2 3 Q32 9 62 3 L59 10 Q32 14 5 10 Z"/>
+        <rect x="9" y="15" width="46" height="4.5" rx="1"/>
+        <rect x="29.5" y="10" width="5" height="6"/>
+        <path d="M14.5 14 h5 l.6 30 h-6.2 Z M44.5 14 h5 l.6 30 h-6.2 Z"/>
+      </svg>
+      <span class="logo-word">{{ company|upper|replace(' ', '-') }}</span>
+    </a>
     <nav>
       <a href="/?country=KR">Корея</a>
       <a href="/?country=CN">Китай</a>
@@ -25,7 +34,7 @@
       <a href="/#podbor">Подбор под бюджет</a>
     </nav>
     <div class="contacts">
-      {% if company_phone %}<a href="tel:{{ company_phone|replace(' ', '') }}">{{ company_phone }}</a>{% endif %}
+      {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_telegram %}<a class="btn ghost" href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener">Telegram</a>{% endif %}
     </div>
   </div>
@@ -34,10 +43,23 @@
 {% block content %}{% endblock %}
 </main>
 <footer>
-  <div class="wrap">
-    © {{ year }} {{ company }}. Объявления собираются с открытых площадок (KB Chachacha, Encar, Dongchedi, Che168) и обновляются в реальном времени.
+  <div class="wrap foot">
+    <div class="foot-brand">
+      <a class="logo" href="/"><svg class="logo-mark" viewBox="0 0 64 48" aria-hidden="true"><path d="M2 3 Q32 9 62 3 L59 10 Q32 14 5 10 Z"/><rect x="9" y="15" width="46" height="4.5" rx="1"/><rect x="29.5" y="10" width="5" height="6"/><path d="M14.5 14 h5 l.6 30 h-6.2 Z M44.5 14 h5 l.6 30 h-6.2 Z"/></svg><span class="logo-word">{{ company|upper|replace(' ', '-') }}</span></a>
+      <p>Авто из Кореи и Китая под заказ: подбор, проверка, выкуп и доставка до вашего города.</p>
+    </div>
+    <div class="foot-contacts">
+      {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '') }}">{{ company_phone }}</a>{% endif %}
+      {% if company_email %}<a href="mailto:{{ company_email }}">{{ company_email }}</a>{% endif %}
+      {% if company_telegram %}<a href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener">Telegram {{ company_telegram }}</a>{% endif %}
+      {% if company_address %}<span>{{ company_address }}</span>{% endif %}
+    </div>
+  </div>
+  <div class="wrap foot-legal">
+    <p>© {{ year }} {{ company_legal_name or company }}{% if company_requisites %} · {{ company_requisites }}{% endif %}</p>
+    <p>Объявления собираются с открытых площадок (KB Chachacha, Encar, Dongchedi, Che168) и обновляются в реальном времени.
     Цены в рублях — {{ 'по курсу ЦБ РФ' if rates_source == 'ЦБ РФ' else 'по ориентировочному курсу' }}, без доставки, растаможки и утильсбора; стоимость под ключ рассчитывает менеджер.
-    Правила ввоза: {{ rules_as_of }}.
+    Правила ввоза: {{ rules_as_of }}.</p>
   </div>
 </footer>
 <script src="/static/app.js?v={{ asset_version }}" defer></script>

@@ -65,7 +65,26 @@ class Settings:
     # Публичный адрес сайта — для ссылок в Telegram и sitemap.xml
     site_url: str = field(default_factory=lambda: os.getenv("SITE_URL", "https://renal-auto.asia:8443").rstrip("/"))
     company_name: str = field(default_factory=lambda: os.getenv("COMPANY_NAME", "Renal Auto"))
-    company_phone: str | None = field(default_factory=lambda: os.getenv("COMPANY_PHONE") or None)
+    company_phone: str | None = field(default_factory=lambda: os.getenv("COMPANY_PHONE", "8-800-250-57-78") or None)
+    company_email: str | None = field(
+        default_factory=lambda: os.getenv("COMPANY_EMAIL", "ren125primorye@gmail.com") or None
+    )
+    # Реквизиты юрлица для подвала сайта
+    company_legal_name: str | None = field(
+        default_factory=lambda: os.getenv("COMPANY_LEGAL_NAME", "ООО «ГАРАНТ-ЛОГИСТИКА»") or None
+    )
+    company_requisites: str | None = field(
+        default_factory=lambda: os.getenv(
+            "COMPANY_REQUISITES", "ИНН 2543160025 / КПП 254001001 · ОГРН 1212500021271"
+        )
+        or None
+    )
+    company_address: str | None = field(
+        default_factory=lambda: os.getenv(
+            "COMPANY_ADDRESS", "690078, Приморский край, г. Владивосток, ул. Мыс Чумака, д. 1а, помещ. 408"
+        )
+        or None
+    )
     company_telegram: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM") or None)
     # Брать курсы с cbr-xml-daily.ru (иначе — значения RATE_*_RUB ниже)
     rates_live: bool = field(default_factory=lambda: _bool("RATES_LIVE", True))
