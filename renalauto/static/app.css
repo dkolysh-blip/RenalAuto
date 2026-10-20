@@ -227,7 +227,10 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .description p:last-child { margin-bottom: 0; }
 
 /* --- лендинг «Порт» -------------------------------------------------------- */
-.port-hero { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 28px; align-items: center; padding: 28px 0 8px; }
+.port-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; padding: 28px 0 8px; }
+.port-offer { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 12px 48px; align-items: end; }
+.port-offer .offer-side .hero-cta { margin-top: 16px; }
+.port-offer .port-facts { grid-template-columns: repeat(3, minmax(0, auto)); gap: 6px 18px; margin-top: 16px; }
 .port-offer h1 { font-size: clamp(28px, 3.6vw, 44px); line-height: 1.08; letter-spacing: -.03em; margin: 0 0 12px; }
 .port-offer h1 em { font-style: normal; color: var(--accent); }
 .port-offer p { color: var(--muted); margin: 0; font-size: 16px; }
@@ -238,7 +241,7 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .port-stage { position: relative; min-width: 0; }
 .terminal { --t-ground: #3a3e44; --t-yard: #33373d; --t-road: #2a2d32; --t-water: #123049; --t-hull: #1b2733; --t-deck: #2c3a48;
   --t-bridge: #e9ecef; --t-glass: #1a2430; --t-booth: #e9ecef; --t-bollard: #e5b53a;
-  position: relative; aspect-ratio: 1200 / 560; border-radius: var(--radius); overflow: hidden; background: #2b2e33;
+  position: relative; aspect-ratio: 1600 / 760; border-radius: var(--radius); overflow: hidden; background: #2b2e33;
   box-shadow: 0 12px 40px rgba(16,24,40,.18); user-select: none; -webkit-tap-highlight-color: transparent; }
 .terminal-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .terminal-svg { opacity: 0; transition: opacity .6s ease; }
@@ -300,7 +303,8 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .consent { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; margin: 4px 0 12px; }
 .consent input { width: auto; margin-top: 2px; }
 @media (max-width: 1100px) {
-  .port-hero { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .port-offer { grid-template-columns: minmax(0, 1fr); }
+  .port-offer .port-facts { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
   .port-hero { padding-top: 18px; }
@@ -314,7 +318,7 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
   .port-offer p { font-size: 15px; }
   .port-offer .hero-cta { margin-top: 14px; }
   .port-offer .hero-cta .btn.ghost { display: none; }
-  .port-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
+  .port-facts, .port-offer .port-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
   .port-facts li { padding: 6px 8px; font-size: 11.5px; line-height: 1.3; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
   .port-facts li::before { display: none; }
   .port-facts b { display: block; font-size: 13px; }
@@ -456,3 +460,16 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 @media (max-width: 900px) { .journey-grid { grid-template-columns: minmax(0, 1fr); } .journey-map { top: 8px; z-index: 2; } }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .journey .j-sea { filter: brightness(.55); }
   :root:not([data-theme="light"]) .journey .j-land { fill: #2a2d32; stroke: #3a3f46; } :root:not([data-theme="light"]) .journey .j-point text { fill: #e8eaed; stroke: rgba(0,0,0,.6); } }
+
+/* табло цен на стоянке */
+.terminal .chip rect { fill: rgba(12,14,17,.82); stroke: rgba(255,255,255,.18); stroke-width: .8; }
+.terminal .chip text { font: 800 10.5px/1 Inter, system-ui, sans-serif; fill: #fff; letter-spacing: .01em; }
+.terminal .chip.none text { fill: rgba(255,255,255,.45); }
+.terminal .focused .chip { opacity: .35; }
+.terminal .t-stats { font-weight: 700; fill: rgba(240,236,224,.82); }
+.terminal .t-scale line { stroke: rgba(240,236,224,.55); stroke-width: 1.4; }
+.terminal .t-scale text { font: 700 10.5px/1 Inter, system-ui, sans-serif; fill: rgba(240,236,224,.75); }
+.terminal .t-scale .t-scale-cap { font-weight: 600; fill: rgba(240,236,224,.5); letter-spacing: .04em; }
+.terminal .t-chips, .terminal .t-board { pointer-events: none; }
+.terminal .arrival-tag .tag-sub { display: none; }
+.terminal .t-flag rect:first-child { stroke: rgba(0,0,0,.25); stroke-width: .6; }

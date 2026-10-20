@@ -42,7 +42,7 @@ HERE = Path(__file__).parent
 SSE_KEEPALIVE = 15
 PAGE_SIZE = 24
 POLICY_DATE = "20 октября 2026 г."  # дата редакции /privacy — менять вместе с текстом
-PORT_PER_ZONE = 20  # мест в зоне терминала (Корея / Китай)
+PORT_PER_ZONE = 56  # мест в зоне терминала (Корея / Китай): 4 ряда × 14
 PORT_SCAN = 600  # сколько свежих объявлений перебирает пульт подбора
 RATES_REFRESH = 6 * 3600
 
@@ -326,7 +326,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                         and (not make or make.lower() in f"{c.make} {c.title}".lower())), None)
             matched = (f"{hit.make} {hit.model}" if hit and hit.make and hit.model
                        else " ".join(x[:1].upper() + x[1:] for x in (make, model) if x))
-        scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched}
+        cur = {c: rates.get(c) for c in ("CNY", "KRW", "EUR")}
+        scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched,
+                 "rates": {k: v for k, v in cur.items() if v}, "rates_source": rates.source}
         return render(
             request, "port.html", cars=cars, matched=matched,
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),

@@ -31,7 +31,9 @@ SAMPLES = int(opts.get("--s", 48))
 NIGHT = opts.get("--night") == "1"  # ночная подложка: фонари, огни кранов, луна
 
 # --- раскладки (те же числа, что в port.js) -------------------------------------------
-WIDE = dict(W=1200, H=560, road=56, aisle=210, apron=362, quay=420, zones=[40, 620], rows=[160, 262], cols=10, pitch=50)
+# широкая: две зоны по 4 ряда × 14 мест; ряд = (центр мест, его проезд)
+WIDE = dict(W=1600, H=760, road=56, aisles=[214, 394], rows=[(164, 214), (266, 214), (344, 394), (446, 394)],
+            apron=540, quay=600, zones=[30, 810], zone_w=760, cols=14, pitch=50)
 NARROW = dict(W=360, H=650, lane=180, quay=556, zones=[56, 304], rows=7, pitch=30)
 SUN_DIR = (math.radians(38), 0, math.radians(-35))  # тени ложатся вправо-вниз
 
@@ -355,7 +357,7 @@ def ground(W, H, quay, m_ground, m_water, m_hazard, m_concrete):
 
 def yard_wide():
     k = WIDE
-    W, H, road, aisle, apron, quay = k["W"], k["H"], k["road"], k["aisle"], k["apron"], k["quay"]
+    W, H, road, apron, quay, zw = k["W"], k["H"], k["road"], k["apron"], k["quay"], k["zone_w"]
     m_ground = noisy("ground", (0.2, 0.2, 0.19), (0.27, 0.27, 0.26), scale=0.03)
     m_yard = noisy("yard", (0.075, 0.078, 0.082), (0.11, 0.112, 0.115), scale=0.05, stains=True)
     m_road = noisy("road", (0.05, 0.052, 0.056), (0.075, 0.077, 0.08), scale=0.06, stains=True)
@@ -366,6 +368,7 @@ def yard_wide():
     m_dark = mat("dark", (0.05, 0.05, 0.055), rough=0.5)
     m_lamp = mat("lamp", (0.9, 0.9, 0.85), rough=0.3)
     m_grass = noisy("grass", (0.09, 0.16, 0.06), (0.14, 0.22, 0.08), scale=0.08, bump=0.4)
+    m_median = noisy("median", (0.16, 0.16, 0.155), (0.21, 0.21, 0.2), scale=0.08)
     ground(W, H, quay, m_ground, water_mat(), hazard_mat(), m_conc)
 
     box(-40, -40, W + 40, 8, 0, 0.4, m_grass)  # полоса газона у забора
@@ -377,21 +380,25 @@ def yard_wide():
 
     for x0 in k["zones"]:
         cx = x0 + 24
-        box(x0, 96, x0 + 540, apron - 18, 0, 0.25, m_yard)
-        box(x0, aisle - 18, x0 + 540, aisle + 18, 0, 0.3, m_road)
+        x1 = x0 + 51 + k["cols"] * k["pitch"]
+        box(x0, 96, x0 + zw, apron - 18, 0, 0.25, m_yard)
+        for a in k["aisles"]:
+            box(x0, a - 18, x0 + zw, a + 18, 0, 0.3, m_road)
+            dashes(x0 + 48, a, x0 + zw, a, m_yellow, w=1.4)
         box(x0 + 6, road + 20, x0 + 42, apron - 18, 0, 0.33, m_road)
         dashes(cx, road + 24, cx, apron - 18, m_yellow, w=1.4)
-        dashes(x0 + 48, aisle, x0 + 540, aisle, m_yellow, w=1.4)
-        for sy in k["rows"]:
+        # разделительная полоса между рядами «спина к спине»
+        box(x0 + 51, 293, x1, 317, 0.3, 0.42, m_median)
+        for sy, a in k["rows"]:
             for i in range(k["cols"] + 1):
                 x = x0 + 51 + i * k["pitch"]
                 paint_line(x, sy - 26, x, sy + 26, 1.6, m_white)
-            far = sy - 26 if sy < aisle else sy + 26
-            paint_line(x0 + 51, far, x0 + 51 + k["cols"] * k["pitch"], far, 1.6, m_white)
+            far = sy - 26 if sy < a else sy + 26
+            paint_line(x0 + 51, far, x1, far, 1.6, m_white)
     box(-40, apron - 18, W + 40, apron + 18, 0, 0.36, m_road)
     dashes(-40, apron, W + 40, apron, m_white)
 
-    # контейнеры вдоль верхнего края (уходят за кадр) и справа
+    # контейнеры вдоль верхнего края (уходят за кадр) и по бокам
     x, n = -30, 0
     while x < W + 40:
         ln = random.choice((55, 55, 110))
@@ -400,25 +407,30 @@ def yard_wide():
             roof_logo(x + ln / 2, 24)
         n += 1
         x += ln + 3
-    for y in (110, 200, 290):
-        container(1180, y, 110, vertical=True, tiers=random.choice((1, 2)))
-    for y in (120, 230):
-        container(16, y + 40, 55, vertical=True, tiers=2)
+    for y in (150, 265, 380, 495):
+        container(1590, y, 110, vertical=True, tiers=random.choice((1, 2)))
+    for y in (160, 270, 380):
+        container(12, y, 55, vertical=True, tiers=2)
     # будка у ворот
     box(14, 2, 40, 16, 0, 26, m_lamp, bevel=1)
     box(12, 0, 42, 18, 26, 28, m_dark)
     if NIGHT:
         box(16, 14, 38, 16.5, 20, 27, glow((1, 0.9, 0.7), 6))  # окно будки
-    painted_flags(k["zones"][0] + 466, k["zones"][1] + 466, 296)
-    # фонари между зонами, по краям и вдоль причала
-    for x, y in ((600, 110), (600, 320), (40, 330), (1160, 330), (40, 110), (1160, 110),
-                 (310, 104), (890, 104), (310, 302), (890, 302)):
-        light_pole(x, y, m_dark, m_lamp)
-    for x in (330, 600, 870):
-        light_pole(x, 398, m_dark, m_lamp, h=70)
+    painted_flags(k["zones"][0] + 686, k["zones"][1] + 686, 477)
+    # фонари: между зонами, по краям, над рядами и вдоль причала
+    for y in (110, 305, 500):
+        light_pole(800, y, m_dark, m_lamp)
+    for x0 in k["zones"]:
+        for x in (x0 + 210, x0 + 560):
+            light_pole(x, 305, m_dark, m_lamp)
+        light_pole(x0 + 380, 104, m_dark, m_lamp)
+    for x in (30, 1570):
+        light_pole(x, 500, m_dark, m_lamp)
+    for x in (420, 800, 1180):
+        light_pole(x, quay - 22, m_dark, m_lamp, h=70)
     # портальные краны по краям причала, стрелы над водой
-    gantry_crane(150, quay, 130, m_steel, m_dark)
-    gantry_crane(1050, quay, 130, m_steel, m_dark)
+    gantry_crane(180, quay, 170, m_steel, m_dark)
+    gantry_crane(1420, quay, 170, m_steel, m_dark)
     # кнехты
     bx = 40
     while bx < W:

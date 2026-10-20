@@ -5,7 +5,7 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '5';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '6';  // V — поднять после перерендера
   // Ночь — по времени Владивостока (там порт и офис); ?night=1 / ?night=0 — проверить вручную
   const NIGHT = (() => {
     const q = new URLSearchParams(location.search).get('night');
@@ -30,29 +30,31 @@
   // Две раскладки: широкая (десктоп) и узкая вертикальная полоса в 2 ряда (телефон), судно внизу.
   // Каждое место: где стоит машина и три маршрута — заезд через ворота, выезд обратно и путь к рампе.
   function wideLayout() {
-    const W = 1200, H = 560, road = 56, aisle = 210, apron = 362, quay = 420, rampX = 600;
-    const zones = [{zone: 'KR', x0: 40}, {zone: 'CN', x0: 620}];
+    const W = 1600, H = 760, road = 56, apron = 540, quay = 600, rampX = 800, ZW = 760, COLS = 14;
+    const rows = [[164, 214], [266, 214], [344, 394], [446, 394]];  // центр мест и их проезд
+    const zones = [{zone: 'KR', x0: 30}, {zone: 'CN', x0: 810}];
     const slots = [];
     for (const z of zones) {
       const cx = z.x0 + 24;
-      for (const sy of [160, 262]) for (let i = 0; i < 10; i++) {
+      for (const [sy, a] of rows) for (let i = 0; i < COLS; i++) {
         const sx = z.x0 + 76 + i * 50;
         slots.push({
-          zone: z.zone, x: sx, y: sy,
-          in: [[-60, road], [cx, road], [cx, aisle], [sx, aisle], [sx, sy]],
-          out: [[sx, sy], [sx, aisle], [cx, aisle], [cx, road], [-60, road]],
-          ramp: [[sx, sy], [sx, aisle], [cx, aisle], [cx, apron], [rampX, apron], [rampX, quay + 34]],
+          zone: z.zone, x: sx, y: sy, col: i,
+          chip: [sx, sy + (a > sy ? 32 : -32)],  // ценник — на асфальте у въезда на место
+          in: [[-60, road], [cx, road], [cx, a], [sx, a], [sx, sy]],
+          out: [[sx, sy], [sx, a], [cx, a], [cx, road], [-60, road]],
+          ramp: [[sx, sy], [sx, a], [cx, a], [cx, apron], [rampX, apron], [rampX, quay + 34]],
         });
       }
     }
     return {
-      W, H, slots, quay, rampX, ship: {x: 330, y: quay + 24, w: 560, h: 92},
-      cranes: [150, 1050].map(x => ({x, y0: quay - 84, y1: quay + 118})), truck: road + 9,
+      W, H, slots, quay, rampX, cols: COLS, zoom: 2.6, ship: {x: 450, y: quay + 26, w: 700, h: 115},
+      cranes: [180, 1420].map(x => ({x, y0: quay - 84, y1: quay + 160})), truck: road + 9,
+      zones: zones.map(z => ({zone: z.zone, title: [z.x0 + 52, 124], stats: [z.x0 + ZW - 10, 124],
+        scale: {x0: z.x0 + 76, x1: z.x0 + 76 + (COLS - 1) * 50, y: 500}})),
       paint(g) {
         g.innerHTML = `<image href="${ASSETS}/yard-wide${PLATE}.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
-          ${zones.map(z => `
-            <text x="${z.x0 + 52}" y="124" class="t-zone">${z.zone === 'KR' ? 'ТЕРМИНАЛ КОРЕЯ' : 'ТЕРМИНАЛ КИТАЙ'}</text>
-            <text x="${z.x0 + 532}" y="124" class="t-zone-sub" text-anchor="end">${z.zone === 'KR' ? 'Encar · KB Chachacha' : 'Dongchedi · Che168'}</text>`).join('')}
+          ${zones.map(z => `${flag(z.zone, z.x0 + 52, 124)}<text x="${z.x0 + 80}" y="124" class="t-zone">${z.zone === 'KR' ? 'ТЕРМИНАЛ КОРЕЯ' : 'ТЕРМИНАЛ КИТАЙ'}</text>`).join('')}
           ${barrier(28, road, 'v')}`;
       },
     };
@@ -65,23 +67,43 @@
     for (const z of zones) for (let j = 0; j < 7; j++) for (const side of [-1, 1]) {
       const sy = z.y0 + 36 + j * 30, sx = lane + side * 60;
       slots.push({
-        zone: z.zone, x: sx, y: sy,
+        zone: z.zone, x: sx, y: sy, col: j,
+        chip: [lane + side * 110, sy],
         in: [[lane, -50], [lane, sy], [sx, sy]],
         out: [[sx, sy], [lane, sy], [lane, -50]],
         ramp: [[sx, sy], [lane, sy], [lane, quay + 30]],
       });
     }
     return {
-      W, H, slots, quay, rampX: lane, ship: {x: 34, y: quay + 30, w: 292, h: 48},
+      W, H, slots, quay, rampX: lane, cols: 7, zoom: 1.7, ship: {x: 34, y: quay + 30, w: 292, h: 48},
+      zones: zones.map(z => ({zone: z.zone, title: [26, z.y0 + 15], stats: [W - 26, z.y0 + 15], scale: null})),
       cranes: [28, W - 28].map(x => ({x, y0: quay - 84, y1: quay + 72})), truck: null,
       paint(g) {
         g.innerHTML = `<image href="${ASSETS}/yard-narrow${PLATE}.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
           ${zones.map(z => `
-            <text x="26" y="${z.y0 + 15}" class="t-zone">${z.zone === 'KR' ? 'КОРЕЯ' : 'КИТАЙ'}</text>
-            <text x="${W - 26}" y="${z.y0 + 15}" class="t-zone-sub" text-anchor="end">${z.zone === 'KR' ? 'Encar · KB' : 'Dongchedi · Che168'}</text>`).join('')}
+            ${flag(z.zone, 26, z.y0 + 15)}<text x="53" y="${z.y0 + 15}" class="t-zone">${z.zone === 'KR' ? 'КОРЕЯ' : 'КИТАЙ'}</text>`).join('')}
           ${barrier(lane, 26, 'h')}`;
       },
     };
+  }
+
+  // флажок зоны перед названием (x, y — левый край и базовая линия текста)
+  function flag(zone, x, y) {
+    const w = 21, h = 14, t = y - 11;
+    return zone === 'KR'
+      ? `<g class="t-flag"><rect x="${x}" y="${t}" width="${w}" height="${h}" rx="1.5" fill="#fff"/>
+          <path d="M${x + w / 2 - 4} ${t + h / 2} a4 4 0 0 1 8 0 Z" fill="#cd2e3a"/><path d="M${x + w / 2 - 4} ${t + h / 2} a4 4 0 0 0 8 0 Z" fill="#0047a0"/>
+          <rect x="${x + 2}" y="${t + 2}" width="3" height="2" fill="#111"/><rect x="${x + w - 5}" y="${t + 2}" width="3" height="2" fill="#111"/>
+          <rect x="${x + 2}" y="${t + h - 4}" width="3" height="2" fill="#111"/><rect x="${x + w - 5}" y="${t + h - 4}" width="3" height="2" fill="#111"/></g>`
+      : `<g class="t-flag"><rect x="${x}" y="${t}" width="${w}" height="${h}" rx="1.5" fill="#de2910"/>
+          <path d="${starPath(x + 5, t + 4.5, 3)}" fill="#ffde00"/>
+          ${[[9.5, 2], [11, 4], [11, 6.5], [9.5, 8.5]].map(([dx, dy]) => `<circle cx="${x + dx}" cy="${t + dy}" r=".9" fill="#ffde00"/>`).join('')}</g>`;
+  }
+  function starPath(cx, cy, r) {
+    return Array.from({length: 10}, (_, i) => {
+      const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.4 : r;
+      return `${i ? 'L' : 'M'}${(cx + rr * Math.cos(a)).toFixed(2)} ${(cy + rr * Math.sin(a)).toFixed(2)}`;
+    }).join('') + 'Z';
   }
 
   // шлагбаум у ворот (будка — на подложке): v — дорога горизонтальная, h — вертикальная
@@ -141,7 +163,7 @@
   }
 
   // --- состояние сцены -----------------------------------------------------------
-  let L, svg, gYard, gCars, gShip, gTags, deck;
+  let L, svg, gYard, gCars, gShip, gTags, gChips, gBoard, deck;
   const cars = new Map();        // key -> машина на сцене
   const queue = [];              // ждут заезда
   let occupied = [];             // место -> key
@@ -176,13 +198,15 @@
     </defs><g class="t-yard"></g>
     <g class="t-glints" clip-path="url(#t-water-clip)"><rect class="glint-band" x="${-L.W}" y="${L.quay}" width="${L.W * 3}" height="${L.H - L.quay}" fill="url(#t-glint)"/></g>
     <g class="t-ship"></g><g class="t-trucks"></g><rect class="t-dim" width="${L.W}" height="${L.H}" fill="url(#t-dim-g)"/>
-    <g class="t-route-layer"></g><g class="t-cars"></g><g class="t-cranes"></g><g class="t-clouds"></g><g class="t-tags"></g>`;
+    <g class="t-route-layer"></g><g class="t-chips"></g><g class="t-cars"></g><g class="t-board"></g><g class="t-cranes"></g><g class="t-clouds"></g><g class="t-tags"></g>`;
     if (NIGHT) svg.classList.add('night');
     root.prepend(svg);
     gYard = svg.querySelector('.t-yard');
     gCars = svg.querySelector('.t-cars');
     gShip = svg.querySelector('.t-ship');
     gTags = svg.querySelector('.t-tags');
+    gChips = svg.querySelector('.t-chips');
+    gBoard = svg.querySelector('.t-board');
     L.paint(gYard);
     const plate = gYard.querySelector('image');
     plate.addEventListener('load', () => svg.classList.add('ready'), {once: true});
@@ -245,7 +269,7 @@
   const fullView = () => [0, 0, L.W, L.H];
   function setView(v) { cam.vb = v; svg.setAttribute('viewBox', v.map(n => n.toFixed(1)).join(' ')); }
   function zoomBox(car) {
-    const f = L.W < 600 ? 1.7 : 2.3, w = L.W / f, h = L.H / f;
+    const f = L.zoom, w = L.W / f, h = L.H / f;
     return [Math.max(0, Math.min(L.W - w, car.x - w / 2)), Math.max(0, Math.min(L.H - h, car.y - h / 2)), w, h];
   }
   function flyTo(target, ms = 750) {
@@ -323,9 +347,27 @@
   }
 
   // --- машины --------------------------------------------------------------------
-  function freeSlot(zone) {
+  // Диапазон цен под ключ по зонам (5–95 %), чтобы раскладывать машины по шкале
+  const range = {KR: null, CN: null};
+  function updateRange(list) {
+    for (const zone of ['KR', 'CN']) {
+      const prices = list.filter(d => (d.country === 'CN' ? 'CN' : 'KR') === zone && d.turnkey).map(d => d.turnkey).sort((a, b) => a - b);
+      range[zone] = prices.length > 1 ? [prices[Math.floor(prices.length * 0.05)], prices[Math.ceil(prices.length * 0.95) - 1]] : null;
+    }
+  }
+  function priceCol(d, zone) {
+    const r = range[zone];
+    if (!r || !d.turnkey || r[1] <= r[0]) return null;
+    return Math.max(0, Math.min(1, (d.turnkey - r[0]) / (r[1] - r[0]))) * (L.cols - 1);
+  }
+  function freeSlot(zone, d) {
     const free = L.slots.map((s, i) => i).filter(i => L.slots[i].zone === zone && !occupied[i]);
-    return free.length ? pick(free) : -1;
+    if (!free.length) return -1;
+    const col = d && priceCol(d, zone);
+    if (col === null || col === undefined) return pick(free);
+    // ближайшее свободное место к «своей» колонке шкалы; среди равных — случайный ряд
+    const best = Math.min(...free.map(i => Math.abs(L.slots[i].col - col)));
+    return pick(free.filter(i => Math.abs(L.slots[i].col - col) <= best + 0.5));
   }
   function makeCar(d) {
     const g = document.createElementNS(NS, 'g');
@@ -404,7 +446,7 @@
   function arrive(d, instant) {
     if (cars.has(d.key)) return;
     const zone = d.country === 'CN' ? 'CN' : 'KR';
-    let slot = freeSlot(zone);
+    let slot = freeSlot(zone, d);
     if (slot < 0) {
       // мест нет — самая давняя машина зоны уезжает за ворота, новая встаёт на её место
       const oldest = [...cars.values()].filter(c => c.state === 'parked' && L.slots[c.slot].zone === zone)
@@ -421,10 +463,25 @@
       const car = makeCar(d);
       car.slot = slot; car.state = 'parked';
       place(car, L.slots[slot].x, L.slots[slot].y, parkedAngle(slot));
+      chipOn(car);
       return;
     }
     enter(d, slot);
   }
+  // ценник под ключ на асфальте у места: как табло цен
+  const short = n => (n / 1e6).toFixed(2).replace('.', ',');
+  function chipOn(car) {
+    chipOff(car);
+    const [x, y] = L.slots[car.slot].chip, t = car.d.turnkey;
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'chip' + (t ? '' : ' none'));
+    g.setAttribute('transform', `translate(${x} ${y})`);
+    g.innerHTML = `<rect x="-19" y="-7.5" width="38" height="15" rx="3"/><text y="4" text-anchor="middle">${t ? short(t) : '—'}</text>`;
+    gChips.appendChild(g);
+    car.chip = g;
+  }
+  function chipOff(car) { car.chip?.remove(); car.chip = null; }
+
   function enter(d, slot) {
     if (!L.slots[slot] || occupied[slot] !== d.key) { queue.unshift(d); return; } // раскладка сменилась
     const car = makeCar(d);
@@ -435,12 +492,14 @@
     drive(car, L.slots[slot].in, 'in', () => {
       car.state = 'parked';
       car.since = performance.now();
+      chipOn(car);
       tag(car, d);
       hud();
     });
     hud();
   }
   function leave(car) {
+    chipOff(car);
     if (occupied[car.slot] === car.d.key) occupied[car.slot] = null;
     if (pop.car === car) hidePop();
     if (cam.car === car) { cam.follow = null; unfocus(); }
@@ -448,6 +507,7 @@
     openGate();
   }
   function remove(car) {
+    chipOff(car);
     car.g.remove();
     cars.delete(car.d.key);
     if (occupied[car.slot] === car.d.key) occupied[car.slot] = null;
@@ -464,6 +524,7 @@
   // «Хочу эту»: машина подсвечивается и едет к рампе автовоза
   function toRamp(car, then) {
     if (car.state !== 'parked') return;
+    chipOff(car);
     car.g.classList.add('chosen');
     drive(car, L.slots[car.slot].ramp, 'ramp', () => { car.state = 'at-ramp'; then && then(); });
   }
@@ -472,6 +533,7 @@
     drive(car, [...L.slots[car.slot].ramp].reverse(), 'back', () => {
       car.state = 'parked';
       place(car, L.slots[car.slot].x, L.slots[car.slot].y, parkedAngle(car.slot));
+      chipOn(car);
     });
   }
   function load(car) {
@@ -555,12 +617,35 @@
     setTimeout(() => el.classList.add('out'), 3800);
     setTimeout(() => el.remove(), 4300);
   }
+  function board() {
+    if (!gBoard) return;
+    const word = n => n % 10 === 1 && n % 100 !== 11 ? 'машина' : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'машины' : 'машин';
+    gBoard.innerHTML = L.zones.map(z => {
+      const here = [...cars.values()].filter(c => c.state !== 'out' && (c.d.country === 'CN' ? 'CN' : 'KR') === z.zone);
+      const prices = here.map(c => c.d.turnkey).filter(Boolean);
+      const stats = `${here.length} ${word(here.length)}${prices.length ? ' · под ключ от ' + mln(Math.min(...prices)) : ''}`;
+      let scale = '';
+      const r = range[z.zone];
+      if (z.scale && r) {
+        const {x0, x1, y} = z.scale, mid = (r[0] + r[1]) / 2;
+        scale = `<g class="t-scale"><line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}"/>
+          ${[[x0, r[0], 'start'], [(x0 + x1) / 2, mid, 'middle'], [x1, r[1], 'end']].map(([x, v, a]) =>
+            `<line x1="${x}" x2="${x}" y1="${y - 4}" y2="${y + 4}"/><text x="${x}" y="${y + 16}" text-anchor="${a}">${short(v)} млн</text>`).join('')}
+          <text class="t-scale-cap" x="${(x0 + x1) / 2}" y="${y - 9}" text-anchor="middle">цена под ключ: ← дешевле · дороже →</text></g>`;
+      }
+      return `<text class="t-zone-sub t-stats" x="${z.stats[0]}" y="${z.stats[1]}" text-anchor="end">${stats}</text>${scale}`;
+    }).join('');
+  }
   function hud() {
+    board();
     const list = [...cars.values()].filter(c => c.state !== 'out');
     const kr = list.filter(c => c.d.country !== 'CN').length;
+    // на десктопе — курс, по которому посчитаны цены под ключ (сводка по зонам — на табло)
+    const r = DATA.rates || {}, f = (v, d) => v.toLocaleString('ru-RU', {minimumFractionDigits: d, maximumFractionDigits: d});
+    const rates = [r.CNY && `¥1 = ${f(r.CNY, 2)} ₽`, r.KRW && `₩1000 = ${f(r.KRW * 1000, 1)} ₽`, r.EUR && `€1 = ${f(r.EUR, 1)} ₽`].filter(Boolean);
     root.querySelector('[data-hud="count"]').textContent = L.W < 600
       ? `${list.length} машин · KR ${kr} · CN ${list.length - kr}`
-      : `На терминале ${list.length} · Корея ${kr} · Китай ${list.length - kr}`;
+      : rates.length ? `${DATA.rates_source === 'ЦБ РФ' ? 'Курс ЦБ' : 'Курс'}: ${rates.join(' · ')}` : `На терминале ${list.length}`;
   }
   function setStatus(on, text) {
     root.querySelector('.hud-live .dot').classList.toggle('on', on);
@@ -765,12 +850,13 @@
     build();
     let start = DATA.cars.slice();
     if (DATA.demo) {
-      for (let i = 0; i < 90; i++) demoPool.push(demoCar(i % 2 ? 'CN' : 'KR'));
-      if (start.length < 24) start.push(...demoPool.slice(0, 30 - start.length));
+      for (let i = 0; i < 200; i++) demoPool.push(demoCar(i % 2 ? 'CN' : 'KR'));
+      if (start.length < 80) start.push(...demoPool.slice(0, 90 - start.length));
     }
     // машины из рекламной ссылки (?model=…) заезжают первыми, на глазах у посетителя
     const matched = DATA.match ? start.filter(d => d.title.toLowerCase().includes(DATA.match.toLowerCase())) : [];
     const rest = start.filter(d => !matched.includes(d));
+    updateRange([...start, ...demoPool]);
     const parkNow = Math.round(L.slots.length * 0.6);
     rest.slice(0, parkNow).forEach(d => arrive(d, true));
     queue.push(...matched.slice(0, 4), ...rest.slice(parkNow), ...matched.slice(4));

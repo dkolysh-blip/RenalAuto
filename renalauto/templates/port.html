@@ -7,8 +7,11 @@
 {% block content %}
 <section class="port-hero">
   <div class="port-offer">
+    <div class="offer-main">
     <div class="eyebrow"><span class="dot on"></span> Живая лента: новые машины каждую минуту</div>
     <h1>{% if matched %}<em>{{ matched }}</em> из Кореи и Китая, {% else %}Авто из <em>Кореи</em> и <em>Китая</em>, {% endif %}которые проходят по утильсбору</h1>
+    </div>
+    <div class="offer-side">
     <p>Выберите машину на терминале — мы посчитаем её цену под ключ до вашего города: доставка, таможня, утильсбор, оформление.</p>
     <div class="hero-cta">
       <a class="btn" href="#podbor" data-goal="form_open">Подобрать под бюджет</a>
@@ -19,6 +22,7 @@
       <li><b>Проверка VIN</b> и истории до покупки</li>
       <li><b>35–50 дней</b> от выкупа до ключей</li>
     </ul>
+    </div>
   </div>
 
   <div class="port-stage">
