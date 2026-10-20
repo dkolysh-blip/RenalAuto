@@ -101,6 +101,55 @@
   </div>
 </section>
 
+<section class="port-section journey" id="journey" aria-labelledby="journey-title" data-journey>
+  <div class="port-section-head"><h2 id="journey-title">Путь машины до ваших ключей</h2></div>
+  <div class="journey-grid">
+    <div class="journey-map">
+      <svg viewBox="0 0 800 460" role="img" aria-label="Схема маршрута: из Кореи морем и из Китая через сухопутную границу во Владивосток, дальше по России в ваш город">
+        <defs>
+          <linearGradient id="j-sea" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe3ee"/><stop offset="1" stop-color="#b6d3e3"/></linearGradient>
+          <pattern id="j-dots" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1.1" fill="#b9b3a3"/></pattern>
+        </defs>
+        <rect class="j-sea" width="800" height="460" fill="url(#j-sea)"/>
+        {# материк: Россия и Китай; береговая линия к Владивостоку и вдоль Жёлтого моря — схематично #}
+        <path class="j-land" d="M0 0 H800 V96 C760 104 720 92 690 112 C650 138 610 128 585 150 C566 167 552 166 540 178 C528 190 512 196 498 214 C486 230 470 236 452 246 C430 258 404 262 388 282 C372 302 352 312 330 322 C300 336 268 344 238 362 C200 384 150 392 110 410 C70 428 30 436 0 440 Z"/>
+        <path class="j-land" d="M452 246 C462 262 470 282 478 300 C486 322 494 346 506 368 C514 384 528 396 546 392 C560 388 566 372 562 354 C556 330 548 306 536 286 C524 266 510 250 496 238 C484 230 470 236 452 246 Z"/>
+        <path class="j-land" d="M708 300 C726 286 750 290 766 306 C782 322 798 346 800 360 V460 H660 C668 430 682 404 690 380 C698 352 696 318 708 300 Z"/>
+        <path class="j-land j-land-texture" d="M0 0 H800 V96 C760 104 720 92 690 112 C650 138 610 128 585 150 C566 167 552 166 540 178 C528 190 512 196 498 214 C486 230 470 236 452 246 C430 258 404 262 388 282 C372 302 352 312 330 322 C300 336 268 344 238 362 C200 384 150 392 110 410 C70 428 30 436 0 440 Z" fill="url(#j-dots)"/>
+        <path class="j-border" d="M462 40 C470 80 480 120 500 150 C512 168 526 176 538 180"/>
+        <text class="j-country" x="610" y="60">РОССИЯ</text>
+        <text class="j-country" x="230" y="210">КИТАЙ</text>
+        <text class="j-country" x="474" y="322" transform="rotate(62 474 322)">КОРЕЯ</text>
+        <text class="j-sea-label" x="620" y="250">Японское море</text>
+        {# маршруты #}
+        <path class="j-route j-route-kr" id="j-kr" d="M520 378 C560 360 600 316 612 268 C622 226 600 196 562 184"/>
+        <path class="j-route j-route-cn" id="j-cn" d="M300 140 C360 136 420 134 470 138 C500 142 524 160 556 180"/>
+        <path class="j-route j-route-ru" id="j-ru" d="M562 180 C520 150 470 100 400 76 C320 50 220 44 120 40 C80 38 40 36 10 36"/>
+        <path class="j-progress j-route-kr" d="M520 378 C560 360 600 316 612 268 C622 226 600 196 562 184" data-j-progress="kr"/>
+        <path class="j-progress j-route-cn" d="M300 140 C360 136 420 134 470 138 C500 142 524 160 556 180" data-j-progress="cn"/>
+        <path class="j-progress j-route-ru" d="M562 180 C520 150 470 100 400 76 C320 50 220 44 120 40 C80 38 40 36 10 36" data-j-progress="ru"/>
+        {# точки #}
+        <g class="j-point"><circle cx="520" cy="378" r="6"/><text x="532" y="398">Пусан / Инчхон</text></g>
+        <g class="j-point"><circle cx="300" cy="140" r="6"/><text x="300" y="164" text-anchor="middle">Площадки Китая</text></g>
+        <g class="j-point"><circle cx="470" cy="138" r="5"/><text x="456" y="124" text-anchor="end">граница</text></g>
+        <g class="j-point j-hub"><circle cx="562" cy="182" r="9"/><text x="578" y="206">Владивосток</text></g>
+        <g class="j-point"><circle cx="24" cy="36" r="6"/><text x="24" y="60">Ваш город</text></g>
+        <g class="j-car" data-j-car="kr"><circle r="11"/><path d="M-6 -2 h12 l-2 -4 h-8 z M-7 -2 h14 v5 h-14 z" /></g>
+        <g class="j-car" data-j-car="cn"><circle r="11"/><path d="M-6 -2 h12 l-2 -4 h-8 z M-7 -2 h14 v5 h-14 z" /></g>
+        <g class="j-car" data-j-car="ru"><circle r="11"/><path d="M-6 -2 h12 l-2 -4 h-8 z M-7 -2 h14 v5 h-14 z" /></g>
+      </svg>
+      <p class="muted small">Схема условная. Срок доставки до Владивостока — до {{ deal.delivery_weeks }} недель с момента покупки машины.</p>
+    </div>
+    <ol class="journey-steps">
+      <li data-j-step="0"><b>Выкуп и проверка</b><span>Машина на площадке в Корее или Китае: проверяем историю и проходимость, присылаем фото и видео, выкупаем от вашего имени.</span></li>
+      <li data-j-step="1"><b>Экспорт</b><span>Из Кореи — морем из Пусана или Инчхона. Из Китая — по суше через границу.</span></li>
+      <li data-j-step="2"><b>Владивосток</b><span>Таможня, утильсбор, СБКТС и ЭПТС — всё оформляем сами, расходы — по отчёту.</span></li>
+      <li data-j-step="3"><b>В ваш город</b><span>Автовозом или по железной дороге, либо забираете машину во Владивостоке.</span></li>
+      <li data-j-step="4"><b>Ключи</b><span>Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС.</span></li>
+    </ol>
+  </div>
+</section>
+
 <section class="port-section" id="vydachi" aria-labelledby="vydachi-title">
   <div class="port-section-head"><h2 id="vydachi-title">Выдачи клиентам</h2></div>
   <div class="vydachi">
@@ -224,4 +273,5 @@
 <script type="application/json" id="port-data">{{ scene|safe }}</script>
 {% endblock %}
 {% block scripts %}<script src="/static/port.js?v={{ asset_version }}" defer></script>
-<script src="/static/calc.js?v={{ asset_version }}" defer></script>{% endblock %}
+<script src="/static/calc.js?v={{ asset_version }}" defer></script>
+<script src="/static/journey.js?v={{ asset_version }}" defer></script>{% endblock %}

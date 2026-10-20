@@ -5,7 +5,15 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '3';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '4';  // V — поднять после перерендера
+  // Ночь — по времени Владивостока (там порт и офис); ?night=1 / ?night=0 — проверить вручную
+  const NIGHT = (() => {
+    const q = new URLSearchParams(location.search).get('night');
+    if (q === '1' || q === '0') return q === '1';
+    const h = +new Intl.DateTimeFormat('en-GB', {hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Vladivostok'}).format(new Date());
+    return h >= 19 || h < 7;
+  })();
+  const PLATE = NIGHT ? '-night' : '';
   const DATA = JSON.parse(dataEl.textContent);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const goal = name => { if (window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', name); };
@@ -39,8 +47,9 @@
     }
     return {
       W, H, slots, quay, rampX, ship: {x: 330, y: quay + 24, w: 560, h: 92},
+      cranes: [150, 1050].map(x => ({x, y0: quay - 84, y1: quay + 118})), truck: road + 9,
       paint(g) {
-        g.innerHTML = `<image href="${ASSETS}/yard-wide.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
+        g.innerHTML = `<image href="${ASSETS}/yard-wide${PLATE}.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
           ${zones.map(z => `
             <text x="${z.x0 + 52}" y="124" class="t-zone">${z.zone === 'KR' ? 'ТЕРМИНАЛ КОРЕЯ' : 'ТЕРМИНАЛ КИТАЙ'}</text>
             <text x="${z.x0 + 532}" y="124" class="t-zone-sub" text-anchor="end">${z.zone === 'KR' ? 'Encar · KB Chachacha' : 'Dongchedi · Che168'}</text>`).join('')}
@@ -64,8 +73,9 @@
     }
     return {
       W, H, slots, quay, rampX: lane, ship: {x: 34, y: quay + 30, w: 292, h: 48},
+      cranes: [28, W - 28].map(x => ({x, y0: quay - 84, y1: quay + 72})), truck: null,
       paint(g) {
-        g.innerHTML = `<image href="${ASSETS}/yard-narrow.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
+        g.innerHTML = `<image href="${ASSETS}/yard-narrow${PLATE}.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
           ${zones.map(z => `
             <text x="26" y="${z.y0 + 15}" class="t-zone">${z.zone === 'KR' ? 'КОРЕЯ' : 'КИТАЙ'}</text>
             <text x="${W - 26}" y="${z.y0 + 15}" class="t-zone-sub" text-anchor="end">${z.zone === 'KR' ? 'Encar · KB' : 'Dongchedi · Che168'}</text>`).join('')}
@@ -103,7 +113,9 @@
     const l = LENGTH[body] * M, w = WIDTH[body] * M;
     return `
       <rect class="car-glow" x="${-w / 2 - 4}" y="${-l / 2 - 4}" width="${w + 8}" height="${l + 8}" rx="7"/>
-      <image href="${ASSETS}/cars/${body}-${paintOf(d.color)}.webp?v=${V}" x="${-SPRITE.w / 2}" y="${-SPRITE.h / 2}" width="${SPRITE.w}" height="${SPRITE.h}"/>`;
+      ${NIGHT ? `<path class="beam" d="M${-w / 2 + 2} ${-l / 2 + 1} L${-w / 2 - 10} ${-l / 2 - 46} L${w / 2 + 10} ${-l / 2 - 46} L${w / 2 - 2} ${-l / 2 + 1} Z" fill="url(#t-beam)"/>` : ''}
+      <image href="${ASSETS}/cars/${body}-${paintOf(d.color)}.webp?v=${V}" x="${-SPRITE.w / 2}" y="${-SPRITE.h / 2}" width="${SPRITE.w}" height="${SPRITE.h}"/>
+      ${NIGHT ? `<g class="tail"><circle cx="${-w / 2 + 3}" cy="${l / 2 - 1}" r="3.4" fill="url(#t-tail)"/><circle cx="${w / 2 - 3}" cy="${l / 2 - 1}" r="3.4" fill="url(#t-tail)"/></g>` : ''}`;
   }
 
   // --- тестовые данные (?demo=1) ------------------------------------------------
@@ -150,7 +162,22 @@
       <linearGradient id="t-barrier" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#e0251f"/><stop offset=".5" stop-color="#fff"/></linearGradient>
       <linearGradient id="t-barrier-h" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="#e0251f"/><stop offset=".5" stop-color="#fff"/></linearGradient>
       <radialGradient id="t-wake"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-    </defs><g class="t-yard"></g><g class="t-ship"></g><g class="t-cars"></g><g class="t-tags"></g>`;
+      <radialGradient id="t-dim-g" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="${L.W * 0.3}">
+        <stop offset=".25" stop-color="#05080c" stop-opacity="0"/><stop offset="1" stop-color="#05080c" stop-opacity=".62"/></radialGradient>
+      <radialGradient id="t-cloud"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".6" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+      <pattern id="t-glint" width="140" height="36" patternUnits="userSpaceOnUse">
+        <ellipse cx="20" cy="8" rx="14" ry="1.2" fill="#fff"/><ellipse cx="88" cy="20" rx="20" ry="1.4" fill="#fff"/><ellipse cx="55" cy="31" rx="10" ry="1" fill="#fff"/></pattern>
+      <clipPath id="t-water-clip"><rect y="${L.quay + 8}" width="${L.W}" height="${L.H - L.quay}"/></clipPath>
+      <linearGradient id="t-beam" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff4d6" stop-opacity=".6"/><stop offset="1" stop-color="#fff4d6" stop-opacity="0"/></linearGradient>
+      <radialGradient id="t-tail"><stop offset="0" stop-color="#ff2a1a" stop-opacity=".95"/><stop offset="1" stop-color="#ff2a1a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="t-nav-r"><stop offset="0" stop-color="#ff3b2f"/><stop offset="1" stop-color="#ff3b2f" stop-opacity="0"/></radialGradient>
+      <radialGradient id="t-nav-g"><stop offset="0" stop-color="#39ff7a"/><stop offset="1" stop-color="#39ff7a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="t-nav-w"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    </defs><g class="t-yard"></g>
+    <g class="t-glints" clip-path="url(#t-water-clip)"><rect class="glint-band" x="${-L.W}" y="${L.quay}" width="${L.W * 3}" height="${L.H - L.quay}" fill="url(#t-glint)"/></g>
+    <g class="t-ship"></g><g class="t-trucks"></g><rect class="t-dim" width="${L.W}" height="${L.H}" fill="url(#t-dim-g)"/>
+    <g class="t-route-layer"></g><g class="t-cars"></g><g class="t-cranes"></g><g class="t-clouds"></g><g class="t-tags"></g>`;
+    if (NIGHT) svg.classList.add('night');
     root.prepend(svg);
     gYard = svg.querySelector('.t-yard');
     gCars = svg.querySelector('.t-cars');
@@ -159,10 +186,111 @@
     L.paint(gYard);
     const plate = gYard.querySelector('image');
     plate.addEventListener('load', () => svg.classList.add('ready'), {once: true});
-    plate.addEventListener('error', () => svg.classList.add('ready'), {once: true});
+    plate.addEventListener('error', () => {
+      // ночной подложки нет — берём дневную
+      if (PLATE) plate.setAttribute('href', plate.getAttribute('href').replace(PLATE + '.webp', '.webp'));
+      plate.addEventListener('load', () => svg.classList.add('ready'), {once: true});
+      if (!PLATE) svg.classList.add('ready');
+    }, {once: true});
     if (!ship.loaded) ship.loaded = 3 + Math.floor(Math.random() * 5);
     paintShip();
     occupied = new Array(L.slots.length).fill(null);
+    cam.vb = null; cam.car = null; cam.follow = null;
+    ambient();
+  }
+
+  // --- живой фон: блики на воде, облака, тележки кранов, автовоз ------------------------
+  function ambient() {
+    const cranes = svg.querySelector('.t-cranes'), clouds = svg.querySelector('.t-clouds');
+    cranes.innerHTML = L.cranes.map(c => `<g class="trolley"><rect x="${c.x - 12}" y="-6.5" width="24" height="13" rx="2"/><rect class="hoist" x="${c.x - 7}" y="-2.5" width="14" height="5"/></g>`).join('');
+    if (!NIGHT) {
+      clouds.innerHTML = [0.3, 0.75].map((y, i) => `<ellipse class="cloud" cx="0" cy="${L.H * y}" rx="${L.W * (0.2 + i * 0.06)}" ry="${L.H * (0.32 - i * 0.08)}" fill="url(#t-cloud)"/>`).join('');
+    }
+    if (reduce.matches) {
+      cranes.querySelectorAll('.trolley').forEach((t, i) => t.setAttribute('transform', `translate(0 ${L.cranes[i].y0 + 40})`));
+      return;
+    }
+    cranes.querySelectorAll('.trolley').forEach((t, i) => {
+      const {y0, y1} = L.cranes[i];
+      t.animate([{transform: `translateY(${y0}px)`, offset: 0}, {transform: `translateY(${y1}px)`, offset: 0.42},
+        {transform: `translateY(${y1}px)`, offset: 0.55}, {transform: `translateY(${y0}px)`, offset: 0.95}, {transform: `translateY(${y0}px)`, offset: 1}],
+      {duration: 17000 + i * 4300, iterations: Infinity, easing: 'ease-in-out', delay: -i * 6000});
+    });
+    clouds.querySelectorAll('.cloud').forEach((c, i) => {
+      const rx = +c.getAttribute('rx');
+      c.animate([{transform: `translateX(${-rx}px)`}, {transform: `translateX(${L.W + rx}px)`}],
+        {duration: 70000 + i * 26000, iterations: Infinity, delay: -Math.random() * 60000});
+    });
+    svg.querySelector('.glint-band').animate([{transform: 'translateX(0)'}, {transform: 'translateX(140px)'}], {duration: 16000, iterations: Infinity});
+  }
+  function truck() {
+    if (!L.truck || reduce.matches || document.hidden) return;
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'truck');
+    let load = '';
+    for (let i = 0; i < 3; i++) {
+      const d = {body: pick(['sedan', 'suv', 'hatch']), color: pick(Object.values(PAINTS))};
+      load += `<g transform="translate(${-14 - i * 27} 0) rotate(90) scale(.78)">${carShape(d)}</g>`;
+    }
+    g.innerHTML = `${NIGHT ? '<path class="beam on" d="M14 -8 L60 -16 L60 16 L14 8 Z" fill="url(#t-beam)" transform="rotate(0)"/>' : ''}
+      <rect class="trailer" x="-86" y="-11" width="92" height="22" rx="2"/><rect class="rail" x="-84" y="-8.5" width="88" height="2"/><rect class="rail" x="-84" y="6.5" width="88" height="2"/>
+      ${load}<rect class="cab" x="7" y="-10" width="17" height="20" rx="3"/><rect class="cab-glass" x="18" y="-8" width="4" height="16" rx="1"/>`;
+    svg.querySelector('.t-trucks').appendChild(g);
+    const a = g.animate([{transform: `translate(-140px, ${L.truck}px)`}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 12000, easing: 'linear'});
+    a.onfinish = () => g.remove();
+  }
+
+  // --- камера: приближение к выбранной машине ---------------------------------------------
+  const cam = {vb: null, anim: 0, car: null, follow: null};
+  const fullView = () => [0, 0, L.W, L.H];
+  function setView(v) { cam.vb = v; svg.setAttribute('viewBox', v.map(n => n.toFixed(1)).join(' ')); }
+  function zoomBox(car) {
+    const f = L.W < 600 ? 1.7 : 2.3, w = L.W / f, h = L.H / f;
+    return [Math.max(0, Math.min(L.W - w, car.x - w / 2)), Math.max(0, Math.min(L.H - h, car.y - h / 2)), w, h];
+  }
+  function flyTo(target, ms = 750) {
+    cancelAnimationFrame(cam.anim);
+    const from = (cam.vb || fullView()).slice(), t0 = performance.now();
+    if (reduce.matches) ms = 0;
+    const tick = t => {
+      const k = ms ? Math.min(1, (t - t0) / ms) : 1, e = k < 0.5 ? 4 * k ** 3 : 1 - (-2 * k + 2) ** 3 / 2;
+      setView(from.map((v, i) => v + (target[i] - v) * e));
+      if (pop.car) position(pop.car);
+      if (k < 1) cam.anim = requestAnimationFrame(tick);
+    };
+    cam.anim = requestAnimationFrame(tick);
+  }
+  function dimAt(car) {
+    const g = svg.querySelector('#t-dim-g');
+    g.setAttribute('cx', car.x.toFixed(1)); g.setAttribute('cy', car.y.toFixed(1));
+  }
+  function focusOn(car) {
+    if (cam.car && cam.car !== car) cam.car.g.classList.remove('focus');
+    cam.car = car;
+    car.g.classList.add('focus');
+    gCars.appendChild(car.g);  // поверх остальных
+    svg.classList.add('focused');
+    dimAt(car);
+    flyTo(zoomBox(car));
+  }
+  function unfocus() {
+    if (!cam.car) return;
+    cam.car.g.classList.remove('focus');
+    cam.car = null; cam.follow = null;
+    svg.classList.remove('focused');
+    svg.querySelector('.t-route-layer').replaceChildren();
+    flyTo(fullView());
+  }
+  // маршрут от места до рампы автовоза прорисовывается линией, потом по нему едет машина
+  function drawRoute(car) {
+    const pts = smooth(L.slots[car.slot].ramp);
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('class', 't-route');
+    path.setAttribute('d', 'M' + pts.map(p => p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' L'));
+    svg.querySelector('.t-route-layer').replaceChildren(path);
+    const len = path.getTotalLength();
+    path.style.strokeDasharray = `${len}`;
+    path.animate([{strokeDashoffset: len}, {strokeDashoffset: 0}], {duration: reduce.matches ? 0 : 900, easing: 'ease-out', fill: 'forwards'});
   }
 
   // Судно — рендер 560 × 92 (кадр 640 × 152, корпус с 50-й единицы); машины на палубе — те же спрайты.
@@ -179,8 +307,16 @@
     }
     gShip.innerHTML = `<g class="ship-body">
       <ellipse class="ship-wake" cx="${s.x + 10 * k}" cy="${s.y + s.h / 2}" rx="${90 * k}" ry="${s.h * 0.7}" fill="url(#t-wake)"/>
-      <image href="${ASSETS}/ship.webp?v=${V}" x="${s.x - 50 * k}" y="${s.y - 30 * k}" width="${640 * k}" height="${152 * k}"/>
-      ${marks}
+      <g class="ship-bob">
+        <image href="${ASSETS}/ship.webp?v=${V}" x="${s.x - 50 * k}" y="${s.y - 30 * k}" width="${640 * k}" height="${152 * k}"/>
+        ${marks}
+        <text class="ship-name" x="${s.x + 515 * k}" y="${s.y + s.h / 2}" text-anchor="middle" dominant-baseline="middle" transform="rotate(90 ${s.x + 515 * k} ${s.y + s.h / 2})" font-size="${9 * Math.max(k, 0.7)}">RENAL-AUTO</text>
+        <g class="ship-lights">
+          <circle cx="${s.x + 470 * k}" cy="${s.y + 3}" r="${7 * k + 3}" fill="url(#t-nav-r)"/>
+          <circle cx="${s.x + 470 * k}" cy="${s.y + s.h - 3}" r="${7 * k + 3}" fill="url(#t-nav-g)"/>
+          <circle cx="${s.x + 40 * k}" cy="${s.y + s.h / 2}" r="${9 * k + 3}" fill="url(#t-nav-w)"/>
+        </g>
+      </g>
     </g>`;
     gShip.querySelector('.ship-body').style.transform = `translateX(${ship.x}px)`;
     gShip.querySelectorAll('.deck-car').forEach((el, i) => { if (i < ship.loaded) el.setAttribute('opacity', '1'); });
@@ -196,8 +332,8 @@
     g.setAttribute('class', 'car');
     g.innerHTML = carShape(d);
     g.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') showPop(car, false); });
-    g.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hidePopSoon(); });
-    g.addEventListener('click', () => { goal('car_click'); showPop(car, true); });
+    g.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !pop.pinned) hidePopSoon(); });
+    g.addEventListener('click', () => { goal('car_click'); showPop(car, true); if (pop.car === car) focusOn(car); });
     gCars.appendChild(g);
     const car = {d, g, slot: -1, state: 'new', path: null, dist: 0, len: 0, x: 0, y: 0, ang: 0, since: performance.now()};
     cars.set(d.key, car);
@@ -233,6 +369,7 @@
     let len = 0;
     for (let i = 1; i < path.length; i++) len += Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]);
     Object.assign(car, {path, len, dist: 0, state, done});
+    car.g.classList.add('moving');
     if (reduce.matches) { finish(car); return; }
     car.g.style.opacity = '';
     kick();
@@ -241,6 +378,7 @@
     const p = car.path[car.path.length - 1];
     const done = car.done;
     car.path = null;
+    car.g.classList.remove('moving');
     if (car.state === 'in') place(car, p[0], p[1], parkedAngle(car.slot));
     done && done();
   }
@@ -305,6 +443,7 @@
   function leave(car) {
     if (occupied[car.slot] === car.d.key) occupied[car.slot] = null;
     if (pop.car === car) hidePop();
+    if (cam.car === car) { cam.follow = null; unfocus(); }
     drive(car, L.slots[car.slot].out, 'out', () => remove(car));
     openGate();
   }
@@ -376,6 +515,12 @@
     last = t;
     let moving = false;
     for (const car of cars.values()) if (car.path) { step(car, dt); moving = moving || !!car.path; }
+    if (cam.follow && cam.vb) {
+      const target = zoomBox(cam.follow), k = Math.min(1, dt * 3.5);
+      setView(cam.vb.map((v, i) => v + (target[i] - v) * k));
+      dimAt(cam.follow);
+      if (cam.follow.path) moving = true;
+    }
     raf = moving ? requestAnimationFrame(frame) : 0;
   }
   function kick() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
@@ -463,11 +608,14 @@
       window.RenalCalc.fill(d.calc, label(d));
     });
     popEl.querySelector('[data-act="want"]').addEventListener('click', () => {
+      cam.follow = car;
+      if (cam.car !== car) focusOn(car);
       hidePop();
       goal('car_want');
       let opened = false;
       const open = () => { if (!opened) { opened = true; openForm(d, car); } };
-      toRamp(car, open);
+      drawRoute(car);
+      setTimeout(() => toRamp(car, open), reduce.matches ? 0 : 500);
       setTimeout(open, 2600);
     });
     popEl.hidden = false;
@@ -483,12 +631,13 @@
     popEl.style.left = left + 'px';
     popEl.style.top = top + 'px';
   }
-  function hidePopSoon() { clearTimeout(pop.t); pop.t = setTimeout(hidePop, 260); }
+  function hidePopSoon() { clearTimeout(pop.t); pop.t = setTimeout(() => { if (!pop.pinned) hidePop(); }, 260); }
   function hidePop() {
     clearTimeout(pop.t);
     pop.car?.g.classList.remove('hover');
     pop.car = null; pop.pinned = false;
     popEl.hidden = true;
+    if (!cam.follow) unfocus();
   }
 
   // --- форма заявки с подставленной машиной ---------------------------------------------
@@ -517,10 +666,12 @@
   dialog.addEventListener('close', () => {
     const car = formCar;
     formCar = null;
-    if (!car || !cars.has(car.d.key)) return;
+    if (!car || !cars.has(car.d.key)) { cam.follow = null; unfocus(); return; }
     if (sent) { load(car); toast('Заявка принята · менеджер посчитает цену под ключ'); }
     else if (car.state === 'at-ramp') backToSlot(car);
     else car.g.classList.remove('chosen');
+    cam.follow = null;
+    unfocus();
   });
 
   // --- данные: стартовый набор, затем живая лента (или тестовый поток) -------------------
@@ -625,9 +776,12 @@
     queue.push(...matched.slice(0, 4), ...rest.slice(parkNow), ...matched.slice(4));
     hud();
     connect();
+    if (NIGHT) setTimeout(() => toast('Ночь во Владивостоке · порт работает круглосуточно'), 1500);
     if (!reduce.matches) {
       feed.t = setTimeout(feed, 900);
       setInterval(shipCycle, 42000);
+      setTimeout(truck, 6000);
+      setInterval(truck, 26000);
     } else {
       queue.splice(0).forEach(d => arrive(d, true));
     }

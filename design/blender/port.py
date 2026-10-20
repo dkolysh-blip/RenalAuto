@@ -2,6 +2,7 @@
 
     python port.py yard wide   --s 64 --out yard-wide.png     # 2400×1120, подложка десктопа
     python port.py yard narrow --s 64 --out yard-narrow.png   # 720×1300, подложка телефона
+    python port.py yard wide --s 128 --night 1 --out yard-wide-night.png   # ночные версии (фонари, огни кранов)
     python port.py cars        --s 48 --out cars/             # спрайты машин: 4 кузова × 8 цветов
     python port.py ship        --s 64 --out ship.png
     python port_export.py                                     # → renalauto/static/port/*.webp
@@ -27,6 +28,7 @@ args = sys.argv[1:]
 what = args[0] if args else "yard"
 opts = dict(zip(args[1::2], args[2::2])) if what != "yard" else dict(zip(args[2::2], args[3::2]))
 SAMPLES = int(opts.get("--s", 48))
+NIGHT = opts.get("--night") == "1"  # ночная подложка: фонари, огни кранов, луна
 
 # --- раскладки (те же числа, что в port.js) -------------------------------------------
 WIDE = dict(W=1200, H=560, road=56, aisle=210, apron=362, quay=420, zones=[40, 620], rows=[160, 262], cols=10, pitch=50)
@@ -64,7 +66,7 @@ def top_camera(cx, cy, scale, z=2000):
 
 # --- материалы -------------------------------------------------------------------------
 
-def noisy(name, c1, c2, scale=0.05, rough=0.85, bump=0.15, detail=8.0):
+def noisy(name, c1, c2, scale=0.05, rough=0.85, bump=0.15, detail=8.0, stains=False):
     """Асфальт/бетон: два тона по шуму + мелкий рельеф."""
     m = bpy.data.materials.new(name)
     m.use_nodes = True
@@ -80,7 +82,24 @@ def noisy(name, c1, c2, scale=0.05, rough=0.85, bump=0.15, detail=8.0):
     ramp.color_ramp.elements[0].color = (*c1, 1)
     ramp.color_ramp.elements[1].color = (*c2, 1)
     nt.links.new(nz.outputs["Fac"], ramp.inputs["Fac"])
-    nt.links.new(ramp.outputs["Color"], p.inputs["Base Color"])
+    color = ramp.outputs["Color"]
+    if stains:  # тёмные пятна масла и следы — асфальт перестаёт быть однотонным
+        sn = nt.nodes.new("ShaderNodeTexNoise")
+        sn.inputs["Scale"].default_value = scale * 0.35
+        sn.inputs["Detail"].default_value = 4
+        nt.links.new(tc.outputs["Object"], sn.inputs["Vector"])
+        mask = nt.nodes.new("ShaderNodeValToRGB")
+        mask.color_ramp.elements[0].position = 0.62
+        mask.color_ramp.elements[1].position = 0.72
+        nt.links.new(sn.outputs["Fac"], mask.inputs["Fac"])
+        mix = nt.nodes.new("ShaderNodeMix")
+        mix.data_type = "RGBA"
+        mix.blend_type = "MULTIPLY"
+        mix.inputs["B"].default_value = (0.55, 0.55, 0.56, 1)
+        nt.links.new(mask.outputs["Color"], mix.inputs["Factor"])
+        nt.links.new(color, mix.inputs["A"])
+        color = mix.outputs["Result"]
+    nt.links.new(color, p.inputs["Base Color"])
     fine = nt.nodes.new("ShaderNodeTexNoise")
     fine.inputs["Scale"].default_value = scale * 40
     nt.links.new(tc.outputs["Object"], fine.inputs["Vector"])
@@ -209,10 +228,99 @@ def container(cx, cy, length, vertical=False, tiers=1):
     box(cx - hx, cy - hy, cx + hx, cy + hy, 0, 24 * tiers, random.choice(_container_mats), bevel=0.6)
 
 
+_glow = {}
+
+
+def glow(color=(1, 0.82, 0.55), strength=40):
+    key = (color, strength)
+    if key not in _glow:
+        _glow[key] = mat(f"glow{len(_glow)}", color, rough=0.3, emit=color, emit_s=strength)
+    return _glow[key]
+
+
 def light_pole(x, y, m_pole, m_lamp, h=110):
     bpy.ops.mesh.primitive_cylinder_add(radius=1.4, depth=h, location=(x, -y, h / 2))
     bpy.context.object.data.materials.append(m_pole)
-    box(x - 6, y - 2.5, x + 6, y + 2.5, h - 2, h + 2, m_lamp)
+    box(x - 6, y - 2.5, x + 6, y + 2.5, h - 2, h + 2, glow() if NIGHT else m_lamp)
+    if NIGHT:
+        l = bpy.data.lights.new("lamp", "SPOT")
+        l.energy = 9e5 * (h / 110) ** 2
+        l.color = (1, 0.84, 0.62)
+        l.spot_size = math.radians(115)
+        l.spot_blend = 0.6
+        l.shadow_soft_size = 4
+        o = bpy.data.objects.new("lamp", l)
+        bpy.context.collection.objects.link(o)
+        o.location = (x, -y, h - 4)
+
+
+def beacon(x, y, z, color=(1, 0.08, 0.04)):
+    """Сигнальный огонь (краны, судно): ночью светится."""
+    bpy.ops.mesh.primitive_uv_sphere_add(radius=2.2, location=(x, -y, z))
+    bpy.context.object.data.materials.append(glow(color, 60) if NIGHT else mat("beacon", (0.5, 0.05, 0.03)))
+
+
+def poly(points, z, m):
+    """Плоский многоугольник разметки (точки сцены)."""
+    me = bpy.data.meshes.new("poly")
+    me.from_pydata([(px, -py, z) for px, py in points], [], [list(range(len(points)))])
+    o = bpy.data.objects.new("poly", me)
+    bpy.context.collection.objects.link(o)
+    o.data.materials.append(m)
+    return o
+
+
+def disc(cx, cy, r, z, m, a0=0.0, a1=2 * math.pi, n=48):
+    pts = [(cx, cy)] if a1 - a0 < 2 * math.pi - 1e-6 else []
+    pts += [(cx + r * math.cos(a0 + (a1 - a0) * i / n), cy - r * math.sin(a0 + (a1 - a0) * i / n)) for i in range(n + 1)]
+    return poly(pts, z, m)
+
+
+def star(cx, cy, r, z, m, rot=0.0):
+    pts = []
+    for i in range(10):
+        a = math.pi / 2 + rot + i * math.pi / 5
+        rr = r if i % 2 == 0 else r * 0.38
+        pts.append((cx + rr * math.cos(a), cy - rr * math.sin(a)))
+    return poly(pts, z, m)
+
+
+def painted_flags(kr_x, cn_x, y):
+    """Флаги Кореи и Китая краской на асфальте зон (слегка выцветшие)."""
+    w, h = 64, 42
+    white = mat("flag_white", (0.62, 0.62, 0.6), rough=0.8)
+    red = mat("flag_red", (0.45, 0.04, 0.04), rough=0.8)
+    blue = mat("flag_blue", (0.03, 0.1, 0.32), rough=0.8)
+    black = mat("flag_black", (0.02, 0.02, 0.02), rough=0.8)
+    yellow = mat("flag_yellow", (0.62, 0.48, 0.05), rough=0.8)
+    # Корея: белое поле, тхэгук (красный верх, синий низ), четыре триграммы
+    poly([(kr_x, y), (kr_x + w, y), (kr_x + w, y + h), (kr_x, y + h)], 0.44, white)
+    cx, cy, r = kr_x + w / 2, y + h / 2, 10.5
+    disc(cx, cy, r, 0.46, red, 0, math.pi)
+    disc(cx, cy, r, 0.46, blue, math.pi, 2 * math.pi)
+    disc(cx - r / 2, cy, r / 2, 0.48, red)
+    disc(cx + r / 2, cy, r / 2, 0.48, blue)
+    for sx, sy, ang in ((-1, -1, -0.98), (1, -1, 0.98), (-1, 1, 0.98), (1, 1, -0.98)):
+        bx, by = cx + sx * 21, cy + sy * 12
+        for k in range(3):
+            o = box(bx - 5, by - 0.9 + (k - 1) * 2.8, bx + 5, by + 0.9 + (k - 1) * 2.8, 0.45, 0.5, black)
+            o.rotation_euler.z = ang
+    # Китай: красное поле, большая и четыре малые звезды
+    poly([(cn_x, y), (cn_x + w, y), (cn_x + w, y + h), (cn_x, y + h)], 0.44, red)
+    star(cn_x + 11, y + 11, 6.5, 0.47, yellow)
+    for dx, dy in ((21, 4), (25, 8.5), (25, 14.5), (21, 19)):
+        star(cn_x + dx, y + dy, 2.2, 0.47, yellow, rot=0.4)
+
+
+def roof_logo(cx, cy, text="RENAL-AUTO", size=10):
+    """Надпись на крыше контейнера."""
+    bpy.ops.object.text_add(location=(cx, -cy, 25))
+    t = bpy.context.object
+    t.data.body = text
+    t.data.size = size
+    t.data.align_x = "CENTER"
+    t.data.align_y = "CENTER"
+    t.data.materials.append(mat("logo", (0.95, 0.95, 0.92), rough=0.5))
 
 
 def gantry_crane(x, quay, water_reach, m_steel, m_dark, vertical_boom=True, span=46):
@@ -232,6 +340,8 @@ def gantry_crane(x, quay, water_reach, m_steel, m_dark, vertical_boom=True, span
         box(x - 10, y, x + 10, y + 2, h + 12, h + 15, m_dark)
         y += 14
     box(x - 14, quay - 30, x + 14, quay - 10, h + 16, h + 34, m_dark)  # кабина/машинное
+    beacon(x, quay + water_reach - 2, h + 20)
+    beacon(x, quay - 88, h + 20)
 
 
 def ground(W, H, quay, m_ground, m_water, m_hazard, m_concrete):
@@ -247,11 +357,11 @@ def yard_wide():
     k = WIDE
     W, H, road, aisle, apron, quay = k["W"], k["H"], k["road"], k["aisle"], k["apron"], k["quay"]
     m_ground = noisy("ground", (0.2, 0.2, 0.19), (0.27, 0.27, 0.26), scale=0.03)
-    m_yard = noisy("yard", (0.075, 0.078, 0.082), (0.11, 0.112, 0.115), scale=0.05)
-    m_road = noisy("road", (0.05, 0.052, 0.056), (0.075, 0.077, 0.08), scale=0.06)
+    m_yard = noisy("yard", (0.075, 0.078, 0.082), (0.11, 0.112, 0.115), scale=0.05, stains=True)
+    m_road = noisy("road", (0.05, 0.052, 0.056), (0.075, 0.077, 0.08), scale=0.06, stains=True)
     m_white = mat("white", (0.78, 0.78, 0.74), rough=0.7)
     m_yellow = mat("yellow", (0.8, 0.55, 0.06), rough=0.7)
-    m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08)
+    m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08, stains=True)
     m_steel = mat("steel", (0.85, 0.12, 0.08), rough=0.5)  # краны в фирменном красном
     m_dark = mat("dark", (0.05, 0.05, 0.055), rough=0.5)
     m_lamp = mat("lamp", (0.9, 0.9, 0.85), rough=0.3)
@@ -282,10 +392,13 @@ def yard_wide():
     dashes(-40, apron, W + 40, apron, m_white)
 
     # контейнеры вдоль верхнего края (уходят за кадр) и справа
-    x = -30
+    x, n = -30, 0
     while x < W + 40:
         ln = random.choice((55, 55, 110))
         container(x + ln / 2, 24, ln)
+        if ln == 110 and n % 2 == 0 and 100 < x < W - 150:
+            roof_logo(x + ln / 2, 24)
+        n += 1
         x += ln + 3
     for y in (110, 200, 290):
         container(1180, y, 110, vertical=True, tiers=random.choice((1, 2)))
@@ -294,9 +407,15 @@ def yard_wide():
     # будка у ворот
     box(14, 2, 40, 16, 0, 26, m_lamp, bevel=1)
     box(12, 0, 42, 18, 26, 28, m_dark)
-    # фонари между зонами и по краям
-    for x, y in ((600, 110), (600, 320), (40, 330), (1160, 330)):
+    if NIGHT:
+        box(16, 14, 38, 16.5, 20, 27, glow((1, 0.9, 0.7), 6))  # окно будки
+    painted_flags(k["zones"][0] + 466, k["zones"][1] + 466, 296)
+    # фонари между зонами, по краям и вдоль причала
+    for x, y in ((600, 110), (600, 320), (40, 330), (1160, 330), (40, 110), (1160, 110),
+                 (310, 104), (890, 104), (310, 302), (890, 302)):
         light_pole(x, y, m_dark, m_lamp)
+    for x in (330, 600, 870):
+        light_pole(x, 398, m_dark, m_lamp, h=70)
     # портальные краны по краям причала, стрелы над водой
     gantry_crane(150, quay, 130, m_steel, m_dark)
     gantry_crane(1050, quay, 130, m_steel, m_dark)
@@ -313,11 +432,11 @@ def yard_narrow():
     k = NARROW
     W, H, lane, quay = k["W"], k["H"], k["lane"], k["quay"]
     m_ground = noisy("ground", (0.2, 0.2, 0.19), (0.27, 0.27, 0.26), scale=0.03)
-    m_yard = noisy("yard", (0.075, 0.078, 0.082), (0.11, 0.112, 0.115), scale=0.05)
-    m_road = noisy("road", (0.05, 0.052, 0.056), (0.075, 0.077, 0.08), scale=0.06)
+    m_yard = noisy("yard", (0.075, 0.078, 0.082), (0.11, 0.112, 0.115), scale=0.05, stains=True)
+    m_road = noisy("road", (0.05, 0.052, 0.056), (0.075, 0.077, 0.08), scale=0.06, stains=True)
     m_white = mat("white", (0.78, 0.78, 0.74), rough=0.7)
     m_yellow = mat("yellow", (0.8, 0.55, 0.06), rough=0.7)
-    m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08)
+    m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08, stains=True)
     m_steel = mat("steel", (0.85, 0.12, 0.08), rough=0.5)
     m_dark = mat("dark", (0.05, 0.05, 0.055), rough=0.5)
     m_lamp = mat("lamp", (0.9, 0.9, 0.85), rough=0.3)
@@ -336,7 +455,7 @@ def yard_narrow():
     for x in (40, 96, 264, 320):
         container(x, 18, 55, tiers=random.choice((1, 2)))
     box(lane + 22, 14, lane + 38, 38, 0, 24, m_lamp, bevel=1)
-    for x, y in ((24, 298), (W - 24, 298)):
+    for x, y in ((24, 298), (W - 24, 298), (24, 70), (W - 24, 70), (24, 530), (W - 24, 530)):
         light_pole(x, y, m_dark, m_lamp, h=90)
     gantry_crane(28, quay, 80, m_steel, m_dark, span=30)
     gantry_crane(W - 28, quay, 80, m_steel, m_dark, span=30)
@@ -348,9 +467,15 @@ def render_yard(kind, out):
     sc.render.film_transparent = False
     sc.cycles.samples = SAMPLES
     sc.view_settings.look = "AgX - Medium High Contrast"
-    sc.view_settings.exposure = -0.9
-    sky()
-    sun()
+    if NIGHT:
+        sc.view_settings.exposure = 0.1
+        sky((0.05, 0.07, 0.13), 0.35)
+        moon = sun(0.09)
+        moon.data.color = (0.7, 0.8, 1)
+    else:
+        sc.view_settings.exposure = -0.9
+        sky()
+        sun()
     W, H = yard_wide() if kind == "wide" else yard_narrow()
     sc.render.resolution_x, sc.render.resolution_y = W * 2, H * 2
     top_camera(W / 2, -H / 2, max(W, H))
