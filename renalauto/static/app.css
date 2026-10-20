@@ -238,19 +238,31 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .port-stage { position: relative; min-width: 0; }
 .terminal { --t-ground: #3a3e44; --t-yard: #33373d; --t-road: #2a2d32; --t-water: #123049; --t-hull: #1b2733; --t-deck: #2c3a48;
   --t-bridge: #e9ecef; --t-glass: #1a2430; --t-booth: #e9ecef; --t-bollard: #e5b53a;
-  position: relative; aspect-ratio: 1200 / 560; border-radius: var(--radius); overflow: hidden; background: var(--t-ground);
+  position: relative; aspect-ratio: 1200 / 560; border-radius: var(--radius); overflow: hidden; background: #2b2e33;
   box-shadow: 0 12px 40px rgba(16,24,40,.18); user-select: none; -webkit-tap-highlight-color: transparent; }
 .terminal-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.terminal-svg { opacity: 0; transition: opacity .6s ease; }
+.terminal-svg.ready { opacity: 1; }
 .terminal .t-dash { stroke: rgba(233,228,216,.45); stroke-width: 1.5; stroke-dasharray: 14 12; }
 .terminal .t-slot { stroke: rgba(255,255,255,.28); stroke-width: 1.2; }
-.terminal .t-zone { fill: rgba(255,255,255,.82); font: 800 13px/1 Inter, system-ui, sans-serif; letter-spacing: .12em; }
-.terminal .t-zone-sub { fill: rgba(255,255,255,.45); font: 600 11px/1 Inter, system-ui, sans-serif; }
+.terminal .t-zone { fill: rgba(240,236,224,.78); font: 800 13px/1 Inter, system-ui, sans-serif; letter-spacing: .16em; }
+.terminal .t-zone-sub { fill: rgba(240,236,224,.5); font: 600 11px/1 Inter, system-ui, sans-serif; letter-spacing: .04em; }
 .terminal .t-ship-name { fill: rgba(255,255,255,.55); font: 800 10px/1 Inter, system-ui, sans-serif; letter-spacing: .14em; }
-.terminal .deck-car { fill: #c3c7cc; transition: opacity .4s; }
+.terminal .deck-car { transition: opacity .4s; }
+.terminal .deck-car .car-glow { display: none; }
+.terminal .ship-wake { opacity: 0; transition: opacity 1.2s; }
+.terminal .ship-body.moving .ship-wake { opacity: 1; }
+.terminal .arrival-tag { pointer-events: none; animation: tag-in .35s cubic-bezier(.2,.9,.3,1.2); transition: opacity .5s, transform .5s; }
+.terminal .arrival-tag.out { opacity: 0; }
+.terminal .arrival-tag rect, .terminal .arrival-tag path { fill: rgba(255,255,255,.96); }
+.terminal .arrival-tag text { font: 700 11px/1 Inter, system-ui, sans-serif; fill: #16191d; }
+.terminal .arrival-tag .tag-sub { font: 700 8px/1 Inter, system-ui, sans-serif; fill: #fff; letter-spacing: .08em; text-transform: uppercase;
+  paint-order: stroke; stroke: rgba(0,0,0,.55); stroke-width: 2.5px; }
+@keyframes tag-in { from { opacity: 0; } }
 .terminal .t-barrier { transform-box: fill-box; transform-origin: 50% 0; transition: transform .35s ease; }
 .terminal .t-barrier.open { transform: scaleY(.15); }
-.terminal .t-gate .t-barrier[width="28"] { transform-origin: 0 50%; }
-.terminal .t-gate .t-barrier[width="28"].open { transform: scaleX(.15); }
+.terminal .t-barrier-h { transform-origin: 0 50%; }
+.terminal .t-barrier-h.open { transform: scaleX(.15); }
 .terminal .car { cursor: pointer; transition: opacity .5s; }
 .terminal .car-glow { fill: none; stroke: transparent; stroke-width: 2.5; }
 .terminal .car.hover .car-glow { stroke: #fff; }
