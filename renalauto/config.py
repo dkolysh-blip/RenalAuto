@@ -17,6 +17,11 @@ def _list(name: str, default: str) -> list[str]:
     return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
 
 
+def _int_or_none(name: str) -> int | None:
+    value = (os.getenv(name) or "").replace(" ", "")
+    return int(value) if value else None
+
+
 @dataclass
 class Settings:
     db_path: str = field(default_factory=lambda: os.getenv("DB_PATH", "renalauto.db"))
@@ -96,6 +101,11 @@ class Settings:
     deal_pick_days: int = field(default_factory=lambda: int(os.getenv("DEAL_PICK_DAYS", "20")))
     deal_invoice_days: int = field(default_factory=lambda: int(os.getenv("DEAL_INVOICE_DAYS", "10")))
     deal_delivery_weeks: int = field(default_factory=lambda: int(os.getenv("DEAL_DELIVERY_WEEKS", "8")))
+    # Для калькулятора под ключ: доставка до Владивостока и оформление (СБКТС, ЭПТС, брокер), ₽.
+    # Пусто — в расчёте «назовёт менеджер»
+    deal_logistics_kr_rub: int | None = field(default_factory=lambda: _int_or_none("DEAL_LOGISTICS_KR_RUB"))
+    deal_logistics_cn_rub: int | None = field(default_factory=lambda: _int_or_none("DEAL_LOGISTICS_CN_RUB"))
+    deal_papers_rub: int | None = field(default_factory=lambda: _int_or_none("DEAL_PAPERS_RUB"))
     # Брать курсы с cbr-xml-daily.ru (иначе — значения RATE_*_RUB ниже)
     rates_live: bool = field(default_factory=lambda: _bool("RATES_LIVE", True))
     rate_krw_rub: float = field(default_factory=lambda: float(os.getenv("RATE_KRW_RUB", "0.058")))

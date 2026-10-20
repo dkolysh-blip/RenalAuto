@@ -159,3 +159,16 @@ def test_port_landing_scene_and_message_match(settings):
         assert client.get("/api/port/kbchachacha/404").status_code == 204
     finally:
         client.__exit__(None, None, None)
+
+
+def test_calc_api(settings):
+    client, app = make_client(settings, [])
+    try:
+        r = client.get("/api/calc", params={"price": 25_000_000, "currency": "KRW", "cc": 1598, "hp": 180, "age": "mid"}).json()
+        assert r["passable"] is False and r["total_is_from"] is True
+        assert r["lines"][0]["rub"] == round(25_000_000 * settings.rate_krw_rub)
+        assert any(l["title"] == "Наше вознаграждение" and l["rub"] == 50_000 for l in r["lines"])
+        assert client.get("/api/calc", params={"price": 0}).status_code == 422
+        assert 'data-calc' in client.get("/port").text
+    finally:
+        client.__exit__(None, None, None)

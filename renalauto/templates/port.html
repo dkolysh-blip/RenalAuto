@@ -47,6 +47,45 @@
   {% endif %}
 </section>
 
+<section class="port-section" id="calc" aria-labelledby="calc-title">
+  <div class="port-section-head"><h2 id="calc-title">Калькулятор цены под ключ</h2></div>
+  <div class="calc">
+    <form class="calc-form panel" data-calc>
+      <fieldset class="seg"><legend>Откуда</legend>
+        <label><input type="radio" name="country" value="KR" checked> Корея</label>
+        <label><input type="radio" name="country" value="CN"> Китай</label>
+      </fieldset>
+      <fieldset class="seg"><legend>Двигатель</legend>
+        <label><input type="radio" name="engine" value="ice" checked> Бензин / дизель</label>
+        <label><input type="radio" name="engine" value="hybrid"> Гибрид</label>
+        <label><input type="radio" name="engine" value="ev"> Электро</label>
+      </fieldset>
+      <fieldset class="seg"><legend>Возраст</legend>
+        <label><input type="radio" name="age" value="new"> до 3 лет</label>
+        <label><input type="radio" name="age" value="mid" checked> 3–5 лет</label>
+        <label><input type="radio" name="age" value="old"> старше 5</label>
+      </fieldset>
+      <div class="calc-row">
+        <div class="field"><label for="calc-cc">Объём, см³</label><input id="calc-cc" name="cc" type="number" min="0" max="10000" step="100" value="1600" inputmode="numeric"></div>
+        <div class="field"><label for="calc-hp">Мощность, л.с.</label><input id="calc-hp" name="hp" type="number" min="0" max="2000" value="150" inputmode="numeric"></div>
+      </div>
+      <div class="calc-row">
+        <div class="field"><label for="calc-price">Цена машины</label><input id="calc-price" name="price" type="number" min="1" step="1000" value="1500000" inputmode="numeric"></div>
+        <div class="field"><label for="calc-cur">Валюта</label>
+          <select id="calc-cur" name="currency"><option value="RUB">₽</option><option value="KRW">₩ воны</option><option value="CNY">¥ юани</option></select></div>
+      </div>
+      <p class="muted small">Самая выгодная пошлина — для машин 3–5 лет. Льготный утильсбор — до 160 л.с. (гибриды и электро — до 80 л.с.).</p>
+    </form>
+    <div class="calc-result panel" aria-live="polite">
+      <div class="calc-verdict" data-calc-verdict>Введите параметры машины</div>
+      <table class="calc-lines"><tbody data-calc-lines></tbody></table>
+      <div class="calc-total"><span>Итого под ключ</span><b data-calc-total>—</b></div>
+      <a class="btn block" href="#podbor" data-calc-cta data-goal="form_open">Получить точный расчёт</a>
+      <p class="muted small">Ориентировочно, по курсу ЦБ и ставкам {{ rules_as_of }}. Итог зависит от курса на день оплаты и ставок на дату декларации — точную сумму подтвердит менеджер.</p>
+    </div>
+  </div>
+</section>
+
 <section class="port-section" id="vydachi" aria-labelledby="vydachi-title">
   <div class="port-section-head"><h2 id="vydachi-title">Выдачи клиентам</h2></div>
   <div class="vydachi">
@@ -117,6 +156,10 @@
       <p>На сайте показываем только машины, которые проходят по правилам ввоза в РФ. Перед бронью менеджер ещё раз проверяет мощность, объём и возраст — платёж продавцу не вносится, пока машина не проверена.</p>
     </details>
     <details>
+      <summary>Можно заказать машину с конкретными характеристиками?</summary>
+      <p>Да. Подберём варианты строго под ваши требования: марка, модель, год, пробег, комплектация и бюджет под ключ.</p>
+    </details>
+    <details>
       <summary>Что если вы не найдёте подходящую машину?</summary>
       <p>Если за {{ deal.pick_days }} дней не подберём машину по вашей заявке, вернём предоплату. Срок можно продлить, если вы согласны подождать.</p>
     </details>
@@ -165,4 +208,5 @@
 <div class="cta-bar"><a class="btn" href="#podbor" data-goal="form_open">Подобрать под бюджет</a></div>
 <script type="application/json" id="port-data">{{ scene|safe }}</script>
 {% endblock %}
-{% block scripts %}<script src="/static/port.js?v={{ asset_version }}" defer></script>{% endblock %}
+{% block scripts %}<script src="/static/port.js?v={{ asset_version }}" defer></script>
+<script src="/static/calc.js?v={{ asset_version }}" defer></script>{% endblock %}

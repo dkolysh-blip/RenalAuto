@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 
 from . import __version__
 from .config import Settings
+from .customs import TurnkeyCalc, turnkey
 from .eligibility import RULES_AS_OF
 from .events import EventHub
 from .models import LEAD_KIND_LABELS, Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter
@@ -310,6 +311,27 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         return render(
             request, "port.html", cars=cars, matched=matched,
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),
+        )
+
+    @app.get("/api/calc", response_model=TurnkeyCalc)
+    async def calc(
+        price: float = Query(gt=0, le=1_000_000_000),
+        currency: Literal["RUB", "KRW", "CNY", "USD", "EUR"] = "RUB",
+        cc: int = Query(1600, ge=0, le=10_000),
+        hp: int = Query(150, ge=0, le=2000),
+        age: Literal["new", "mid", "old"] = "mid",
+        engine: Literal["ice", "hybrid", "ev"] = "ice",
+        country: Literal["KR", "CN"] = "KR",
+    ) -> TurnkeyCalc:
+        """Ориентировочная цена под ключ для физлица: пошлина, утильсбор, сборы, доставка, вознаграждение."""
+        price_rub = rates.rub(price, currency)
+        eur = rates.get("EUR")
+        if not price_rub or not eur:
+            raise HTTPException(503, "Нет курса валют — попробуйте позже")
+        return turnkey(
+            price_rub=price_rub, cc=cc, hp=hp, age=age, engine=engine, eur_rub=eur, fee_rub=settings.deal_fee_rub,
+            logistics_rub=settings.deal_logistics_kr_rub if country == "KR" else settings.deal_logistics_cn_rub,
+            papers_rub=settings.deal_papers_rub,
         )
 
     @app.get("/api/port/{source}/{external_id}", include_in_schema=False)
