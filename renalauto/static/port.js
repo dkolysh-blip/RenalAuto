@@ -5,7 +5,7 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '2';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '3';  // V — поднять после перерендера
   const DATA = JSON.parse(dataEl.textContent);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const goal = name => { if (window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', name); };
