@@ -375,3 +375,22 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .legal h2 { font-size: 17px; margin: 22px 0 6px; }
 .legal p, .legal li { line-height: 1.6; }
 .consent a { color: var(--link); }
+/* пульт подбора над терминалом */
+.port-filter { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.3fr); gap: 8px; margin-bottom: 10px; }
+.port-filter .pf-field label { font-size: 12px; margin-bottom: 3px; }
+.port-filter select, .port-filter input { padding: 8px 10px; background: var(--card); }
+.pf-result { grid-column: 1 / -1; margin: 0; font-size: 13.5px; color: var(--muted); min-height: 1em; }
+.pf-result:empty { display: none; }
+.pf-result b { color: var(--text); }
+.port-pop .pop-orig { font-size: 12px; color: var(--muted); margin-top: -4px; }
+.calc-picked { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; font-size: 13.5px; padding: 10px 12px; border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); margin-bottom: 10px; }
+.calc-picked button { border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; }
+.calc-form input.attn { border-color: var(--warn); box-shadow: 0 0 0 3px var(--warn-bg); transition: box-shadow .3s; }
+@media (max-width: 640px) {
+  .port-filter { grid-template-columns: 1fr 1fr; gap: 6px; }
+  .port-filter .pf-field label { font-size: 11px; margin-bottom: 2px; }
+  .port-filter select, .port-filter input { padding: 7px 8px; font-size: 14px; }
+  .pf-result { font-size: 12.5px; }
+}
+.calc-picked[hidden] { display: none; }

@@ -43,5 +43,27 @@
       `ориентировочно ${total.textContent} под ключ.`;
     setTimeout(() => document.querySelector('#podbor input[name="name"]')?.focus({preventScroll: true}), 400);
   });
+  // Терминал передаёт сюда машину: калькулятор заполняется её параметрами
+  const picked = document.createElement('div');
+  picked.className = 'calc-picked';
+  picked.hidden = true;
+  box.querySelector('.calc-result').prepend(picked);
+  picked.addEventListener('click', e => { if (e.target.closest('button')) picked.hidden = true; });
+  window.RenalCalc = {
+    fill(c, title) {
+      const set = (name, value) => {
+        const el = form.elements[name];
+        if (el instanceof RadioNodeList) el.value = value; else if (el) el.value = value;
+      };
+      set('country', c.country); set('engine', c.engine); set('age', c.age);
+      set('cc', c.cc); set('price', c.price); set('currency', 'RUB');
+      picked.innerHTML = `<span>Машина с терминала: <b>${esc(title)}</b>. Мощность в объявлении не указана — проверьте поле «Мощность».</span><button type="button" aria-label="Убрать">×</button>`;
+      picked.hidden = false;
+      form.elements.hp.classList.add('attn');
+      setTimeout(() => form.elements.hp.classList.remove('attn'), 2400);
+      run();
+      document.getElementById('calc').scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+    },
+  };
   run();
 })();

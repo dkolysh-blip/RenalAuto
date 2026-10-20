@@ -13,6 +13,8 @@
   const rnd = (a, b) => a + Math.random() * (b - a);
   const pick = arr => arr[Math.floor(Math.random() * arr.length)];
   const label = d => `${d.title}${d.year ? ' ' + d.year : ''}`;
+  const rub = n => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ');
+  const mln = n => (n / 1e6).toFixed(n < 1e7 ? 2 : 1).replace(/0$/, '').replace('.', ',') + ' млн ₽';
 
   document.querySelectorAll('[data-goal]').forEach(a => a.addEventListener('click', () => goal(a.dataset.goal)));
 
@@ -118,9 +120,12 @@
   function demoCar(country) {
     const [title, body] = pick(DEMO[country]);
     demoSeq += 1;
-    const price = Math.round(rnd(1.5, 3.6) * 20) * 50000;
-    return {key: 'demo:' + demoSeq, source: 'demo', id: String(demoSeq), country, title, body, year: 2019 + Math.floor(rnd(0, 5)),
-      price: price.toLocaleString('ru-RU').replace(/,/g, ' '), photo: null, path: null, verdict: 'ok', color: pick(DEMO_COLORS), demo: true};
+    const price = Math.round(rnd(1.2, 3.2) * 20) * 50000, year = 2019 + Math.floor(rnd(0, 5));
+    const age = new Date().getFullYear() - year < 3 ? 'new' : 'mid', cc = pick([1598, 1598, 1999, 1497]);
+    return {key: 'demo:' + demoSeq, source: 'demo', id: String(demoSeq), country, title, body, year,
+      price: rub(price), photo: null, path: null, verdict: 'ok', color: pick(DEMO_COLORS), demo: true,
+      turnkey: Math.round(price * rnd(1.22, 1.32) / 1000) * 1000 + 50000, turnkey_from: true,
+      calc: {country, engine: 'ice', age, cc, price}};
   }
 
   // --- состояние сцены -----------------------------------------------------------
@@ -376,7 +381,7 @@
   function kick() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
 
   function tag(car, d) {
-    const text = `${label(d)}${d.price ? ' · ' + d.price + ' ₽' : ''}`;
+    const text = `${label(d)}${d.turnkey ? ' · под ключ от ' + mln(d.turnkey) : d.price ? ' · ' + d.price + ' ₽' : ''}`;
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'arrival-tag');
     gTags.replaceChildren();  // одновременно — один ценник
@@ -442,15 +447,21 @@
       ${d.demo ? '<div class="pop-demo">Тестовые данные</div>' : ''}
       <div class="pop-body">
         <b>${esc(label(d))}</b>
-        <div class="pop-price">${d.price ? '≈ ' + esc(d.price) + ' ₽' : 'Цена по запросу'} <small>на площадке</small></div>
+        ${d.turnkey ? `<div class="pop-price">${d.turnkey_from ? 'от ' : '≈ '}${rub(d.turnkey)} ₽ <small>под ключ*</small></div>
+          <div class="pop-orig">${d.price ? esc(d.price) + ' ₽ на площадке · ' : ''}*при мощности до 160 л.с.</div>`
+        : `<div class="pop-price">${d.price ? '≈ ' + esc(d.price) + ' ₽' : 'Цена по запросу'} <small>на площадке</small></div>`}
         ${pill}
         <div class="pop-actions">
-          <button class="btn" type="button" data-act="calc">Узнать цену под ключ</button>
-          <button class="btn ghost" type="button" data-act="want">Хочу эту</button>
+          ${d.calc && window.RenalCalc ? '<button class="btn" type="button" data-act="breakdown">Разобрать цену под ключ</button>' : ''}
+          <button class="btn${d.calc && window.RenalCalc ? ' ghost' : ''}" type="button" data-act="want">Хочу эту</button>
         </div>
         ${d.path ? `<a class="small" href="${esc(d.path)}">Подробнее о машине →</a>` : ''}
       </div>`;
-    popEl.querySelector('[data-act="calc"]').addEventListener('click', () => { hidePop(); openForm(d); });
+    popEl.querySelector('[data-act="breakdown"]')?.addEventListener('click', () => {
+      hidePop();
+      goal('car_calc');
+      window.RenalCalc.fill(d.calc, label(d));
+    });
     popEl.querySelector('[data-act="want"]').addEventListener('click', () => {
       hidePop();
       goal('car_want');
@@ -513,10 +524,76 @@
   });
 
   // --- данные: стартовый набор, затем живая лента (или тестовый поток) -------------------
+  // --- пульт подбора: под фильтр машины уезжают и заезжают ------------------------------
+  const filterForm = document.querySelector('form[data-port-filter]');
+  const filterOut = filterForm?.querySelector('[data-pf-result]');
+  let filter = {}, filterSeq = 0, demoPool = [];
+  const filterActive = () => Object.values(filter).some(Boolean);
+  function matches(d) {
+    if (filter.country && d.country !== filter.country) return false;
+    if (filter.body && d.body !== filter.body) return false;
+    if (filter.budget && !(d.turnkey && d.turnkey <= +filter.budget)) return false;
+    if (filter.q && !d.title.toLowerCase().includes(filter.q.toLowerCase())) return false;
+    return true;
+  }
+  function resultText(n, total) {
+    if (!filterActive()) return '';
+    if (!n) return 'Под этот запрос машин сейчас нет — <a href="#podbor" data-pf-lead>оставьте заявку</a>, пришлём, как только появятся.';
+    const word = total % 10 === 1 && total % 100 !== 11 ? 'машина' : [2, 3, 4].includes(total % 10) && ![12, 13, 14].includes(total % 100) ? 'машины' : 'машин';
+    return `Под ваш запрос — <b>${total} ${word}</b>. Подходящие заезжают на терминал.`;
+  }
+  async function applyFilter() {
+    filter = Object.fromEntries([...new FormData(filterForm)].filter(([, v]) => v !== ''));
+    const my = ++filterSeq;
+    let found, total;
+    if (DATA.demo) {
+      found = demoPool.filter(matches);
+      total = found.length;
+    } else {
+      try {
+        const res = await fetch('/api/port/cars?' + new URLSearchParams(filter));
+        const body = await res.json();
+        found = body.cars; total = body.total;
+      } catch (err) { return; }
+    }
+    if (my !== filterSeq) return;
+    goal('filter');
+    filterOut.innerHTML = resultText(found.length, total);
+    const keep = new Set(found.map(d => d.key));
+    // неподходящие уезжают за ворота по одной, подходящие — в очередь на заезд
+    const gone = [...cars.values()].filter(c => c.state === 'parked' && !keep.has(c.d.key));
+    queue.length = 0;
+    queue.push(...found.filter(d => !cars.has(d.key)));
+    if (reduce.matches) {  // без анимации: сразу новая расстановка
+      gone.forEach(leave);
+      queue.splice(0).forEach(d => arrive(d, true));
+      hud();
+      return;
+    }
+    gone.forEach((c, i) => setTimeout(() => cars.has(c.d.key) && c.state === 'parked' && leave(c), i * 160));
+    clearTimeout(feed.t);
+    feed.t = setTimeout(feed, 700);
+  }
+  filterForm?.addEventListener('input', () => { clearTimeout(applyFilter.t); applyFilter.t = setTimeout(applyFilter, 350); });
+  filterForm?.addEventListener('submit', e => e.preventDefault());
+  filterOut?.addEventListener('click', e => {
+    if (!e.target.closest('[data-pf-lead]')) return;
+    const comment = document.querySelector('#podbor textarea[name="comment"]');
+    const f = filterForm.elements;
+    const parts = [f.q.value, f.body.selectedIndex ? f.body.selectedOptions[0].text : '', f.country.selectedIndex ? 'из ' + f.country.selectedOptions[0].text : '',
+      f.budget.value ? 'бюджет ' + f.budget.selectedOptions[0].text : ''].filter(Boolean);
+    if (comment) comment.value = 'Ищу: ' + parts.join(', ') + '. Сообщите, когда появится.';
+  });
+
+  // машины заезжают по одной; под фильтр — быстрее
   function feed() {
-    if (document.hidden) return;
-    if (queue.length) { arrive(queue.shift()); return; }
-    if (DATA.demo) arrive(demoCar(Math.random() < 0.5 ? 'KR' : 'CN'));
+    clearTimeout(feed.t);
+    let delay = 4200;
+    if (!document.hidden) {
+      if (queue.length) { arrive(queue.shift()); delay = filterActive() ? 650 : 4200; }
+      else if (DATA.demo && !filterActive()) arrive(demoCar(Math.random() < 0.5 ? 'KR' : 'CN'));
+    }
+    if (!reduce.matches) feed.t = setTimeout(feed, delay);
   }
   function connect() {
     if (DATA.demo) { setStatus(true, 'Тестовые данные'); return; }
@@ -527,15 +604,18 @@
     es.addEventListener('new', async e => {
       const l = JSON.parse(e.data).listing;
       const res = await fetch(`/api/port/${encodeURIComponent(l.source)}/${encodeURIComponent(l.external_id)}`);
-      if (res.status === 200) queue.unshift(await res.json());
+      if (res.status !== 200) return;
+      const d = await res.json();
+      if (matches(d)) queue.unshift(d);
     });
   }
 
   function init() {
     build();
     let start = DATA.cars.slice();
-    if (DATA.demo && start.length < 24) {
-      for (let i = start.length; i < 30; i++) start.push(demoCar(i % 2 ? 'CN' : 'KR'));
+    if (DATA.demo) {
+      for (let i = 0; i < 90; i++) demoPool.push(demoCar(i % 2 ? 'CN' : 'KR'));
+      if (start.length < 24) start.push(...demoPool.slice(0, 30 - start.length));
     }
     // машины из рекламной ссылки (?model=…) заезжают первыми, на глазах у посетителя
     const matched = DATA.match ? start.filter(d => d.title.toLowerCase().includes(DATA.match.toLowerCase())) : [];
@@ -546,13 +626,12 @@
     hud();
     connect();
     if (!reduce.matches) {
-      setTimeout(feed, 900);
-      setInterval(feed, 4200);
+      feed.t = setTimeout(feed, 900);
       setInterval(shipCycle, 42000);
     } else {
       queue.splice(0).forEach(d => arrive(d, true));
-      setInterval(feed, 15000);
     }
+    if (filterForm && filterForm.elements.q.value) applyFilter();  // ?model=… из рекламы — сразу как фильтр
     let wide = !matchMedia('(max-width: 640px)').matches;
     addEventListener('resize', () => {
       if (pop.car) position(pop.car);

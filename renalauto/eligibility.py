@@ -61,6 +61,15 @@ def _has(words: tuple[str, ...], *texts: str | None) -> bool:
     return any(w in haystack for w in words)
 
 
+def engine_kind(listing: Listing) -> str:
+    """ice / hybrid / ev — для расчёта растаможки."""
+    if _has(_HYBRID_WORDS, listing.fuel, listing.title):
+        return "hybrid"
+    if _has(_EV_WORDS, listing.fuel, listing.title):
+        return "ev"
+    return "ice"
+
+
 def age_group(year: int | None, today: date | None = None) -> str | None:
     if not year:
         return None

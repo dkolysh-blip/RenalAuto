@@ -22,6 +22,21 @@
   </div>
 
   <div class="port-stage">
+    <form class="port-filter" data-port-filter aria-label="Подбор машин на терминале">
+      <div class="pf-field"><label for="pf-budget">Бюджет под ключ</label>
+        <select id="pf-budget" name="budget">
+          <option value="">Любой</option>
+          {% for b in [1500000, 2000000, 2500000, 3000000, 4000000, 5000000] %}<option value="{{ b }}">до {{ (b / 1000000)|round(1)|string|replace('.0', '')|replace('.', ',') }} млн ₽</option>{% endfor %}
+        </select></div>
+      <div class="pf-field"><label for="pf-country">Откуда</label>
+        <select id="pf-country" name="country"><option value="">Корея и Китай</option><option value="KR">Корея</option><option value="CN">Китай</option></select></div>
+      <div class="pf-field"><label for="pf-body">Кузов</label>
+        <select id="pf-body" name="body"><option value="">Любой</option><option value="sedan">Седан</option><option value="suv">Кроссовер</option><option value="hatch">Хэтчбек</option><option value="van">Минивэн</option></select></div>
+      <div class="pf-field pf-q"><label for="pf-q">Марка или модель</label>
+        <input id="pf-q" name="q" list="pf-makes" placeholder="Kia K5, Geely…" maxlength="60" value="{{ matched or '' }}" autocomplete="off">
+        <datalist id="pf-makes">{% for m in ['Hyundai', 'Kia', 'Genesis', 'BYD', 'Geely', 'Changan', 'Chery', 'Haval', 'Toyota', 'Volkswagen', 'Audi', 'BMW'] %}<option value="{{ m }}">{% endfor %}</datalist></div>
+      <p class="pf-result" data-pf-result aria-live="polite"></p>
+    </form>
     {# Сцена декоративная: всё, что в ней есть, продублировано ниже обычными карточками #}
     <div class="terminal" id="terminal" aria-hidden="true">
       <div class="terminal-hud">

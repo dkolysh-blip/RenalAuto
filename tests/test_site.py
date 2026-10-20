@@ -192,3 +192,25 @@ def test_privacy_consent_and_metrika(settings):
         assert "Яндекс Метрика" in client.get("/privacy").text
     finally:
         client.__exit__(None, None, None)
+
+
+def test_port_filter_api(settings):
+    k5 = kb(external_id="2", title="기아 K5 1.6 터보", make="기아", model="K5", year=2022, price=20_000_000,
+            extra={"displacement": "1,598cc"})
+    suv = kb(external_id="3", title="기아 스포티지 1.6 터보", make="기아", model="스포티지", year=2022, price=60_000_000,
+             extra={"displacement": "1,598cc"})
+    client, app = make_client(settings, [k5, suv])
+    try:
+        r = client.get("/api/port/cars", params={"q": "Kia K5"}).json()
+        assert [c["id"] for c in r["cars"]] == ["2"] and r["total"] == 1
+        car = r["cars"][0]
+        assert car["turnkey"] > 20_000_000 * settings.rate_krw_rub and car["turnkey_from"] is True
+        assert car["calc"] == {"country": "KR", "engine": "ice", "age": car["calc"]["age"], "cc": 1598,
+                               "price": round(20_000_000 * settings.rate_krw_rub)}
+        assert {c["id"] for c in client.get("/api/port/cars", params={"q": "kia"}).json()["cars"]} == {"2", "3"}
+        assert client.get("/api/port/cars", params={"body": "suv"}).json()["total"] == 1
+        cheap = client.get("/api/port/cars", params={"budget": 2_000_000}).json()
+        assert [c["id"] for c in cheap["cars"]] == ["2"]
+        assert client.get("/api/port/cars", params={"country": "CN"}).json() == {"cars": [], "total": 0}
+    finally:
+        client.__exit__(None, None, None)

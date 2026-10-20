@@ -21,10 +21,10 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-from . import __version__
+from . import __version__, i18n
 from .config import Settings
 from .customs import TurnkeyCalc, turnkey
-from .eligibility import RULES_AS_OF
+from .eligibility import RULES_AS_OF, engine_kind
 from .events import EventHub
 from .models import LEAD_KIND_LABELS, Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter
 from .notify import TelegramNotifier
@@ -43,6 +43,7 @@ SSE_KEEPALIVE = 15
 PAGE_SIZE = 24
 POLICY_DATE = "20 октября 2026 г."  # дата редакции /privacy — менять вместе с текстом
 PORT_PER_ZONE = 20  # мест в зоне терминала (Корея / Китай)
+PORT_SCAN = 600  # сколько свежих объявлений перебирает пульт подбора
 RATES_REFRESH = 6 * 3600
 
 # Значение фильтра «топливо» -> как оно пишется на площадках
@@ -254,6 +255,22 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         )
         return [car_view(l, rates) for l in rows[:limit]], len(rows) > limit
 
+    def quote_car(v) -> dict[str, Any]:
+        """Машина для сцены + ориентировочная цена под ключ (мощность не известна — считаем по льготе до 160 л.с.)."""
+        car = scene_car(v)
+        l, cc, eur = v.listing, v.eligibility.displacement_cc, rates.get("EUR")
+        engine = engine_kind(l)
+        if v.price_rub and l.year and eur and (cc or engine == "ev"):
+            years = date.today().year - l.year
+            age = "new" if years < 3 else "mid" if years <= 5 else "old"
+            q = turnkey(price_rub=v.price_rub, cc=cc or 0, hp=150, age=age, engine=engine, eur_rub=eur,
+                        fee_rub=settings.deal_fee_rub, papers_rub=settings.deal_papers_rub,
+                        logistics_rub=settings.deal_logistics_kr_rub if l.country == "KR" else settings.deal_logistics_cn_rub)
+            car["turnkey"] = q.total_rub
+            car["turnkey_from"] = q.total_is_from
+            car["calc"] = {"country": l.country, "engine": engine, "age": age, "cc": cc or 0, "price": round(v.price_rub)}
+        return car
+
     def stream_query(f: PageFilters) -> str:
         params = {"country": f.country, "make": f.make, "model": f.model, "year_from": f.year_from,
                   "mileage_max": f.mileage_max}
@@ -309,7 +326,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                         and (not make or make.lower() in f"{c.make} {c.title}".lower())), None)
             matched = (f"{hit.make} {hit.model}" if hit and hit.make and hit.model
                        else " ".join(x[:1].upper() + x[1:] for x in (make, model) if x))
-        scene = {"cars": [scene_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched}
+        scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched}
         return render(
             request, "port.html", cars=cars, matched=matched,
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),
@@ -336,6 +353,33 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             papers_rub=settings.deal_papers_rub,
         )
 
+    @app.get("/api/port/cars", include_in_schema=False)
+    async def port_cars(
+        request: Request,
+        budget: int | None = Query(None, ge=0),
+        country: Literal["KR", "CN"] | None = None,
+        body: Literal["sedan", "suv", "hatch", "van"] | None = None,
+        q: str | None = Query(None, max_length=60),
+    ) -> dict[str, Any]:
+        """Пульт терминала: машины под бюджет под ключ, страну, кузов, марку/модель (до 20 в зоне)."""
+        rows = storage_of(request).search(country=country, passable_only=True, limit=PORT_SCAN)
+        # «Kia K5»: каждое слово ищем в исходном названии (기아, 起亚…) и в русском
+        words = [[a.lower() for a in i18n.search_aliases(w)] for w in (_clean(q) or "").split()]
+        found = []
+        for l in rows:
+            v = car_view(l, rates)
+            text = f"{l.title} {l.make or ''} {l.model or ''} {v.title}".lower()
+            if not all(any(a in text for a in aliases) for aliases in words):
+                continue
+            car = quote_car(v)
+            if body and car["body"] != body:
+                continue
+            if budget and not (car.get("turnkey") and car["turnkey"] <= budget):
+                continue
+            found.append(car)
+        shown = [c for c in found if c["country"] == "KR"][:PORT_PER_ZONE] + [c for c in found if c["country"] == "CN"][:PORT_PER_ZONE]
+        return {"cars": shown, "total": len(found)}
+
     @app.get("/api/port/{source}/{external_id}", include_in_schema=False)
     async def port_car(request: Request, source: str, external_id: str) -> Response:
         """Машина для сцены терминала (по событию из /api/stream). 204 — не показываем."""
@@ -345,7 +389,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         v = car_view(listing, rates)
         if v.eligibility.verdict == "bad":
             return Response(status_code=204)
-        return Response(json.dumps(scene_car(v), ensure_ascii=False), media_type="application/json")
+        return Response(json.dumps(quote_car(v), ensure_ascii=False), media_type="application/json")
 
     @app.get("/car/{source}/{external_id}", response_class=HTMLResponse, include_in_schema=False)
     async def car_page(request: Request, source: str, external_id: str) -> HTMLResponse:
