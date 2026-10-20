@@ -5,7 +5,7 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '6';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '7';  // V — поднять после перерендера
   // Ночь — по времени Владивостока (там порт и офис); ?night=1 / ?night=0 — проверить вручную
   const NIGHT = (() => {
     const q = new URLSearchParams(location.search).get('night');
