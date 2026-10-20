@@ -175,6 +175,7 @@ def test_calc_api(settings):
 
 
 def test_privacy_consent_and_metrika(settings):
+    settings.ym_id = None
     client, app = make_client(settings, [])
     try:
         page = client.get("/port").text
