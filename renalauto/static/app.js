@@ -1,6 +1,12 @@
 (() => {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 
+  // --- цели Метрики: переход в Telegram с любой страницы ------------------------
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="https://t.me/"]');
+    if (a && window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', 'telegram');
+  });
+
   // --- заявки --------------------------------------------------------------
   document.querySelectorAll('form[data-lead]').forEach(form => {
     form.addEventListener('submit', async e => {
@@ -8,6 +14,7 @@
       const msg = form.querySelector('.form-msg');
       const data = Object.fromEntries(new FormData(form).entries());
       for (const k of Object.keys(data)) if (data[k] === '') delete data[k];
+      delete data.consent;  // галочка обязательна в форме, на сервер не уходит
       if (!data.phone && !data.telegram) {
         msg.innerHTML = '<p class="error">Укажите телефон или Telegram, чтобы менеджер мог ответить.</p>';
         return;

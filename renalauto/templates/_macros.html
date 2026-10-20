@@ -19,6 +19,10 @@
 </a>
 {%- endmacro %}
 
+{% macro consent() -%}
+<label class="consent"><input type="checkbox" name="consent" required> <span>Согласен на обработку персональных данных по <a href="/privacy" target="_blank">политике конфиденциальности</a></span></label>
+{%- endmacro %}
+
 {% macro lead_form(car=None, title='Рассчитать под ключ', button='Получить расчёт') -%}
 <form class="lead-form" data-lead>
   <h2>{{ title }}</h2>
@@ -36,6 +40,7 @@
   <div class="field"><label>Город получения</label><input name="city" maxlength="100" placeholder="Москва"></div>
   <div class="field"><label>Комментарий</label><textarea name="comment" maxlength="2000" placeholder="{{ 'Что важно в этой машине?' if car else 'Марка, модель, год, пробег…' }}"></textarea></div>
   <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
+  {{ consent() }}
   <button class="btn block" type="submit">{{ button }}</button>
   <p class="muted small">Нужен телефон или Telegram — чтобы менеджер мог ответить.</p>
   <div class="form-msg"></div>

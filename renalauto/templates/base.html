@@ -14,6 +14,15 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 48'><g fill='%23e0251f'><path d='M2 3 Q32 9 62 3 L59 10 Q32 14 5 10 Z'/><rect x='9' y='15' width='46' height='4.5'/><rect x='29.5' y='10' width='5' height='6'/><path d='M14.5 14 h5 l.6 30 h-6.2 Z M44.5 14 h5 l.6 30 h-6.2 Z'/></g></svg>">
 <meta name="theme-color" content="#0f1012">
 {% block head %}{% endblock %}
+{% if ym_id %}<script>
+(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();
+for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}
+k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+(window,document,"script","https://mc.yandex.ru/metrika/tag.js","ym");
+window.YM_ID={{ ym_id }};
+ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,webvisor:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/{{ ym_id }}" style="position:absolute;left:-9999px" alt=""></div></noscript>{% endif %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
 <header class="top">
@@ -58,7 +67,7 @@
     </div>
   </div>
   <div class="wrap foot-legal">
-    <p>© {{ year }} {{ company_legal_name or company }}{% if company_requisites %} · {{ company_requisites }}{% endif %}</p>
+    <p>© {{ year }} {{ company_legal_name or company }}{% if company_requisites %} · {{ company_requisites }}{% endif %} · <a href="/privacy">Политика конфиденциальности</a></p>
     <p>Объявления собираются с открытых площадок (KB Chachacha, Encar, Dongchedi, Che168) и обновляются в реальном времени.
     Цены в рублях — {{ 'по курсу ЦБ РФ' if rates_source == 'ЦБ РФ' else 'по ориентировочному курсу' }}, без доставки, растаможки и утильсбора; стоимость под ключ рассчитывает менеджер.
     Правила ввоза: {{ rules_as_of }}.</p>

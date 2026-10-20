@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import card, lead_form %}
+{% from "_macros.html" import card, consent, lead_form %}
 {% block title %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Авто из Кореи и Китая{% endif %}, которые проходят по утильсбору | {{ company }}{% endblock %}
 {% block description %}Выберите машину на терминале — посчитаем цену под ключ до вашего города. Только проходные авто, проверка VIN, 35–50 дней до ключей.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
@@ -104,7 +104,7 @@
     <div class="vydachi-more">
       <b>Больше выдач и отзывов</b>
       <p class="muted small">Каждую машину, которую привозим, показываем в наших каналах.</p>
-      {% if company_telegram %}<a class="btn ghost block" href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener" data-goal="telegram">Telegram-канал</a>{% endif %}
+      {% if company_telegram %}<a class="btn ghost block" href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener">Telegram-канал</a>{% endif %}
       {% if company_vk %}<a class="btn ghost block" href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
       {% if company_avito %}<a class="btn ghost block" href="{{ company_avito }}" target="_blank" rel="noopener">Отзывы на Авито</a>{% endif %}
     </div>
@@ -199,7 +199,7 @@
     <div class="field"><label for="cd-phone">Телефон</label><input id="cd-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+7"></div>
     <div class="field"><label for="cd-tg">или Telegram</label><input id="cd-tg" name="telegram" maxlength="64" placeholder="@username"></div>
     <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
-    <label class="consent"><input type="checkbox" name="consent" required> Согласен на обработку персональных данных</label>
+    {{ consent() }}
     <button class="btn block" type="submit">Получить расчёт</button>
     <div class="form-msg"></div>
   </form>

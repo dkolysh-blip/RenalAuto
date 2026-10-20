@@ -41,6 +41,7 @@ log = logging.getLogger(__name__)
 HERE = Path(__file__).parent
 SSE_KEEPALIVE = 15
 PAGE_SIZE = 24
+POLICY_DATE = "20 октября 2026 г."  # дата редакции /privacy — менять вместе с текстом
 PORT_PER_ZONE = 20  # мест в зоне терминала (Корея / Китай)
 RATES_REFRESH = 6 * 3600
 
@@ -199,6 +200,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         company_requisites=settings.company_requisites,
         company_address=settings.company_address,
         company_vk=settings.company_vk,
+        ym_id=settings.ym_id,
         company_avito=settings.company_avito,
         deal=dict(fee=settings.deal_fee_rub, deposit=settings.deal_deposit_rub, pick_days=settings.deal_pick_days,
                   invoice_days=settings.deal_invoice_days, delivery_weeks=settings.deal_delivery_weeks),
@@ -404,6 +406,10 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         storage = storage_of(request)
         return render(request, "admin.html", leads=storage.list_leads(status), stats=storage.lead_stats())
 
+    @app.get("/privacy", response_class=HTMLResponse, include_in_schema=False)
+    async def privacy(request: Request) -> HTMLResponse:
+        return render(request, "privacy.html", policy_date=POLICY_DATE)
+
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon() -> Response:
         svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>"
@@ -416,7 +422,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     @app.get("/sitemap.xml", include_in_schema=False)
     async def sitemap(request: Request) -> Response:
         urls = [f"<url><loc>{settings.site_url}/</loc><changefreq>hourly</changefreq></url>",
-                f"<url><loc>{settings.site_url}/vin</loc></url>"]
+                f"<url><loc>{settings.site_url}/vin</loc></url>",
+                f"<url><loc>{settings.site_url}/port</loc></url>",
+                f"<url><loc>{settings.site_url}/privacy</loc></url>"]
         for source, external_id, last_seen in storage_of(request).recent_listing_keys(5000):
             urls.append(f"<url><loc>{settings.site_url}/car/{source}/{external_id}</loc><lastmod>{last_seen[:10]}</lastmod></url>")
         body = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + "".join(urls) + "</urlset>"

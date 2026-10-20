@@ -91,6 +91,8 @@ class Settings:
         or None
     )
     company_telegram: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM", "RenalautoChina") or None)
+    # Яндекс Метрика: номер счётчика. Пусто — счётчик на сайт не ставится
+    ym_id: int | None = field(default_factory=lambda: _int_or_none("YM_ID"))
     company_vk: str | None = field(default_factory=lambda: os.getenv("COMPANY_VK", "https://vk.ru/renal_auto") or None)
     company_avito: str | None = field(
         default_factory=lambda: os.getenv("COMPANY_AVITO", "https://www.avito.ru/brands/71979293911a45d3fb69acf1cf597365") or None

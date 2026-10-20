@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import card, lead_form, pill %}
+{% from "_macros.html" import card, consent, lead_form, pill %}
 {% set l = v.listing %}
 {% block title %}{{ v.seo_title }}{% if v.price_rub %} — ≈ {{ fmt(v.price_rub) }} ₽{% endif %} | {{ company }}{% endblock %}
 {% block description %}{{ desc.meta }}{% endblock %}
@@ -90,6 +90,7 @@
             <input name="telegram" maxlength="64" placeholder="или @telegram">
           </div>
           <div class="hp"><input name="website" tabindex="-1" autocomplete="off"></div>
+          {{ consent() }}
           <button class="btn block" type="submit">Получить отчёт</button>
           <div class="form-msg"></div>
         </form>
