@@ -47,6 +47,90 @@
   {% endif %}
 </section>
 
+<section class="port-section" id="vydachi" aria-labelledby="vydachi-title">
+  <div class="port-section-head"><h2 id="vydachi-title">Выдачи клиентам</h2></div>
+  <div class="vydachi">
+    <figure class="vydacha wide">
+      <video controls playsinline preload="none" poster="/static/media/vydacha-1.jpg" width="1280" height="720">
+        <source src="/static/media/vydacha-1.mp4" type="video/mp4">
+      </video>
+      <figcaption>Клиентка получила свою машину — отзыв на видео</figcaption>
+    </figure>
+    <figure class="vydacha tall">
+      <video controls playsinline preload="none" poster="/static/media/vydacha-2.jpg" width="640" height="900">
+        <source src="/static/media/vydacha-2.mp4" type="video/mp4">
+      </video>
+      <figcaption>Передача ключей</figcaption>
+    </figure>
+    <div class="vydachi-more">
+      <b>Больше выдач и отзывов</b>
+      <p class="muted small">Каждую машину, которую привозим, показываем в наших каналах.</p>
+      {% if company_telegram %}<a class="btn ghost block" href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener" data-goal="telegram">Telegram-канал</a>{% endif %}
+      {% if company_vk %}<a class="btn ghost block" href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
+      {% if company_avito %}<a class="btn ghost block" href="{{ company_avito }}" target="_blank" rel="noopener">Отзывы на Авито</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="port-section" id="deal" aria-labelledby="deal-title">
+  <div class="port-section-head"><h2 id="deal-title">Как проходит сделка и оплата</h2></div>
+  <ol class="deal-steps">
+    <li>
+      <b>Заявка и договор</b>
+      <p>Согласуем марку, модель, год и бюджет. Заключаем агентский договор с {{ company_legal_name or company }}, вы вносите предоплату — это и есть наше вознаграждение.</p>
+      <span class="deal-sum">{{ fmt(deal.fee) }} ₽ · фиксированно</span>
+    </li>
+    <li>
+      <b>Подбор и осмотр</b>
+      <p>Присылаем варианты с фото, видео и диагностикой, проверяем историю и проходимость в РФ. Вы утверждаете машину. Не подобрали за {{ deal.pick_days }} дней — вернём предоплату.</p>
+    </li>
+    <li>
+      <b>Бронь и оплата машины</b>
+      <p>Для брони у продавца — обеспечительный платёж. Машину оплачиваете по инвойсу в течение {{ deal.invoice_days }} дней, после этого платёж за бронь возвращаем за 1 рабочий день.</p>
+      <span class="deal-sum">{{ fmt(deal.deposit) }} ₽ · возвращается</span>
+    </li>
+    <li>
+      <b>Доставка и таможня</b>
+      <p>Везём до Владивостока — до {{ deal.delivery_weeks }} недель с момента покупки. Растаможиваем, оформляем СБКТС и ЭПТС. Фото- и видеоотчёт на этапах — по вашему запросу.</p>
+    </li>
+    <li>
+      <b>Получение</b>
+      <p>Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, а также отчёт по всем расходам. Можно забрать самим или отправить транспортной компанией.</p>
+    </li>
+  </ol>
+  <p class="muted small">Все расчёты — в рублях: переводом на расчётный счёт или наличными в кассу в офисе во Владивостоке.</p>
+</section>
+
+<section class="port-section" id="faq" aria-labelledby="faq-title">
+  <div class="port-section-head"><h2 id="faq-title">Частые вопросы</h2></div>
+  <div class="faq">
+    <details>
+      <summary>Сколько стоят ваши услуги?</summary>
+      <p>Фиксированно {{ fmt(deal.fee) }} ₽ за машину — не процент от её цены. Всё остальное (машина, доставка, таможня, утильсбор, оформление) — фактические расходы, каждую сумму подтверждаем отчётом.</p>
+    </details>
+    <details>
+      <summary>Может ли итоговая цена измениться?</summary>
+      <p>Расчёт под ключ ориентировочный: итог зависит от курса на день оплаты инвойса и от таможенных ставок на дату подачи декларации. Если курс или ставки изменятся, изменится и сумма — заранее предупредим и покажем расчёт.</p>
+    </details>
+    <details>
+      <summary>Что если машина не пройдёт по утильсбору или запрету на вывоз?</summary>
+      <p>На сайте показываем только машины, которые проходят по правилам ввоза в РФ. Перед бронью менеджер ещё раз проверяет мощность, объём и возраст — платёж продавцу не вносится, пока машина не проверена.</p>
+    </details>
+    <details>
+      <summary>Что если вы не найдёте подходящую машину?</summary>
+      <p>Если за {{ deal.pick_days }} дней не подберём машину по вашей заявке, вернём предоплату. Срок можно продлить, если вы согласны подождать.</p>
+    </details>
+    <details>
+      <summary>Можно ли отказаться?</summary>
+      <p>Да, до брони машины у продавца. После брони предоплата не возвращается, а если машину не оплатить по инвойсу за {{ deal.invoice_days }} дней, бронь снимается и платёж за неё не возвращается.</p>
+    </details>
+    <details>
+      <summary>Какие гарантии?</summary>
+      <p>Работаем по агентскому договору с юрлицом: {{ company_legal_name or company }}{% if company_requisites %}, {{ company_requisites }}{% endif %}. Машину покупаем от вашего имени и за ваш счёт, отчитываемся по каждой трате, по запросу присылаем фото и видео на этапах. За утрату вашего имущества или денег отвечаем в размере реального ущерба.</p>
+    </details>
+  </div>
+</section>
+
 <section id="podbor" class="car-grid">
   <div class="panel">
     <h2>Цена под ключ — из чего она складывается</h2>

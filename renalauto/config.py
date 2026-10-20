@@ -85,7 +85,17 @@ class Settings:
         )
         or None
     )
-    company_telegram: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM") or None)
+    company_telegram: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM", "RenalautoChina") or None)
+    company_vk: str | None = field(default_factory=lambda: os.getenv("COMPANY_VK", "https://vk.ru/renal_auto") or None)
+    company_avito: str | None = field(
+        default_factory=lambda: os.getenv("COMPANY_AVITO", "https://www.avito.ru/brands/71979293911a45d3fb69acf1cf597365") or None
+    )
+    # Условия агентского договора — показываются на лендинге (как проходит сделка, FAQ)
+    deal_fee_rub: int = field(default_factory=lambda: int(os.getenv("DEAL_FEE_RUB", "50000")))
+    deal_deposit_rub: int = field(default_factory=lambda: int(os.getenv("DEAL_DEPOSIT_RUB", "120000")))
+    deal_pick_days: int = field(default_factory=lambda: int(os.getenv("DEAL_PICK_DAYS", "20")))
+    deal_invoice_days: int = field(default_factory=lambda: int(os.getenv("DEAL_INVOICE_DAYS", "10")))
+    deal_delivery_weeks: int = field(default_factory=lambda: int(os.getenv("DEAL_DELIVERY_WEEKS", "8")))
     # Брать курсы с cbr-xml-daily.ru (иначе — значения RATE_*_RUB ниже)
     rates_live: bool = field(default_factory=lambda: _bool("RATES_LIVE", True))
     rate_krw_rub: float = field(default_factory=lambda: float(os.getenv("RATE_KRW_RUB", "0.058")))

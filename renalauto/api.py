@@ -122,7 +122,8 @@ def _asset_version() -> str:
     """Версия статики по содержимому файлов: после обновления браузер сразу берёт новые css/js."""
     digest = hashlib.sha1(__version__.encode())
     for path in sorted((HERE / "static").glob("*")):
-        digest.update(path.read_bytes())
+        if path.is_file():  # media/ (видео) версионируется по имени файла
+            digest.update(path.read_bytes())
     return digest.hexdigest()[:10]
 
 
@@ -196,6 +197,10 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         company_legal_name=settings.company_legal_name,
         company_requisites=settings.company_requisites,
         company_address=settings.company_address,
+        company_vk=settings.company_vk,
+        company_avito=settings.company_avito,
+        deal=dict(fee=settings.deal_fee_rub, deposit=settings.deal_deposit_rub, pick_days=settings.deal_pick_days,
+                  invoice_days=settings.deal_invoice_days, delivery_weeks=settings.deal_delivery_weeks),
         site_url=settings.site_url,
         rules_as_of=RULES_AS_OF,
         fmt=fmt_int,
