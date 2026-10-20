@@ -125,3 +125,68 @@ def car_view(listing: Listing, rates: Rates) -> CarView:
     ]
     view.specs = [(k, str(v)) for k, v in specs if v]
     return view
+
+
+# --- сцена «Порт» на лендинге: машина сверху = кузов + цвет ------------------------
+
+SCENE_COLORS = {
+    "Белый": "#eceef0", "Чёрный": "#1c1e22", "Серый": "#8a9099", "Серебристый": "#c3c7cc",
+    "Тёмно-серый": "#4b5058", "Перламутровый": "#f2eee4", "Синий": "#2f5fa6", "Красный": "#c62a24",
+    "Коричневый": "#6e4b33", "Зелёный": "#3e7a4c", "Жёлтый": "#e2b33c", "Оранжевый": "#e07a2c",
+}
+# цвета, которых больше всего на рынке, — если площадка цвет не отдала
+COMMON_COLORS = ["#eceef0", "#eceef0", "#1c1e22", "#8a9099", "#c3c7cc", "#4b5058"]
+SUV_WORDS = (
+    "suv", "sportage", "sorento", "tucson", "santa fe", "palisade", "seltos", "niro", "kona", "mohave", "venue",
+    "torres", "tivoli", "rexton", "qm6", "trailblazer", "trax", "equinox", "gv70", "gv80", "x1", "x3", "x5", "q3",
+    "q5", "glc", "gle", "rav4", "cr-v", "harrier", "highlander", "tiguan", "xc40", "xc60", "song", "tang", "yuan",
+    "monjaro", "atlas", "coolray", "tiggo", "jolion", "haval", "h6", "uni-k", "uni-t", "cs35", "cs55", "cs75",
+    "li l", "zeekr 7x", "model y", "jimny", "defender", "越野",
+)
+VAN_WORDS = ("carnival", "staria", "sienna", "odyssey", "alphard", "gl8", "mpv", "starex", "денза d9", "denza d9")
+HATCH_WORDS = ("ray", "morning", "spark", "casper", "golf", "polo", "yaris", "dolphin", "seagull", "i30", "mini")
+
+
+def scene_body(v: CarView) -> str:
+    """Силуэт для сцены: sedan / suv / van / hatch."""
+    body = (v.body or "").lower()
+    if "внедорож" in body or "кроссовер" in body:
+        return "suv"
+    if "минивэн" in body or "микроавтобус" in body:
+        return "van"
+    if body in ("микро", "малый класс"):
+        return "hatch"
+    name = f" {(v.title or '').lower()} {(v.model or '').lower()} "
+    for kind, words in (("van", VAN_WORDS), ("suv", SUV_WORDS), ("hatch", HATCH_WORDS)):
+        if any(f" {w}" in name for w in words):
+            return kind
+    return "sedan"
+
+
+def scene_color(v: CarView) -> str:
+    for name, hex_ in SCENE_COLORS.items():
+        if v.color and v.color.startswith(name):
+            return hex_
+    key = sum(map(ord, v.listing.external_id))
+    return COMMON_COLORS[key % len(COMMON_COLORS)]
+
+
+def scene_car(v: CarView) -> dict[str, Any]:
+    """Короткая запись для сцены терминала (уходит в браузер JSON-ом)."""
+    title = v.title
+    if v.make and v.model and len(f"{v.make} {v.model}") < len(title):
+        title = f"{v.make} {v.model}"  # на плашке «Kia K5 2020» без комплектации
+    return {
+        "key": f"{v.listing.source}:{v.listing.external_id}",
+        "source": v.listing.source,
+        "id": v.listing.external_id,
+        "country": v.listing.country,
+        "title": title,
+        "year": v.listing.year,
+        "price": fmt_int(v.price_rub) if v.price_rub else None,
+        "photo": v.photos[0] if v.photos else None,
+        "path": v.path,
+        "verdict": v.eligibility.verdict,
+        "body": scene_body(v),
+        "color": scene_color(v),
+    }

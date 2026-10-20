@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% from "_macros.html" import card, lead_form %}
+{% block title %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Авто из Кореи и Китая{% endif %}, которые проходят по утильсбору | {{ company }}{% endblock %}
+{% block description %}Выберите машину на терминале — посчитаем цену под ключ до вашего города. Только проходные авто, проверка VIN, 35–50 дней до ключей.{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
+{% block body_class %}has-cta port-page{% endblock %}
+{% block content %}
+<section class="port-hero">
+  <div class="port-offer">
+    <div class="eyebrow"><span class="dot on"></span> Живая лента: новые машины каждую минуту</div>
+    <h1>{% if matched %}<em>{{ matched }}</em> из Кореи и Китая, {% else %}Авто из <em>Кореи</em> и <em>Китая</em>, {% endif %}которые проходят по утильсбору</h1>
+    <p>Выберите машину на терминале — мы посчитаем её цену под ключ до вашего города: доставка, таможня, утильсбор, оформление.</p>
+    <div class="hero-cta">
+      <a class="btn" href="#podbor" data-goal="form_open">Подобрать под бюджет</a>
+      <a class="btn ghost" href="/">Все машины</a>
+    </div>
+    <ul class="port-facts">
+      <li><b>Только проходные</b> авто по правилам ввоза в РФ</li>
+      <li><b>Проверка VIN</b> и истории до покупки</li>
+      <li><b>35–50 дней</b> от выкупа до ключей</li>
+    </ul>
+  </div>
+
+  <div class="port-stage">
+    {# Сцена декоративная: всё, что в ней есть, продублировано ниже обычными карточками #}
+    <div class="terminal" id="terminal" aria-hidden="true">
+      <div class="terminal-hud">
+        <span class="hud-live"><span class="dot"></span> <span data-hud="status">Терминал</span></span>
+        <span data-hud="count"></span>
+      </div>
+      <div class="terminal-toasts"></div>
+    </div>
+    <p class="terminal-note muted small">Машины на терминале — объявления с площадок Кореи и Китая. Наведите или нажмите на машину.</p>
+    <div class="port-pop" id="port-pop" hidden></div>
+  </div>
+</section>
+
+<section class="port-section" aria-labelledby="now-title">
+  <div class="port-section-head">
+    <h2 id="now-title">Сейчас на терминале</h2>
+    <a href="/">Весь каталог →</a>
+  </div>
+  {% if cars %}
+  <div class="grid">{% for v in cars[:8] %}{{ card(v) }}{% endfor %}</div>
+  {% else %}
+  <div class="empty">Машины появятся здесь, как только придут свежие объявления. Оставьте заявку — менеджер подберёт варианты.</div>
+  {% endif %}
+</section>
+
+<section id="podbor" class="car-grid">
+  <div class="panel">
+    <h2>Цена под ключ — из чего она складывается</h2>
+    <ol>
+      <li><b>Машина</b> — цена на площадке в Корее или Китае.</li>
+      <li><b>Доставка</b> до Владивостока и дальше до вашего города.</li>
+      <li><b>Таможня и утильсбор</b> — по действующим ставкам на дату ввоза.</li>
+      <li><b>Оформление</b> — СБКТС, ЭПТС, услуги брокера.</li>
+    </ol>
+    <p class="muted small">«Проходит в РФ» значит, что машину можно легально ввезти и она не попадает под заградительный утильсбор. Правила меняются — финальную проверку делает менеджер.</p>
+  </div>
+  <div class="panel">{{ lead_form(None, 'Подберём авто под ваш бюджет', 'Оставить заявку') }}</div>
+</section>
+
+<dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">
+  <form class="lead-form" data-lead>
+    <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
+    <h2 id="car-dialog-title">Узнать цену под ключ</h2>
+    <p class="muted small" data-car-name></p>
+    <input type="hidden" name="source">
+    <input type="hidden" name="external_id">
+    <div class="field"><label for="cd-name">Имя *</label><input id="cd-name" name="name" required maxlength="100" autocomplete="name"></div>
+    <div class="field"><label for="cd-phone">Телефон</label><input id="cd-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+7"></div>
+    <div class="field"><label for="cd-tg">или Telegram</label><input id="cd-tg" name="telegram" maxlength="64" placeholder="@username"></div>
+    <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
+    <label class="consent"><input type="checkbox" name="consent" required> Согласен на обработку персональных данных</label>
+    <button class="btn block" type="submit">Получить расчёт</button>
+    <div class="form-msg"></div>
+  </form>
+</dialog>
+
+<div class="cta-bar"><a class="btn" href="#podbor" data-goal="form_open">Подобрать под бюджет</a></div>
+<script type="application/json" id="port-data">{{ scene|safe }}</script>
+{% endblock %}
+{% block scripts %}<script src="/static/port.js?v={{ asset_version }}" defer></script>{% endblock %}

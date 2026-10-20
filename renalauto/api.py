@@ -32,7 +32,7 @@ from .rates import Rates
 from .sources import REGISTRY, Source, build_sources
 from .storage import Storage
 from .describe import describe
-from .view import car_view, fmt_int
+from .view import car_view, fmt_int, scene_car
 from .vin.decoder import VinDecoded, decode
 from .vin.report import VinReport, build_report, build_report_for_plate, looks_like_plate
 
@@ -40,6 +40,7 @@ log = logging.getLogger(__name__)
 HERE = Path(__file__).parent
 SSE_KEEPALIVE = 15
 PAGE_SIZE = 24
+PORT_PER_ZONE = 20  # мест в зоне терминала (Корея / Китай)
 RATES_REFRESH = 6 * 3600
 
 # Значение фильтра «топливо» -> как оно пишется на площадках
@@ -276,6 +277,46 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             return Response(status_code=204)
         macros = templates.env.get_template("_macros.html").module
         return HTMLResponse(str(macros.card(v, fresh=True)))
+
+    @app.get("/port", response_class=HTMLResponse, include_in_schema=False)
+    async def port_page(request: Request) -> HTMLResponse:
+        """Рекламный лендинг «Порт»: терминал, куда заезжают машины из живой ленты."""
+        q = request.query_params
+        # message match: ?model=k5 / ?make=kia из ссылки рекламы (или utm_term)
+        model, make = _clean(q.get("model") or q.get("utm_term")), _clean(q.get("make"))
+        storage = storage_of(request)
+        cars, seen = [], set()
+        for country in ("KR", "CN"):
+            rows = []
+            if model or make:
+                rows = storage.search(country=country, make=make, model=model, passable_only=True, limit=PORT_PER_ZONE)
+            rows += storage.search(country=country, passable_only=True, limit=PORT_PER_ZONE)
+            for l in rows:
+                if l.key not in seen and len([c for c in cars if c.listing.country == country]) < PORT_PER_ZONE:
+                    seen.add(l.key)
+                    cars.append(car_view(l, rates))
+        matched = None
+        if model or make:
+            hit = next((c for c in cars if (not model or model.lower() in f"{c.model} {c.title}".lower())
+                        and (not make or make.lower() in f"{c.make} {c.title}".lower())), None)
+            matched = (f"{hit.make} {hit.model}" if hit and hit.make and hit.model
+                       else " ".join(x[:1].upper() + x[1:] for x in (make, model) if x))
+        scene = {"cars": [scene_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched}
+        return render(
+            request, "port.html", cars=cars, matched=matched,
+            scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),
+        )
+
+    @app.get("/api/port/{source}/{external_id}", include_in_schema=False)
+    async def port_car(request: Request, source: str, external_id: str) -> Response:
+        """Машина для сцены терминала (по событию из /api/stream). 204 — не показываем."""
+        listing = storage_of(request).get(source, external_id)
+        if listing is None:
+            return Response(status_code=204)
+        v = car_view(listing, rates)
+        if v.eligibility.verdict == "bad":
+            return Response(status_code=204)
+        return Response(json.dumps(scene_car(v), ensure_ascii=False), media_type="application/json")
 
     @app.get("/car/{source}/{external_id}", response_class=HTMLResponse, include_in_schema=False)
     async def car_page(request: Request, source: str, external_id: str) -> HTMLResponse:

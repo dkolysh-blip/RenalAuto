@@ -225,3 +225,88 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .chips span { font-size: 13px; padding: 3px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); }
 .description p { margin: 0 0 10px; }
 .description p:last-child { margin-bottom: 0; }
+
+/* --- лендинг «Порт» -------------------------------------------------------- */
+.port-hero { display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 28px; align-items: center; padding: 28px 0 8px; }
+.port-offer h1 { font-size: clamp(28px, 3.6vw, 44px); line-height: 1.08; letter-spacing: -.03em; margin: 0 0 12px; }
+.port-offer h1 em { font-style: normal; color: var(--accent); }
+.port-offer p { color: var(--muted); margin: 0; font-size: 16px; }
+.port-facts { list-style: none; padding: 0; margin: 22px 0 0; display: grid; gap: 8px; }
+.port-facts li { font-size: 14px; color: var(--muted); padding-left: 22px; position: relative; }
+.port-facts li::before { content: "✓"; position: absolute; left: 0; color: var(--ok); font-weight: 800; }
+.port-facts b { color: var(--text); }
+.port-stage { position: relative; min-width: 0; }
+.terminal { --t-ground: #3a3e44; --t-yard: #33373d; --t-road: #2a2d32; --t-water: #123049; --t-hull: #1b2733; --t-deck: #2c3a48;
+  --t-bridge: #e9ecef; --t-glass: #1a2430; --t-booth: #e9ecef; --t-bollard: #e5b53a;
+  position: relative; aspect-ratio: 1200 / 560; border-radius: var(--radius); overflow: hidden; background: var(--t-ground);
+  box-shadow: 0 12px 40px rgba(16,24,40,.18); user-select: none; -webkit-tap-highlight-color: transparent; }
+.terminal-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.terminal .t-dash { stroke: rgba(233,228,216,.45); stroke-width: 1.5; stroke-dasharray: 14 12; }
+.terminal .t-slot { stroke: rgba(255,255,255,.28); stroke-width: 1.2; }
+.terminal .t-zone { fill: rgba(255,255,255,.82); font: 800 13px/1 Inter, system-ui, sans-serif; letter-spacing: .12em; }
+.terminal .t-zone-sub { fill: rgba(255,255,255,.45); font: 600 11px/1 Inter, system-ui, sans-serif; }
+.terminal .t-ship-name { fill: rgba(255,255,255,.55); font: 800 10px/1 Inter, system-ui, sans-serif; letter-spacing: .14em; }
+.terminal .deck-car { fill: #c3c7cc; transition: opacity .4s; }
+.terminal .t-barrier { transform-box: fill-box; transform-origin: 50% 0; transition: transform .35s ease; }
+.terminal .t-barrier.open { transform: scaleY(.15); }
+.terminal .t-gate .t-barrier[width="28"] { transform-origin: 0 50%; }
+.terminal .t-gate .t-barrier[width="28"].open { transform: scaleX(.15); }
+.terminal .car { cursor: pointer; transition: opacity .5s; }
+.terminal .car-glow { fill: none; stroke: transparent; stroke-width: 2.5; }
+.terminal .car.hover .car-glow { stroke: #fff; }
+.terminal .car.chosen .car-glow { stroke: var(--accent); fill: rgba(224,37,31,.18); }
+.terminal .car.boarding { opacity: 0; }
+.terminal-hud { position: absolute; left: 10px; top: 8px; right: 10px; display: flex; justify-content: space-between; gap: 8px; pointer-events: none;
+  font-size: 12px; color: rgba(255,255,255,.85); font-weight: 600; z-index: 1; }
+.terminal-hud > span { background: rgba(15,16,18,.6); padding: 3px 9px; border-radius: 999px; display: inline-flex; gap: 6px; align-items: center; }
+.terminal-toasts { position: absolute; left: 10px; bottom: 10px; display: flex; flex-direction: column; gap: 6px; pointer-events: none; z-index: 1; }
+.terminal-toast { background: rgba(255,255,255,.95); color: #16191d; font-size: 13px; padding: 6px 12px; border-radius: 10px; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+  animation: t-in .3s ease; transition: opacity .4s, transform .4s; }
+.terminal-toast.out { opacity: 0; transform: translateY(6px); }
+@keyframes t-in { from { opacity: 0; transform: translateY(8px); } }
+.terminal-note { margin: 8px 2px 0; }
+.port-pop { position: absolute; z-index: 5; width: 260px; background: var(--card); color: var(--text); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 14px 40px rgba(16,24,40,.28); overflow: hidden; }
+.port-pop .pop-ph { aspect-ratio: 16 / 9; background: var(--line); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; }
+.port-pop .pop-ph img { width: 100%; height: 100%; object-fit: cover; }
+.port-pop .pop-demo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--warn); background: var(--warn-bg); padding: 4px 12px; }
+.port-pop .pop-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
+.port-pop .pop-price { font-size: 18px; font-weight: 800; }
+.port-pop .pop-price small { font-size: 12px; color: var(--muted); font-weight: 500; }
+.port-pop .pop-actions { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 4px; }
+.port-pop .btn { padding: 8px 12px; font-size: 14px; }
+.port-section { margin: 32px 0 8px; }
+.port-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }
+.port-section-head h2 { margin: 0; font-size: 22px; }
+.car-dialog { border: 0; border-radius: 16px; padding: 0; width: min(420px, calc(100vw - 32px)); background: var(--card); color: var(--text);
+  box-shadow: 0 24px 60px rgba(0,0,0,.35); }
+.car-dialog::backdrop { background: rgba(15,16,18,.55); }
+.car-dialog form { padding: 20px; position: relative; }
+.car-dialog h2 { margin: 0 0 4px; font-size: 20px; padding-right: 28px; }
+.car-dialog .btn.ghost { margin-top: 10px; }
+.dialog-close { position: absolute; right: 10px; top: 8px; border: 0; background: none; font-size: 26px; line-height: 1; color: var(--muted); cursor: pointer; padding: 4px 8px; }
+.consent { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; margin: 4px 0 12px; }
+.consent input { width: auto; margin-top: 2px; }
+@media (max-width: 1100px) {
+  .port-hero { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+}
+@media (max-width: 640px) {
+  .port-hero { padding-top: 18px; }
+  .port-offer h1 { font-size: 27px; }
+  .port-facts { margin-top: 16px; }
+  .terminal { aspect-ratio: 360 / 650; width: min(100%, calc(78vh * 360 / 650)); margin: 0 auto; }
+  .terminal-hud { font-size: 11px; left: 6px; right: 6px; top: 6px; }
+  .terminal-hud > span { padding: 2px 7px; }
+  .port-pop { width: 230px; }
+  .port-offer h1 { font-size: 25px; margin-bottom: 8px; }
+  .port-offer p { font-size: 15px; }
+  .port-offer .hero-cta { margin-top: 14px; }
+  .port-offer .hero-cta .btn.ghost { display: none; }
+  .port-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 14px; }
+  .port-facts li { padding: 6px 8px; font-size: 11.5px; line-height: 1.3; background: var(--card); border: 1px solid var(--line); border-radius: 10px; }
+  .port-facts li::before { display: none; }
+  .port-facts b { display: block; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .terminal *, .terminal-toast { transition: none !important; animation: none !important; }
+}

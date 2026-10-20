@@ -21,6 +21,7 @@
         const body = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(body.detail && typeof body.detail === 'string' ? body.detail : 'Не удалось отправить');
         form.innerHTML = '<div class="thanks">Заявка отправлена! Менеджер свяжется с вами в ближайшее время.</div>';
+        form.dispatchEvent(new CustomEvent('lead:sent', {bubbles: true}));
         if (window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', 'lead');
       } catch (err) {
         msg.innerHTML = `<p class="error">${esc(err.message)}. Попробуйте ещё раз.</p>`;

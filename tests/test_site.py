@@ -1,3 +1,5 @@
+import json
+
 from fastapi.testclient import TestClient
 
 from renalauto import i18n
@@ -133,3 +135,24 @@ def test_kb_detail_collects_photo_gallery(settings):
     listing = src.apply_detail(kb(external_id="27892372", photo=None), detail)
     assert len(listing.extra["photos"]) == 2
     assert listing.photo == listing.extra["photos"][0]
+
+
+def test_port_landing_scene_and_message_match(settings):
+    ok_car = kb(external_id="2", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc", "color": "흰색"})
+    client, app = make_client(settings, [kb(), ok_car])
+    try:
+        page = client.get("/port", params={"model": "k5"})
+        assert page.status_code == 200
+        assert "<em>Kia K5</em>" in page.text
+        assert 'id="terminal" aria-hidden="true"' in page.text
+        scene = json.loads(page.text.split('id="port-data">')[1].split("</script>")[0])
+        assert [c["key"] for c in scene["cars"]] == ["kbchachacha:2"]  # непроходной Palisade 3.8 не попадает
+        assert scene["cars"][0] | {"title": "Kia K5", "body": "sedan", "color": "#eceef0"} == scene["cars"][0]
+        assert scene["match"] == "Kia K5" and scene["demo"] is False
+        assert client.get("/port", params={"demo": "1"}).text.count('"demo": true') == 1
+
+        assert client.get("/api/port/kbchachacha/2").json()["title"] == "Kia K5"
+        assert client.get("/api/port/kbchachacha/1").status_code == 204
+        assert client.get("/api/port/kbchachacha/404").status_code == 204
+    finally:
+        client.__exit__(None, None, None)
