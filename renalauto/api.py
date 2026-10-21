@@ -203,6 +203,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         company_vk=settings.company_vk,
         ym_id=settings.ym_id,
         company_avito=settings.company_avito,
+        company_2gis=settings.company_2gis,
         deal=dict(fee=settings.deal_fee_rub, deposit=settings.deal_deposit_rub, pick_days=settings.deal_pick_days,
                   invoice_days=settings.deal_invoice_days, delivery_weeks=settings.deal_delivery_weeks),
         site_url=settings.site_url,

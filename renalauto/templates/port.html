@@ -193,6 +193,7 @@
       <p class="muted small">Каждую машину, которую привозим, показываем в наших каналах.</p>
       {% if company_max %}<a class="btn ghost block" href="{{ company_max }}" target="_blank" rel="noopener">Канал в MAX</a>{% endif %}
       {% if company_vk %}<a class="btn ghost block" href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
+      {% if company_2gis %}<a class="btn ghost block" href="{{ company_2gis }}" target="_blank" rel="noopener">Отзывы в 2ГИС</a>{% endif %}
       {% if company_avito %}<a class="btn ghost block" href="{{ company_avito }}" target="_blank" rel="noopener">Отзывы на Авито</a>{% endif %}
     </div>
   </div>
@@ -282,7 +283,7 @@
         {% if company_max %}<a class="btn" href="{{ company_max }}" target="_blank" rel="noopener">Наш канал в MAX</a>{% endif %}
         {% if company_phone %}<a class="final-phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '') }}">{{ company_phone }}</a>{% endif %}
       </div>
-      {% if company_address %}<p class="final-address">Офис: {{ company_address }}</p>{% endif %}
+      {% if company_address %}<p class="final-address">Офис: {{ company_address }}{% if company_2gis %} · <a href="{{ company_2gis }}" target="_blank" rel="noopener">на карте 2ГИС</a>{% endif %}</p>{% endif %}
     </div>
     <div class="panel final-form">{{ lead_form(None, 'Оставить заявку на подбор', 'Отправить заявку') }}</div>
   </div>
