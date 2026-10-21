@@ -342,14 +342,6 @@ body.pop-sheet .cta-bar { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .terminal *, .terminal-toast { transition: none !important; animation: none !important; }
 }
-.deal-steps { list-style: none; counter-reset: step; padding: 0; margin: 0 0 10px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
-.deal-steps li { counter-increment: step; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow);
-  display: flex; flex-direction: column; gap: 6px; }
-.deal-steps li::before { content: counter(step); width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; font-weight: 800;
-  display: inline-flex; align-items: center; justify-content: center; font-size: 14px; }
-.deal-steps b { font-size: 15px; }
-.deal-steps p { margin: 0; color: var(--muted); font-size: 13.5px; flex: 1; }
-.deal-sum { font-weight: 800; font-size: 15px; color: var(--text); padding-top: 8px; border-top: 1px dashed var(--line); }
 .faq { display: grid; gap: 8px; }
 .faq details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 0 16px; }
 .faq summary { cursor: pointer; font-weight: 600; padding: 14px 0; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
@@ -357,8 +349,6 @@ body.pop-sheet .cta-bar { display: none; }
 .faq summary::after { content: "+"; color: var(--accent); font-weight: 800; font-size: 18px; line-height: 1; }
 .faq details[open] summary::after { content: "−"; }
 .faq details p { margin: 0 0 14px; color: var(--muted); }
-@media (max-width: 1100px) { .deal-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .deal-steps { grid-template-columns: minmax(0, 1fr); } }
 /* видео выдач: одна высота у горизонтального и вертикального, подпись поверх кадра */
 .vydachi { display: grid; grid-template-columns: minmax(0, 1.778fr) minmax(0, .711fr); gap: 16px; }
 .vydacha { position: relative; margin: 0; border-radius: 20px; overflow: hidden; background: #0f172a; box-shadow: 0 18px 44px rgba(11,40,70,.16); }
@@ -688,28 +678,4 @@ body.port-page footer { margin-top: 0; }
 .port-page .band-white { background: #fff; }
 .port-page .sec-eyebrow { color: var(--sea); }
 .port-page .sec-head h2 { color: #0f172a; }
-.port-page .deal-steps li::before { background: var(--sea); }
-/* «Сделка и оплата» как путь: площадка → море → порт Владивосток; станции над карточками шагов */
-.deal-map { margin: 0 0 14px; border-radius: 20px; overflow: hidden; border: 1px solid var(--line); box-shadow: var(--shadow); background: #cfe4f1; }
-.deal-map svg { display: block; width: 100%; height: auto; }
-.deal-map .dm-sea { fill: #cfe4f1; } .deal-map .dm-land { fill: #f3efe6; } .deal-map .dm-wave { fill: none; stroke: #fff; stroke-width: 2; opacity: .7; stroke-linecap: round; }
-.deal-map .dm-office rect:not(.dm-win):not(.dm-door), .deal-map .dm-office path { fill: #fff; stroke: #cbd5e1; stroke-width: 1.5; }
-.deal-map .dm-win { fill: #bcd6ea; } .deal-map .dm-door { fill: var(--sea); }
-.deal-map .dm-yard { fill: #9aa1aa; } .deal-map .dm-lines line { stroke: #f1f5f9; stroke-width: 1.5; }
-.deal-map .dm-quay { fill: #d6d3cb; } .deal-map .dm-crane rect { fill: var(--accent); }
-.deal-map .dm-hull { fill: #1f3a5a; } .deal-map .dm-bridge { fill: #f8fafc; }
-.deal-map .dm-ship { transition: transform 3.2s cubic-bezier(.45,.05,.35,1); }
-.deal-map.go .dm-ship { transform: translateX(150px); }
-.deal-map .dm-lbl { font: 700 15px/1 Onest, system-ui, sans-serif; fill: #334155; }
-.deal-map .dm-sea-lbl { font-style: italic; font-weight: 600; fill: #4f7d99; font-size: 13px; }
-.deal-map .dm-route { fill: none; stroke: var(--sea); stroke-width: 2.5; stroke-dasharray: 1 8; stroke-linecap: round; }
-.deal-map .dm-progress { fill: none; stroke: var(--sea); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 960; stroke-dashoffset: 960; transition: stroke-dashoffset 3.6s ease-out; }
-.deal-map.go .dm-progress { stroke-dashoffset: 0; }
-.deal-map .dm-pin circle { fill: #fff; stroke: var(--sea); stroke-width: 3; transition: fill .3s; }
-.deal-map .dm-pin text { font: 800 14px/1 Onest, system-ui, sans-serif; fill: var(--sea); }
-.deal-map.go .dm-pin circle { fill: var(--sea); } .deal-map.go .dm-pin text { fill: #fff; }
-.deal-map .dm-pin circle, .deal-map .dm-pin text { transition-delay: calc(var(--i, 0) * .7s); }
-.deal-map .dm-tag rect { fill: #0f172a; } .deal-map .dm-tag text { font: 800 13px/1 Onest, system-ui, sans-serif; fill: #fff; }
-@media (max-width: 700px) { .deal-map .dm-lbl { display: none; } .deal-map { border-radius: 14px; } }
-@media (prefers-reduced-motion: reduce) { .deal-map .dm-ship, .deal-map .dm-progress, .deal-map .dm-pin * { transition: none; } }
 .port-page footer { border-top: 1px solid var(--line); }
