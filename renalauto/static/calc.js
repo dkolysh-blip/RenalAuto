@@ -66,6 +66,7 @@
   const showBtn = box.querySelector('[data-calc-show]');
   const showText = showBtn?.textContent;
   let catalog = [], chosen = null;
+  const carName = (make, model) => model.toLowerCase().startsWith(make.toLowerCase()) ? model : `${make} ${model}`;  // не «Audi Audi A4L»
   const plural = (n, a, b, c) => n % 10 === 1 && n % 100 !== 11 ? a : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? b : c;
   const opts = (sel, items, empty) => {
     sel.innerHTML = `<option value="">${empty}</option>` + items.map(([v, t]) => `<option value="${esc(v)}">${esc(t)}</option>`).join('');
@@ -85,7 +86,7 @@
     const mk = catalog.find(m => m.make === pickEl.make.value);
     const md = mk?.models.find(m => m.model === pickEl.model.value);
     chosen = md ? {make: mk.make, model: md.model, ...md} : null;
-    if (showBtn) showBtn.textContent = chosen ? `Показать ${chosen.make} ${chosen.model} на стоянке` : showText;
+    if (showBtn) showBtn.textContent = chosen ? `Показать ${carName(chosen.make, chosen.model)} на стоянке` : showText;
     if (!chosen) {
       pickEl.info.textContent = mk ? `${mk.make}: ${mk.count} ${plural(mk.count, 'объявление', 'объявления', 'объявлений')} в ленте — выберите модель.`
         : 'Выберите машину из объявлений — подставим её параметры и цену. Или задайте всё вручную ниже.';
@@ -99,10 +100,10 @@
     setVal('age', age < 3 ? 'new' : age <= 5 ? 'mid' : 'old');
     if (chosen.cc) setVal('cc', chosen.cc);
     setVal('price', yr.price); setVal('currency', 'RUB');
-    showCar(`${chosen.make} ${chosen.model} ${y}`,
+    showCar(`${carName(chosen.make, chosen.model)} ${y}`,
       `${chosen.country === 'CN' ? 'из Китая' : 'из Кореи'}${chosen.cc ? ' · ' + (chosen.cc / 1000).toFixed(1).replace('.', ',') + ' л' : ''} · ${ENGINE[chosen.engine] || ''}`,
       chosen.sprite ? `/static/port/cars/${chosen.sprite}.webp?v=11` : null);
-    pickEl.info.innerHTML = `<b>${esc(chosen.make)} ${esc(chosen.model)} ${y}</b>: ${yr.n} ${plural(yr.n, 'объявление', 'объявления', 'объявлений')} в ленте, ` +
+    pickEl.info.innerHTML = `<b>${esc(carName(chosen.make, chosen.model))} ${y}</b>: ${yr.n} ${plural(yr.n, 'объявление', 'объявления', 'объявлений')} в ленте, ` +
       `цена машины — типичная за этот год. Мощность в объявлениях не указана — проверьте поле «Мощность». <button type="button" data-calc-reset>Сбросить</button>`;
     run();
   }
@@ -132,7 +133,7 @@
     if (match) {
       const low = match.toLowerCase();
       for (const mk of catalog) {
-        const md = mk.models.find(m => `${mk.make} ${m.model}`.toLowerCase() === low || m.model.toLowerCase() === low);
+        const md = mk.models.find(m => carName(mk.make, m.model).toLowerCase() === low || m.model.toLowerCase() === low);
         if (md) { pickEl.make.value = mk.make; pickEl.make.dispatchEvent(new Event('change'));
           pickEl.model.value = md.model; pickEl.model.dispatchEvent(new Event('change')); break; }
       }
@@ -146,7 +147,7 @@
     const sel = pf.elements.budget, sum = last.r.total_rub;
     if (chosen) {
       sel.value = '';
-      if (pf.elements.q) pf.elements.q.value = `${chosen.make} ${chosen.model}`;
+      if (pf.elements.q) pf.elements.q.value = carName(chosen.make, chosen.model);
     } else {
       const opt = [...sel.options].find(o => o.value && +o.value >= sum);
       sel.value = opt ? opt.value : '';

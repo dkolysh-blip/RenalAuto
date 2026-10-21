@@ -11,20 +11,21 @@
 <section class="port-hero band band-dark">
   <div class="port-offer">
     <div class="offer-main">
-    <div class="eyebrow"><span class="dot on"></span> Живая лента: новые машины каждую минуту</div>
+    <div class="eyebrow"><span class="dot on"></span> Объявления в реальном времени</div>
     <h1>{% if matched %}Найдём <em>{{ matched }}</em> в Корее и Китае{% else %}Найдём оптимальный авто в <em>Корее</em> и <em>Китае</em>{% endif %}</h1>
     <p class="hero-sub">Сравним варианты на площадках, проверим историю и проходимость в РФ — до того, как вы заплатите</p>
     </div>
     <div class="offer-side">
-    <p>Свежие объявления с площадок Кореи и Китая с ориентировочной ценой в рублях: машина, таможня, утильсбор, оформление. Точную сумму посчитает менеджер под вашу машину.</p>
-    <div class="hero-cta">
-      <a class="btn" href="#podbor" data-goal="form_open">Подобрать под бюджет</a>
-      <a class="btn ghost" href="/">Все машины</a>
-    </div>
+    <p class="live-lead"><b>Это живая лента:</b> все свежие объявления с площадок Кореи и Китая появляются здесь в реальном времени, без отбора, сразу с ориентировочной ценой в рублях.</p>
+    {% if company_max %}<a class="best-pick" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">
+      <span class="best-pick-ico" aria-hidden="true">★</span>
+      <span><b>Хотите лучшие варианты?</b><small>Отбираем вручную и публикуем подборку в нашем канале MAX</small></span>
+      <span class="best-pick-go" aria-hidden="true">→</span>
+    </a>{% endif %}
     <ul class="port-facts">
       <li><b>Проходимость</b> по утильсбору и запрету на вывоз</li>
       <li><b>Проверка VIN</b> и истории до брони</li>
-      <li><b>до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽</b> — наше вознаграждение, не процент от цены</li>
+      <li><b>до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽</b> — наше вознаграждение, не процент от цены</li>
     </ul>
     </div>
   </div>

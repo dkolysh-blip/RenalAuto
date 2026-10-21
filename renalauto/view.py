@@ -201,8 +201,11 @@ def real_sprite(v: CarView) -> str | None:
 def scene_car(v: CarView) -> dict[str, Any]:
     """Короткая запись для сцены терминала (уходит в браузер JSON-ом)."""
     title = v.title
-    if v.make and v.model and len(f"{v.make} {v.model}") < len(title):
-        title = f"{v.make} {v.model}"  # на плашке «Kia K5 2020» без комплектации
+    if v.make and v.model:
+        # «Audi A4L», а не «Audi Audi A4L»: в китайских объявлениях модель часто уже начинается с марки
+        short = v.model if v.model.lower().startswith(v.make.lower()) else f"{v.make} {v.model}"
+        if len(short) < len(title):
+            title = short  # на плашке «Kia K5 2020» без комплектации
     return {
         "key": f"{v.listing.source}:{v.listing.external_id}",
         "source": v.listing.source,

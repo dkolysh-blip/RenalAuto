@@ -725,3 +725,16 @@ body.port-page footer { margin-top: 0; }
 #calc-price { font-variant-numeric: tabular-nums; }
 .port-page .calc-result .btn.block { width: auto; }
 @media (max-width: 900px) { .port-page .calc { grid-template-columns: minmax(0, 1fr); } .port-page .calc-result { position: static; } }
+
+/* первый экран: лента в реальном времени, подборка лучших — в канале MAX */
+.port-page .top nav { display: none; }  /* на лендинге без меню: одна страница, один путь */
+.live-lead { margin: 0 0 14px; font-size: 17px; line-height: 1.55; color: #334155; }
+.live-lead b { color: #0f172a; }
+.best-pick { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: #0f1012; color: #fff;
+  box-shadow: 0 14px 32px rgba(15,16,18,.22); transition: transform .15s ease, box-shadow .15s ease; margin-bottom: 16px; }
+.best-pick:hover { text-decoration: none; transform: translateY(-2px); box-shadow: 0 18px 40px rgba(15,16,18,.28); }
+.best-pick > span:nth-child(2) { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.best-pick b { font-size: 16px; }
+.best-pick small { color: rgba(255,255,255,.7); font-size: 13.5px; }
+.best-pick-ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--accent); font-size: 20px; flex: 0 0 auto; }
+.best-pick-go { font-size: 22px; font-weight: 700; }

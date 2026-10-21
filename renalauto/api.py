@@ -280,11 +280,29 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         )
         return [car_view(l, rates) for l in rows[:limit]], len(rows) > limit
 
+    cc_seen: dict[tuple[str, str], list[int]] = defaultdict(list)  # объёмы по модели — из объявлений, где он указан
+
+    def guess_cc(v) -> tuple[int | None, bool]:
+        """Объём двигателя: из объявления, иначе типичный для модели по другим объявлениям, иначе 1,5 л для Китая.
+
+        Второе значение — True, если объём угадан: цена тогда показывается «от»."""
+        cc = v.eligibility.displacement_cc
+        key = (v.make or "", v.model or "")
+        if cc:
+            seen = cc_seen[key]
+            if len(seen) < 50:
+                seen.append(cc)
+            return cc, False
+        if cc_seen.get(key):
+            return int(statistics.median(cc_seen[key])), True
+        return (1500, True) if v.listing.country == "CN" else (None, False)
+
     def quote_car(v) -> dict[str, Any]:
-        """Машина для сцены + ориентировочная цена под ключ (мощность не известна — считаем по льготе до 160 л.с.)."""
+        """Машина для сцены + ориентировочная цена с растаможкой (мощность не известна — считаем по льготе до 160 л.с.)."""
         car = scene_car(v)
-        l, cc, eur = v.listing, v.eligibility.displacement_cc, rates.get("EUR")
+        l, eur = v.listing, rates.get("EUR")
         engine = engine_kind(l)
+        cc, guessed = guess_cc(v) if engine != "ev" else (v.eligibility.displacement_cc, False)
         if v.price_rub and l.year and eur and (cc or engine == "ev"):
             years = date.today().year - l.year
             age = "new" if years < 3 else "mid" if years <= 5 else "old"
@@ -292,7 +310,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                         fee_rub=settings.deal_fee_rub, papers_rub=settings.deal_papers_rub,
                         logistics_rub=settings.deal_logistics_kr_rub if l.country == "KR" else settings.deal_logistics_cn_rub)
             car["turnkey"] = q.total_rub
-            car["turnkey_from"] = q.total_is_from
+            car["turnkey_from"] = q.total_is_from or guessed
             car["calc"] = {"country": l.country, "engine": engine, "age": age, "cc": cc or 0, "price": round(v.price_rub)}
         return car
 
@@ -349,12 +367,15 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if model or make:
             hit = next((c for c in cars if (not model or model.lower() in f"{c.model} {c.title}".lower())
                         and (not make or make.lower() in f"{c.make} {c.title}".lower())), None)
-            matched = (f"{hit.make} {hit.model}" if hit and hit.make and hit.model
+            matched = ((hit.model if hit.model.lower().startswith(hit.make.lower()) else f"{hit.make} {hit.model}")
+                       if hit and hit.make and hit.model
                        else " ".join(x[:1].upper() + x[1:] for x in (make, model) if x))
             # ключевая фраза из utm_term («авто из кореи») — не модель: в заголовок только то, что нашлось на стоянке
             if not hit and not q.get("model") and not make:
                 matched = None
         cur = {c: rates.get(c) for c in ("CNY", "KRW", "EUR")}
+        for c in cars:  # сначала собираем объёмы по моделям — для объявлений, где объём не указан
+            guess_cc(c)
         scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched,
                  "rates": {k: v for k, v in cur.items() if v}, "rates_source": rates.source}
         return render(

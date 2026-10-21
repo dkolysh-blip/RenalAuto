@@ -255,3 +255,16 @@ def test_not_found_page_favicon_and_share_image(settings):
         assert client.get("/static/brand/og.jpg").status_code == 200
     finally:
         client.__exit__(None, None, None)
+
+
+def test_scene_title_without_double_make_and_cn_price_without_engine(settings):
+    from renalauto.models import Listing
+    audi = Listing(source="dongchedi", external_id="7", country="CN", url="https://example.com/7", title="奥迪 Audi A4L 2022款 40 TFSI",
+                   make="奥迪", model="Audi A4L", year=2022, price=200_000, currency="CNY")
+    client, app = make_client(settings, [audi])
+    try:
+        car = client.get("/api/port/dongchedi/7").json()
+        assert car["title"] == "Audi A4L"
+        assert car["turnkey"] and car["turnkey_from"] is True  # объём не указан — 1,5 л по умолчанию, цена «от»
+    finally:
+        client.__exit__(None, None, None)
