@@ -55,30 +55,54 @@
       <div class="terminal-toasts"></div>
       <div class="lot-sign"></div>
     </div>
-    <p class="terminal-note muted small">Каждая машина — реальное объявление с площадки Кореи или Китая, цена ориентировочная. Наведите или нажмите на машину.</p>
     <div class="port-pop" id="port-pop" hidden></div>
     <ul class="sr-only">{% for v in cars[:12] %}<li><a href="{{ v.path }}">{{ v.title }}</a></li>{% endfor %}</ul>
-    <div class="port-route" id="route" data-route data-weeks="{{ deal.delivery_weeks }}">
-      <div class="pr-head">
-        <span class="pr-eyebrow">Путь машины</span>
-        <b class="pr-car" data-route-car>Нажмите на машину на стоянке — покажем, как она поедет к вам</b>
+    {# путь машины: вода из порта продолжается здесь — судно уходит из терминала в эту полосу, из Китая едет автовоз #}
+    <div class="voyage" id="route" data-route>
+      <div class="vy-band" aria-hidden="true">
+        <div class="vy-sea"><i class="vy-waves"></i></div>
+        <div class="vy-land"><i class="vy-road"></i></div>
+        <div class="vy-pier"><span>Владивосток</span></div>
+        <div class="vy-border"><span>граница</span></div>
+        <div class="vy-wake" data-vy-wake></div>
+        <div class="vy-ship" data-vy-ship><img src="/static/port/ship.webp?v=11" alt="" width="190" height="45">
+          <span class="vy-deck"><img data-vy-mine src="/static/port/cars/suv-white.webp?v=11" alt=""></span></div>
+        <div class="vy-truck" data-vy-truck><i class="vy-cab"></i><span class="vy-deck"><img data-vy-mine src="/static/port/cars/sedan-red.webp?v=11" alt=""><img src="/static/port/cars/suv-silver.webp?v=11" alt=""></span></div>
+        <ol class="vy-pins">{% for i in range(5) %}<li data-vy-pin style="--x: {{ [4, 27, 50, 73, 96][i] }}%"><i>{{ i + 1 }}</i></li>{% endfor %}</ol>
       </div>
-      <div class="pr-track">
-        <div class="pr-line"><i data-route-fill></i>
-          <span class="pr-veh" data-route-veh aria-hidden="true">
-            <img class="pr-ship" src="/static/port/ship.webp?v=9" alt="" width="72" height="17">
-            <svg class="pr-truck" viewBox="0 0 44 16" width="44" height="16"><rect x="0" y="3" width="30" height="10" rx="2"/><rect class="cab" x="31" y="3" width="12" height="10" rx="3"/></svg>
-          </span>
+      <div class="vy-info">
+        <div class="vy-head">
+          <span class="pr-eyebrow">Путь машины</span>
+          <b class="vy-car" data-route-car>Листайте вниз — покажем, как машина едет к вам. Или нажмите на машину на стоянке.</b>
+          <div class="vy-tabs" role="group" aria-label="Откуда везём">
+            <button type="button" data-vy-mode="kr" aria-pressed="true">Из Кореи — морем</button>
+            <button type="button" data-vy-mode="cn" aria-pressed="false">Из Китая — по суше</button>
+          </div>
         </div>
-        <ol class="pr-steps">
-          <li data-route-step><i>1</i><b>Выкуп</b><span>Проверяем историю и проходимость в РФ, присылаем фото и видео, выкупаем от вашего имени.</span><em>подбор — до {{ deal.pick_days }} дней</em></li>
-          <li data-route-step><i>2</i><b>В пути</b><span data-kr>Морем из Пусана или Инчхона во Владивосток, около 1 000 км.</span><span data-cn hidden>Автовозом через переход Суйфэньхэ — Пограничный во Владивосток, около 700 км.</span><em>до Владивостока — до {{ deal.delivery_weeks }} недель</em></li>
-          <li data-route-step><i>3</i><b>Таможня</b><span>Во Владивостоке: декларация, утильсбор, СБКТС и ЭПТС. Каждую сумму подтверждаем отчётом.</span></li>
-          <li data-route-step><i>4</i><b>Ваш город</b><span>Автовозом или по железной дороге. Или забираете сами во Владивостоке.</span></li>
-          <li data-route-step><i>5</i><b>Ключи</b><span>Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, отчёт по всем расходам.</span></li>
-        </ol>
+        <figure class="vy-card" data-vy-card>
+          <img data-vy-photo src="/static/media/route/busan.webp" alt="" width="640" height="400" loading="lazy">
+          <figcaption><span class="vy-num" data-vy-num>1</span><b data-vy-title></b><span data-vy-text></span><em data-vy-meta></em></figcaption>
+        </figure>
+        <ol class="vy-steps">{% for i in range(5) %}<li><button type="button" data-vy-step="{{ i }}"><i>{{ i + 1 }}</i><span data-vy-step-title></span></button></li>{% endfor %}</ol>
       </div>
+      <script type="application/json" id="vy-data">{{ {
+        "kr": [
+          {"photo": "busan", "title": "Выкуп и отгрузка в Пусане", "text": "Проверяем историю и проходимость в РФ, присылаем фото и видео, выкупаем от вашего имени и везём в порт.", "meta": "подбор — до " ~ deal.pick_days ~ " дней"},
+          {"photo": "ship", "title": "В море", "text": "Судно-автовоз из Пусана или Инчхона во Владивосток — около 1 000 км.", "meta": "до Владивостока — до " ~ deal.delivery_weeks ~ " недель"},
+          {"photo": "vlad", "title": "Владивосток", "text": "Таможня, утильсбор, СБКТС и ЭПТС — оформляем сами, каждую сумму подтверждаем отчётом.", "meta": ""},
+          {"photo": "truck-ru", "title": "В ваш город", "text": "Автовозом или по железной дороге. Или забираете машину во Владивостоке сами.", "meta": ""},
+          {"photo": "keys", "title": "Ключи у вас", "text": "Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, отчёт по всем расходам.", "meta": "фото с нашей выдачи"}
+        ],
+        "cn": [
+          {"photo": "truck-cn", "title": "Выкуп в Китае", "text": "Проверяем историю и проходимость в РФ, присылаем фото и видео, выкупаем и грузим на автовоз.", "meta": "подбор — до " ~ deal.pick_days ~ " дней"},
+          {"photo": "truck-cn", "title": "Граница", "text": "Автовозом через переход Суйфэньхэ — Пограничный во Владивосток, около 700 км.", "meta": "до Владивостока — до " ~ deal.delivery_weeks ~ " недель"},
+          {"photo": "vlad", "title": "Владивосток", "text": "Таможня, утильсбор, СБКТС и ЭПТС — оформляем сами, каждую сумму подтверждаем отчётом.", "meta": ""},
+          {"photo": "truck-ru", "title": "В ваш город", "text": "Автовозом или по железной дороге. Или забираете машину во Владивостоке сами.", "meta": ""},
+          {"photo": "keys", "title": "Ключи у вас", "text": "Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, отчёт по всем расходам.", "meta": "фото с нашей выдачи"}
+        ]
+      }|tojson }}</script>
     </div>
+    <p class="terminal-note muted small">Каждая машина — реальное объявление с площадки Кореи или Китая, цена ориентировочная. Наведите или нажмите на машину.</p>
   </div>
 </section>
 

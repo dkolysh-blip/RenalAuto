@@ -576,7 +576,8 @@
     delivering = true;
     const d = car.d, byShip = d.country !== 'CN' && ship.state === 'docked';
     hidePop();
-    dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey, manual: true}}));
+    dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey, manual: true,
+      sprite: `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`}}));
     routeAt(0);
     cam.follow = car; focusOn(car);
     drawRoute(car);

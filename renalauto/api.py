@@ -551,7 +551,11 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     @app.get("/credits", response_class=HTMLResponse, include_in_schema=False)
     async def credits(request: Request) -> HTMLResponse:
         """Авторы 3D-моделей машин на стоянке: лицензия CC BY требует их указать."""
-        return render(request, "credits.html")
+        try:
+            photos = json.loads((HERE / "photo_credits.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            photos = []
+        return render(request, "credits.html", photos=photos)
 
     @app.get("/privacy", response_class=HTMLResponse, include_in_schema=False)
     async def privacy(request: Request) -> HTMLResponse:

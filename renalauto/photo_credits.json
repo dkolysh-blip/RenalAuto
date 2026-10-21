@@ -1,0 +1,47 @@
+[
+ {
+  "slug": "truck-cn",
+  "name": "Автовоз в Китае",
+  "title": "Chinese car transporter.jpg",
+  "author": "Unau",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.ru",
+  "url": "https://commons.wikimedia.org/wiki/File:Chinese_car_transporter.jpg"
+ },
+ {
+  "slug": "busan",
+  "name": "Порт Пусана",
+  "title": "Busan Port in 2018.jpg",
+  "author": "Christophe95",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/deed.ru",
+  "url": "https://commons.wikimedia.org/wiki/File:Busan_Port_in_2018.jpg"
+ },
+ {
+  "slug": "ship",
+  "name": "Судно-автовоз",
+  "title": "Car carrier vessel LIBERTY PEACE, sailing in the Puget Sound (20240219).jpg",
+  "author": "FPTI",
+  "license": "CC0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.ru",
+  "url": "https://commons.wikimedia.org/wiki/File:Car_carrier_vessel_LIBERTY_PEACE,_sailing_in_the_Puget_Sound_(20240219).jpg"
+ },
+ {
+  "slug": "vlad",
+  "name": "Владивосток, бухта Золотой Рог",
+  "title": "Vladivostok Golden Horn bay 2022-08.jpg",
+  "author": "Svetlov Artem",
+  "license": "CC0",
+  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.ru",
+  "url": "https://commons.wikimedia.org/wiki/File:Vladivostok_Golden_Horn_bay_2022-08.jpg"
+ },
+ {
+  "slug": "truck-ru",
+  "name": "Автовоз с машинами в России",
+  "title": "Du novaj aŭtoj Moskviĉ-3 sur kamiono (Tjumeno).jpg",
+  "author": "RG72",
+  "license": "CC BY-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/deed.ru",
+  "url": "https://commons.wikimedia.org/wiki/File:Du_novaj_a%C5%ADtoj_Moskvi%C4%89-3_sur_kamiono_(Tjumeno).jpg"
+ }
+]

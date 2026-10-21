@@ -251,7 +251,8 @@ def test_not_found_page_favicon_and_share_image(settings):
         assert client.get("/favicon.ico").headers["content-type"] == "image/x-icon"
         port = client.get("/port").text
         assert "/static/brand/og.jpg" in port and 'href="/credits"' in port
-        assert "Hyundai Tucson" in client.get("/credits").text
+        credits = client.get("/credits").text
+        assert "Hyundai Tucson" in credits and "Wikimedia Commons" in credits and "CC BY-SA 4.0" in credits
         assert client.get("/static/brand/og.jpg").status_code == 200
     finally:
         client.__exit__(None, None, None)
