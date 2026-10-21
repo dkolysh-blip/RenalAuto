@@ -95,11 +95,14 @@
         <div class="field"><label for="calc-make">Марка</label>
           <select id="calc-make" data-calc-make><option value="">Все марки</option></select></div>
         <div class="field"><label for="calc-model">Модель</label>
-          <select id="calc-model" data-calc-model disabled><option value="">Сначала марка</option></select></div>
+          <select id="calc-model" data-calc-model disabled><option value="">Модель</option></select></div>
         <div class="field"><label for="calc-year">Год</label>
           <select id="calc-year" data-calc-year disabled><option value="">—</option></select></div>
       </div>
       <p class="calc-pick-info" data-calc-info>Выберите машину из объявлений — подставим её параметры и цену. Или задайте всё вручную ниже.</p>
+      <details class="calc-more" data-calc-more open>
+        <summary>Параметры машины</summary>
+        <div class="calc-more-body">
       <fieldset class="seg"><legend>Откуда</legend>
         <label><input type="radio" name="country" value="KR" checked> Корея</label>
         <label><input type="radio" name="country" value="CN"> Китай</label>
@@ -124,6 +127,8 @@
           <select id="calc-cur" name="currency"><option value="RUB">₽</option><option value="KRW">₩ воны</option><option value="CNY">¥ юани</option></select></div>
       </div>
       <p class="muted small">Самая выгодная пошлина — для машин 3–5 лет. Льготный утильсбор — до 160 л.с. (гибриды и электро — до 80 л.с.).</p>
+        </div>
+      </details>
     </form>
     <div class="calc-result panel" aria-live="polite">
       <div class="calc-verdict" data-calc-verdict>Введите параметры машины</div>

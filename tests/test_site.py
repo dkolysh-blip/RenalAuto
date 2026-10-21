@@ -231,3 +231,10 @@ def test_port_models_catalog(settings):
         assert client.get("/api/port/cars", params={"make": "Kia", "model": "K3"}).json()["total"] == 0
     finally:
         client.__exit__(None, None, None)
+
+
+def test_title_leaves_no_hangul():
+    assert i18n.title("BMW 1시리즈 (F40) 120i Advantage") == "BMW 1 Series (F40) 120i Advantage"
+    assert i18n.title("Renault Korea (삼성) The New QM6 2.0 LPe") == "Renault Korea The New QM6 2.0 LPe"
+    assert i18n.title("벤츠 GLC-클래스 X253") == "Mercedes-Benz GLC-Class X253"
+    assert not i18n.has_foreign(i18n.title("기아 더 뉴 레이 시그니처"))

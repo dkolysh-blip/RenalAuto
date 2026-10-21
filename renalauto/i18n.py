@@ -130,11 +130,30 @@ def _lookup(table: dict[str, str], value: str | None) -> str | None:
     return value
 
 
+# серии и приставки поколений, которые пишут слитно с цифрой или буквой: «1시리즈», «GLC-클래스», «더 뉴»
+_PATTERNS = [
+    (re.compile(r"(\w+?)\s*시리즈"), r"\1 Series"),
+    (re.compile(r"([A-Z]{1,3})\s*-?\s*클래스"), r"\1-Class"),
+    (re.compile(r"디\s*올\s*뉴"), "The All New"), (re.compile(r"올\s*뉴"), "All New"),
+    (re.compile(r"더\s*뉴"), "The New"), (re.compile(r"뉴\s"), "New "),
+]
+_FOREIGN_GROUP_RE = re.compile(r"\([^()]*[가-힣一-鿿][^()]*\)")
+_FOREIGN_WORD_RE = re.compile(r"\S*[가-힣一-鿿]\S*")
+
+
 def title(text: str | None) -> str:
-    """'현대 팰리세이드 3.8 가솔린 8인승 프레스티지' -> 'Hyundai Palisade 3.8 бензин 8 мест Prestige'."""
+    """'현대 팰리세이드 3.8 가솔린 8인승 프레스티지' -> 'Hyundai Palisade 3.8 бензин 8 мест Prestige'.
+
+    Что перевести не удалось (комплектации, «(삼성)»), из названия убираем: на сайте — только латиница и русский.
+    """
     if not text:
         return ""
-    out = _TITLE_RE.sub(lambda m: f" {_ALL_TITLE[m.group()]} ", text)
+    out = text
+    for rx, repl in _PATTERNS:
+        out = rx.sub(repl, out)
+    out = _TITLE_RE.sub(lambda m: f" {_ALL_TITLE[m.group()]} ", out)
+    out = _FOREIGN_GROUP_RE.sub(" ", out)
+    out = _FOREIGN_WORD_RE.sub(" ", out)
     out = re.sub(r"\s+", " ", out).strip()
     out = re.sub(r"(\d)\s+мест", r"\1 мест", out)
     out = re.sub(r"(\d)\s+-го", r"\1-го", out)

@@ -31,6 +31,9 @@
     }
   }
   form.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 250); });
+  // на телефоне ручные параметры свёрнуты: их заполняет выбор марки и модели
+  const more = form.querySelector('[data-calc-more]');
+  if (more && matchMedia('(max-width: 760px)').matches) more.open = false;
   form.addEventListener('submit', e => e.preventDefault());
 
   // «Получить точный расчёт»: подставляем параметры в комментарий формы подбора
@@ -79,7 +82,7 @@
   }
   pickEl.make.addEventListener('change', () => {
     const mk = catalog.find(m => m.make === pickEl.make.value);
-    opts(pickEl.model, mk ? mk.models.map(m => [m.model, `${m.model} (${m.count})`]) : [], mk ? 'Выберите модель' : 'Сначала марка');
+    opts(pickEl.model, mk ? mk.models.map(m => [m.model, `${m.model} (${m.count})`]) : [], mk ? 'Выберите модель' : 'Модель');
     opts(pickEl.year, [], '—');
     choose();
   });
@@ -135,7 +138,7 @@
   picked.addEventListener('click', e => { if (e.target.closest('button')) picked.hidden = true; });
   window.RenalCalc = {
     fill(c, title) {
-      if (pickEl.make.value) { pickEl.make.value = ''; opts(pickEl.model, [], 'Сначала марка'); opts(pickEl.year, [], '—'); chosen = null;
+      if (pickEl.make.value) { pickEl.make.value = ''; opts(pickEl.model, [], 'Модель'); opts(pickEl.year, [], '—'); chosen = null;
         if (showBtn) showBtn.textContent = showText; }
       const set = (name, value) => {
         const el = form.elements[name];
@@ -145,6 +148,7 @@
       set('cc', c.cc); set('price', c.price); set('currency', 'RUB');
       picked.innerHTML = `<span>Выбранная машина: <b>${esc(title)}</b>. Мощность в объявлении не указана — проверьте поле «Мощность».</span><button type="button" aria-label="Убрать">×</button>`;
       picked.hidden = false;
+      if (more) more.open = true;
       form.elements.hp.classList.add('attn');
       setTimeout(() => form.elements.hp.classList.remove('attn'), 2400);
       run();
