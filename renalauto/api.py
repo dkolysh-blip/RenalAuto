@@ -20,6 +20,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from pydantic import BaseModel, Field
 
 from . import __version__, i18n
@@ -517,14 +518,23 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         storage = storage_of(request)
         return render(request, "admin.html", leads=storage.list_leads(status), stats=storage.lead_stats())
 
+    @app.exception_handler(StarletteHTTPException)
+    async def not_found(request: Request, exc: StarletteHTTPException):
+        """404 для людей — страница сайта; API и остальные ошибки — как раньше, JSON."""
+        if exc.status_code == 404 and not request.url.path.startswith("/api/") and "text/html" in request.headers.get("accept", ""):
+            detail = exc.detail if isinstance(exc.detail, str) and exc.detail != "Not Found" else None
+            return render(request, "404.html", status_code=404, detail=detail)
+        from fastapi.exception_handlers import http_exception_handler
+        return await http_exception_handler(request, exc)
+
     @app.get("/privacy", response_class=HTMLResponse, include_in_schema=False)
     async def privacy(request: Request) -> HTMLResponse:
         return render(request, "privacy.html", policy_date=POLICY_DATE)
 
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon() -> Response:
-        svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>"
-        return Response(svg, media_type="image/svg+xml", headers={"Cache-Control": "public, max-age=604800"})
+        ico = (HERE / "static" / "favicon.ico").read_bytes()  # знак из логотипа: ворота и машина
+        return Response(ico, media_type="image/x-icon", headers={"Cache-Control": "public, max-age=604800"})
 
     @app.get("/robots.txt", response_class=PlainTextResponse, include_in_schema=False)
     async def robots() -> str:

@@ -679,3 +679,14 @@ body.port-page footer { margin-top: 0; }
 .port-page .sec-eyebrow { color: var(--sea); }
 .port-page .sec-head h2 { color: #0f172a; }
 .port-page footer { border-top: 1px solid var(--line); }
+
+/* плашка про cookie и страница 404 */
+.cookie-note { position: fixed; left: 16px; bottom: 16px; z-index: 30; max-width: 420px; display: flex; gap: 12px; align-items: center;
+  padding: 12px 14px; border-radius: 14px; background: var(--card); color: var(--text); border: 1px solid var(--line); box-shadow: 0 12px 32px rgba(16,24,40,.18); font-size: 13.5px; }
+.cookie-note p { margin: 0; }
+.cookie-note .btn { flex: 0 0 auto; padding: 8px 14px; }
+@media (max-width: 760px) { .cookie-note { left: 8px; right: 8px; bottom: calc(76px + env(safe-area-inset-bottom)); max-width: none; } }
+.nf { min-height: 60vh; display: grid; place-content: center; justify-items: center; text-align: center; gap: 12px; padding: 48px 16px; }
+.nf h1 { margin: 8px 0 0; font-size: clamp(26px, 4vw, 40px); }
+.nf p { margin: 0; max-width: 460px; }
+.nf-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }

@@ -111,3 +111,17 @@
     });
   }
 })();
+
+// Плашка про cookie: показываем, пока человек не нажмёт «Понятно»
+(() => {
+  const note = document.querySelector('[data-cookie-note]');
+  if (!note) return;
+  let seen = false;
+  try { seen = localStorage.getItem('cookie-ok') === '1'; } catch (_) { /* без хранилища — показываем */ }
+  if (seen) return;
+  note.hidden = false;
+  note.querySelector('[data-cookie-ok]').addEventListener('click', () => {
+    note.hidden = true;
+    try { localStorage.setItem('cookie-ok', '1'); } catch (_) { /* не сохранили — покажем в следующий раз */ }
+  });
+})();

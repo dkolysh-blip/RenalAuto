@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Страница не найдена | {{ company }}{% endblock %}
+{% block content %}
+<section class="nf">
+  <img src="/static/brand/renal-auto-mark.svg" alt="" width="180" height="80">
+  <h1>Такой страницы нет</h1>
+  <p class="muted">{{ detail or 'Возможно, объявление уже снято с продажи или ссылка устарела.' }}</p>
+  <div class="nf-actions">
+    <a class="btn" href="/port">Посмотреть машины</a>
+    <a class="btn ghost" href="/port#podbor">Подобрать под бюджет</a>
+  </div>
+</section>
+{% endblock %}
