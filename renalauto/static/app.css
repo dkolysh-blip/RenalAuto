@@ -501,7 +501,7 @@ body.pop-sheet .cta-bar { display: none; }
 .port-page .terminal { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .voyage { --water: #144452; --land: #8b929a; margin-top: 0; border-radius: 0 0 20px 20px; overflow: hidden; background: var(--card);
   border: 1px solid var(--line); border-top: 0; box-shadow: var(--shadow); }
-.vy-band { --road: 62px; position: relative; height: 164px; overflow: hidden; background: #b8c2a3; }
+.vy-band { --road: 64px; --dock: 125px; position: relative; height: 164px; overflow: hidden; background: #b8c2a3; }
 /* земля сверху: лес точками и поля пятнами; дорога с белыми кромками и жёлтой разметкой */
 .vy-land { position: absolute; inset: 0; background-color: #b8c2a3;
   background-image: radial-gradient(ellipse 140px 50px at 30% 20%, rgba(226,214,160,.55), transparent 70%),
@@ -519,18 +519,42 @@ body.pop-sheet .cta-bar { display: none; }
   background: repeating-linear-gradient(100deg, transparent 0 38px, rgba(255,255,255,.35) 38px 40px, transparent 40px 90px);
   animation: vy-waves 14s linear infinite; }
 @keyframes vy-waves { to { background-position: 360px 0; } }
-.vy-coast { position: absolute; top: 0; bottom: 0; right: -8px; width: 10px; background: #dccfa3; border-radius: 4px; box-shadow: -3px 0 0 rgba(255,255,255,.35); }
-.vy-quay { position: absolute; left: calc(50% - 4px); top: calc(var(--road) - 34px); width: 26px; height: 68px; background: #cfd3d6;
-  box-shadow: inset 0 0 0 2px #b5bbc0; border-radius: 2px; transition: opacity .3s; }
+.vy-coast { position: absolute; left: calc(50% - 20px); top: 0; width: 40px; height: 100%; fill: #b8c2a3; stroke: #dccfa3; stroke-width: 5px;
+  vector-effect: non-scaling-stroke; transition: opacity .3s; }
+/* порт Владивостока: причал в воду, два крана над судном, штабели контейнеров */
+.vy-port { position: absolute; left: 50%; top: 0; bottom: 0; width: 0; transition: opacity .3s; }
+.vy-quay { position: absolute; left: -30px; top: calc(var(--road) - 30px); width: 42px; height: 60px; border-radius: 2px; background: #cfd3d6;
+  box-shadow: inset 0 0 0 2px #b0b6bb, inset 6px 0 0 #e7e9eb; }
+.vy-crane { position: absolute; left: -34px; top: calc(var(--road) - 34px); width: 30px; height: 7px; border-radius: 2px; background: #f2b233;
+  box-shadow: 0 0 0 1.5px #6b4e12; }
+.vy-crane::before { content: ""; position: absolute; right: 100%; top: 2px; width: 26px; height: 3px; background: #f2b233; box-shadow: 0 0 0 1px #6b4e12; }
+.vy-crane.low { top: calc(var(--road) + 27px); }
+.vy-boxes { position: absolute; left: 18px; top: calc(var(--road) - 26px); width: 12px; height: 6px; background: #b5473a;
+  box-shadow: 13px 0 #3d7cb3, 26px 0 #d08a2e, 0 7px #3f8f5c, 13px 7px #b5473a, 26px 7px #3d7cb3; }
+.vy-boxes.low { top: calc(var(--road) + 20px); box-shadow: 13px 0 #d08a2e, 26px 0 #3f8f5c, 0 7px #3d7cb3, 13px 7px #d08a2e, 26px 7px #b5473a; }
+.voyage.land .vy-port .vy-quay, .voyage.land .vy-port .vy-crane { opacity: 0; }
+/* дом в конце пути: машина съезжает с автовоза на площадку у дома */
+.vy-home { position: absolute; left: 96%; top: 0; width: 0; height: 100%; }
+.vy-house { position: absolute; left: -34px; top: calc(var(--road) - 50px); width: 26px; height: 22px; border-radius: 2px; background: #cf9b86;
+  box-shadow: inset 0 -11px 0 #bb8670, 0 2px 3px rgba(0,0,0,.2); }
+.vy-drive { position: absolute; left: -4px; top: calc(var(--road) - 44px); width: 24px; height: 30px; background: #c9ccc9; border-radius: 2px; }
+.vy-home img { position: absolute; left: 8px; top: calc(var(--road) - 29px); width: 11px; height: 22px; max-width: none; transform: translate(-50%, -50%);
+  opacity: 0; transition: opacity .4s ease, transform .4s ease; }
+.voyage.arrived .vy-home img { opacity: 1; transform: translate(-50%, -60%); }
+.vy-trailer img:first-child { transition: opacity .3s; } .voyage.arrived .vy-trailer img:first-child { opacity: 0; }
+/* расстояния над участками пути */
+.vy-dist { position: absolute; left: var(--x); top: 6px; transform: translateX(-50%); font: 600 12px/1 Onest, system-ui, sans-serif; color: #fff;
+  white-space: nowrap; padding: 3px 8px; border-radius: 999px; background: rgba(15,23,42,.45); }
+.voyage.land .vy-dist { background: rgba(15,23,42,.55); }
 /* города: кварталы крыш по обе стороны дороги */
 .vy-town { position: absolute; left: var(--x); top: 0; width: 92px; height: 100%; transform: translateX(-50%); pointer-events: none; }
 .vy-town.big { width: 128px; transform: translateX(-12%); }
 .vy-town::before, .vy-town::after { content: ""; position: absolute; left: 8px; width: 14px; height: 10px; border-radius: 2px; background: #efebe3;
   box-shadow: 0 1px 0 rgba(0,0,0,.12), 19px 0 #d6dade, 38px 0 #efebe3, 57px 0 #d6dade, 0 -14px #d6dade, 19px -14px #efebe3, 38px -14px #cf9b86, 57px -14px #efebe3; }
-.vy-town::before { top: calc(var(--road) - 30px); }
+.vy-town::before { top: calc(var(--road) - 28px); }
 .vy-town::after { top: calc(var(--road) + 34px); }
-.vy-town.big { width: 120px; }
-.vy-town.big::before, .vy-town.big::after { left: 16px; box-shadow: 19px 0 #d6dade, 38px 0 #efebe3, 57px 0 #d6dade, 76px 0 #efebe3,
+.vy-town.big { width: 120px; margin-left: 34px; }
+.vy-town.big::before, .vy-town.big::after { left: 22px; box-shadow: 19px 0 #d6dade, 38px 0 #efebe3, 57px 0 #d6dade, 76px 0 #efebe3,
   0 -14px #d6dade, 19px -14px #efebe3, 38px -14px #cf9b86, 57px -14px #efebe3, 76px -14px #d6dade; }
 .vy-town.small { width: 44px; transform: translateX(-70%); }
 .vy-town.small::before, .vy-town.small::after { box-shadow: 19px 0 #d6dade, 0 -14px #cf9b86, 19px -14px #efebe3; }
@@ -543,7 +567,7 @@ body.pop-sheet .cta-bar { display: none; }
 .vy-flag { position: absolute; top: 10px; right: 8px; font: 800 11px/1 Onest, system-ui, sans-serif; letter-spacing: .04em; color: #7a1a1a;
   background: rgba(255,255,255,.75); padding: 3px 6px; border-radius: 4px; }
 .vy-flag.ru { right: auto; left: 8px; color: #0b3d63; }
-.voyage.land .vy-sea { right: 100%; } .voyage.land .vy-quay, .voyage.land .vy-coast { opacity: 0; } .voyage.land .vy-border { opacity: 1; } .voyage.land .vy-wake { opacity: 0; }
+.voyage.land .vy-sea { right: 100%; } .voyage.land .vy-coast { opacity: 0; } .voyage.land .vy-border { opacity: 1; } .voyage.land .vy-wake { opacity: 0; }
 /* транспорт */
 .vy-ship, .vy-truck { position: absolute; top: var(--road); left: 0; transform: translate(-50%, -50%); transition: opacity .3s; will-change: left; }
 .vy-ship { width: 190px; height: 45px; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)); }
@@ -597,7 +621,10 @@ body.pop-sheet .cta-bar { display: none; }
 .vy-steps li.on i { background: var(--accent); color: #fff; }
 .port-page .terminal-note { margin-top: 10px; }
 @media (max-width: 900px) {
-  .vy-band { height: 132px; --road: 50px; }
+  .vy-band { height: 132px; --road: 52px; --dock: 92px; }
+  .vy-dist { display: none; }
+  .vy-town:not(.big) { display: none; } .vy-home { left: 93%; }
+  .vy-port, .vy-home { transform: scale(.8); transform-origin: 0 var(--road); }
   .vy-ship { width: 130px; height: 31px; } .vy-ship > img { width: 130px; height: 31px; } .vy-ship .vy-deck { left: 68px; }
   .vy-deck img { width: 7px; height: 14px; }
   .vy-truck { transform: translate(-50%, -50%) scale(.78); }

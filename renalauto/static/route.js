@@ -20,6 +20,7 @@
   function fillSteps() {
     steps.forEach((b, i) => { b.querySelector('[data-vy-step-title]').textContent = DATA[mode][i].title; });
     pins.forEach((p, i) => { p.querySelector('[data-vy-pin-label]').textContent = DATA[mode][i].short; });
+    $$('.vy-dist').forEach(d => { d.textContent = d.dataset[mode]; });
   }
   function showCard(i) {
     const s = DATA[mode][i];
@@ -38,19 +39,20 @@
     const land = mode === 'cn';
     if (land) {
       ship.style.opacity = 0; wake.style.opacity = 0;
-      truck.style.opacity = 1; truck.style.left = `${lerp(4, 96, t)}%`;
-    } else if (t <= 0.5) {
-      const x = lerp(4, 46, t / 0.5);
-      ship.style.opacity = 1; ship.style.left = `${x}%`;
-      wake.style.opacity = t > 0.02 ? 1 : 0; wake.style.left = `${Math.max(0, x - 22)}%`; wake.style.width = `${Math.min(x, 22) - 4}%`;
+      truck.style.opacity = 1; truck.style.left = `${lerp(4, 92, t)}%`;
+    } else if (t <= 0.5) {  // судно идёт к причалу; --dock — сколько не доходит до берега (полкорпуса и причал)
+      const k = t / 0.5, x = lerp(4, 50, k);
+      ship.style.opacity = 1; ship.style.left = `calc(${x}% - ${k} * var(--dock))`;
+      wake.style.opacity = t > 0.02 ? 1 : 0; wake.style.left = `${Math.max(0, x - 24)}%`; wake.style.width = `${Math.max(0, Math.min(x, 24) - 8)}%`;
       truck.style.opacity = 0; truck.style.left = '54%';
-    } else {  // во Владивостоке машину забирает автовоз
-      ship.style.opacity = .55; ship.style.left = '44%'; wake.style.opacity = 0;
-      truck.style.opacity = 1; truck.style.left = `${lerp(56, 96, (t - 0.5) / 0.5)}%`;
+    } else {  // судно у причала, машину забирает автовоз
+      ship.style.opacity = 1; ship.style.left = 'calc(50% - var(--dock))'; wake.style.opacity = 0;
+      truck.style.opacity = 1; truck.style.left = `${lerp(56, 92, (t - 0.5) / 0.5)}%`;
     }
     const s = Math.round(t * 4);
     pins.forEach((p, i) => { p.classList.toggle('done', i < s); p.classList.toggle('on', i === s); });
     steps.forEach((b, i) => { b.parentElement.classList.toggle('done', i < s); b.parentElement.classList.toggle('on', i === s); });
+    box.classList.toggle('arrived', t > 0.97);  // машина съехала с автовоза к дому
     if (s !== stage) { stage = s; showCard(s); }
   }
 
