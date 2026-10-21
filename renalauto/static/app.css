@@ -534,7 +534,9 @@ body.pop-sheet .cta-bar { display: none; }
 .terminal .chip rect { fill: rgba(12,14,17,.82); stroke: rgba(255,255,255,.18); stroke-width: .8; }
 .terminal .chip.sel rect { fill: var(--accent); stroke: #fff; stroke-width: 1.2; }
 .terminal .focused .chip.sel { opacity: 1; }
-.terminal .focused .arrival-tag { display: none; }  /* пока смотрим машину, ценники новых не мешают */
+.terminal .focused .arrival-tag { display: none; }
+/* выбранная машина на палубе и на автовозе — с красной обводкой, её видно среди остальных */
+.terminal .deck-car.mine, .terminal .truck .mine { filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 4px var(--accent)); }  /* пока смотрим машину, ценники новых не мешают */
 .terminal .focused .t-scale, .terminal .focused .t-stats { opacity: 0; transition: opacity .3s; }
 .terminal .chip text { font: 800 10.5px/1 Inter, system-ui, sans-serif; fill: #fff; letter-spacing: .01em; }
 .terminal .chip.none text { fill: rgba(255,255,255,.45); }

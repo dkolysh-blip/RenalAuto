@@ -250,20 +250,22 @@
     });
     svg.querySelector('.glint-band').animate([{transform: 'translateX(0)'}, {transform: 'translateX(140px)'}], {duration: 16000, iterations: Infinity});
   }
-  function truck() {
+  function truck(mine) {
     if (!L.truck || reduce.matches || document.hidden) return;
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'truck');
     let load = '';
     for (let i = 0; i < 3; i++) {
-      const d = {body: pick(['sedan', 'suv', 'hatch']), color: pick(Object.values(PAINTS))};
-      load += `<g transform="translate(${-14 - i * 27} 0) rotate(90) scale(.78)">${carShape(d)}</g>`;
+      const d = i === 0 && mine ? mine : {body: pick(['sedan', 'suv', 'hatch']), color: pick(Object.values(PAINTS))};
+      load += `<g class="${i === 0 && mine ? 'mine' : ''}" transform="translate(${-14 - i * 27} 0) rotate(90) scale(.78)">${carShape(d)}</g>`;
     }
     g.innerHTML = `${NIGHT ? '<path class="beam on" d="M14 -8 L60 -16 L60 16 L14 8 Z" fill="url(#t-beam)" transform="rotate(0)"/>' : ''}
       <rect class="trailer" x="-86" y="-11" width="92" height="22" rx="2"/><rect class="rail" x="-84" y="-8.5" width="88" height="2"/><rect class="rail" x="-84" y="6.5" width="88" height="2"/>
       ${load}<rect class="cab" x="7" y="-10" width="17" height="20" rx="3"/><rect class="cab-glass" x="18" y="-8" width="4" height="16" rx="1"/>`;
     svg.querySelector('.t-trucks').appendChild(g);
-    const a = g.animate([{transform: `translate(-140px, ${L.truck}px)`}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 12000, easing: 'linear'});
+    const a = mine  // с выбранной машиной автовоз трогается от рампы и уходит направо
+      ? g.animate([{transform: `translate(${L.rampX}px, ${L.truck}px)`}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 6000, easing: 'ease-in'})
+      : g.animate([{transform: `translate(-140px, ${L.truck}px)`}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 12000, easing: 'linear'});
     a.onfinish = () => g.remove();
   }
 
@@ -557,9 +559,57 @@
     gShip.querySelectorAll('.deck-car')[ship.loaded - 1]?.setAttribute('opacity', '1');
   }
 
+  // --- «Как она поедет ко мне»: выбранная машина грузится на судно (Корея) или автовоз (Китай),
+  // транспорт уходит, полоса «Путь машины» под сценой идёт в такт. Потом машина снова встаёт на стоянку.
+  let delivering = false;
+  const routeAt = t => window.RenalRoute?.at(t);
+  function deliver(car) {
+    if (delivering || car.state !== 'parked') return;
+    delivering = true;
+    const d = car.d, byShip = d.country !== 'CN' && ship.state === 'docked';
+    hidePop();
+    dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey, manual: true}}));
+    routeAt(0);
+    cam.follow = car; focusOn(car);
+    drawRoute(car);
+    toast(`<b>${esc(label(d))}</b> — выкуплена и едет ${byShip ? 'на погрузку в порт' : 'к автовозу'}`);
+    const done = () => {
+      routeAt(1);
+      toast(`<b>${esc(label(d))}</b> во Владивостоке: таможня, документы — и к вам. <a href="#podbor" data-goal="form_open">Хочу так же →</a>`);
+      setTimeout(() => { delivering = false; arrive(d, true); hud(); }, reduce.matches ? 0 : 1200);
+    };
+    setTimeout(() => toRamp(car, () => {
+      cam.follow = null; unfocus();
+      if (byShip) {
+        load(car);
+        gShip.querySelectorAll('.deck-car')[ship.loaded - 1]?.classList.add('mine');
+        routeAt(0.25);
+        ship.state = 'leaving';
+        setTimeout(() => {
+          window.RenalRoute?.run(0.25, 0.75, 6000);
+          moveShip(L.W + 40, 6, () => {
+            ship.loaded = 0;
+            ship.x = -L.ship.x - L.ship.w - 60;
+            paintShip();
+            done();
+            moveShip(0, 7, () => { ship.state = 'docked'; });
+          });
+        }, reduce.matches ? 0 : 700);
+      } else {
+        car.g.classList.add('boarding');
+        setTimeout(() => remove(car), reduce.matches ? 0 : 500);
+        occupied[car.slot] = null;
+        routeAt(0.25);
+        truck(d);
+        window.RenalRoute?.run(0.25, 0.75, 6000);
+        setTimeout(done, reduce.matches ? 0 : 6000);
+      }
+    }), reduce.matches ? 0 : 500);
+  }
+
   // --- судно: периодически уходит с машинами и приходит новое ------------------------
   function shipCycle() {
-    if (reduce.matches || document.hidden || ship.state !== 'docked' || [...cars.values()].some(c => c.state === 'ramp' || c.state === 'at-ramp')) return;
+    if (delivering || reduce.matches || document.hidden || ship.state !== 'docked' || [...cars.values()].some(c => c.state === 'ramp' || c.state === 'at-ramp')) return;
     // перед отходом на борт заезжают 2–3 самые давние машины
     const old = [...cars.values()].filter(c => c.state === 'parked').sort((a, b) => a.since - b.since).slice(0, 3);
     old.forEach((c, i) => setTimeout(() => toRamp(c, () => load(c)), i * 900));
@@ -705,6 +755,7 @@
         <div class="pop-actions">
           ${d.calc && window.RenalCalc ? '<button class="btn" type="button" data-act="breakdown">Разобрать цену под ключ</button>' : ''}
           <button class="btn${d.calc && window.RenalCalc ? ' ghost' : ''}" type="button" data-act="want">Хочу эту</button>
+          <button class="btn ghost" type="button" data-act="trip">Как она поедет ко мне →</button>
         </div>
         ${d.path ? `<a class="small" href="${esc(d.path)}" data-act="more">Подробнее о машине →</a>` : ''}
       </div>`;
@@ -719,6 +770,7 @@
       goal('car_calc');
       window.RenalCalc.fill(d.calc, label(d));
     });
+    popEl.querySelector('[data-act="trip"]').addEventListener('click', () => { goal('car_trip'); deliver(car); });
     popEl.querySelector('[data-act="want"]').addEventListener('click', () => {
       cam.follow = car;
       if (cam.car !== car) focusOn(car);

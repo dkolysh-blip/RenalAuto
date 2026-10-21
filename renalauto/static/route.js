@@ -30,8 +30,18 @@
     raf = requestAnimationFrame(tick);
   }
 
+  // сцена порта ведёт полосу сама, когда показывает доставку: at(t) — встать, run(a, b, ms) — проехать
+  function run(a, b, ms) {
+    cancelAnimationFrame(raf);
+    if (reduce.matches) { show(b); return; }
+    const t0 = performance.now();
+    const tick = now => { const k = Math.min(1, (now - t0) / ms); show(a + (b - a) * k); if (k < 1) raf = requestAnimationFrame(tick); };
+    raf = requestAnimationFrame(tick);
+  }
+  window.RenalRoute = {at: t => { cancelAnimationFrame(raf); show(t); }, run};
+
   addEventListener('renal:car', e => {
-    const {title, country, turnkey} = e.detail || {};
+    const {title, country, turnkey, manual} = e.detail || {};
     if (!title) return;
     const cn = country === 'cn';
     box.classList.add('picked');
@@ -39,6 +49,6 @@
     box.querySelectorAll('[data-kr]').forEach(el => { el.hidden = cn; });
     box.querySelectorAll('[data-cn]').forEach(el => { el.hidden = !cn; });
     carEl.textContent = `${title} — ${cn ? 'из Китая по суше' : 'из Кореи морем'}${turnkey ? `, от ${Math.round(turnkey).toLocaleString('ru-RU')} ₽ под ключ` : ''}`;
-    play();
+    if (!manual) play();
   });
 })();
