@@ -19,6 +19,7 @@
 
   function fillSteps() {
     steps.forEach((b, i) => { b.querySelector('[data-vy-step-title]').textContent = DATA[mode][i].title; });
+    pins.forEach((p, i) => { p.querySelector('[data-vy-pin-label]').textContent = DATA[mode][i].short; });
   }
   function showCard(i) {
     const s = DATA[mode][i];

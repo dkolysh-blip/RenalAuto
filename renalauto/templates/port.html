@@ -60,15 +60,18 @@
     {# путь машины: вода из порта продолжается здесь — судно уходит из терминала в эту полосу, из Китая едет автовоз #}
     <div class="voyage" id="route" data-route>
       <div class="vy-band" aria-hidden="true">
-        <div class="vy-sea"><i class="vy-waves"></i></div>
         <div class="vy-land"><i class="vy-road"></i></div>
-        <div class="vy-pier"><span>Владивосток</span></div>
-        <div class="vy-border"><span>граница</span></div>
+        <div class="vy-sea"><i class="vy-waves"></i><i class="vy-coast"></i></div>
+        <i class="vy-quay"></i>
+        <i class="vy-town big" style="--x: 50%"></i>
+        <i class="vy-town" style="--x: 73%"></i>
+        <i class="vy-town small" style="--x: 96%"></i>
+        <div class="vy-border"><i class="vy-gate"></i><span class="vy-flag">КНР</span><span class="vy-flag ru">РФ</span></div>
         <div class="vy-wake" data-vy-wake></div>
         <div class="vy-ship" data-vy-ship><img src="/static/port/ship.webp?v=11" alt="" width="190" height="45">
           <span class="vy-deck"><img data-vy-mine src="/static/port/cars/suv-white.webp?v=11" alt=""></span></div>
-        <div class="vy-truck" data-vy-truck><i class="vy-cab"></i><span class="vy-deck"><img data-vy-mine src="/static/port/cars/sedan-red.webp?v=11" alt=""><img src="/static/port/cars/suv-silver.webp?v=11" alt=""></span></div>
-        <ol class="vy-pins">{% for i in range(5) %}<li data-vy-pin style="--x: {{ [4, 27, 50, 73, 96][i] }}%"><i>{{ i + 1 }}</i></li>{% endfor %}</ol>
+        <div class="vy-truck" data-vy-truck><span class="vy-trailer"><img data-vy-mine src="/static/port/cars/sedan-red.webp?v=11" alt=""><img src="/static/port/cars/suv-silver.webp?v=11" alt=""><img src="/static/port/cars/sedan-white.webp?v=11" alt=""></span><i class="vy-cab"></i></div>
+        <ol class="vy-pins">{% for i in range(5) %}<li data-vy-pin style="--x: {{ [4, 27, 50, 73, 96][i] }}%"><i>{{ i + 1 }}</i><span data-vy-pin-label></span></li>{% endfor %}</ol>
       </div>
       <div class="vy-info">
         <div class="vy-head">
@@ -87,18 +90,18 @@
       </div>
       <script type="application/json" id="vy-data">{{ {
         "kr": [
-          {"photo": "busan", "title": "Выкуп и отгрузка в Пусане", "text": "Проверяем историю и проходимость в РФ, присылаем фото и видео, выкупаем от вашего имени и везём в порт.", "meta": "подбор — до " ~ deal.pick_days ~ " дней"},
-          {"photo": "ship", "title": "В море", "text": "Судно-автовоз из Пусана или Инчхона во Владивосток — около 1 000 км.", "meta": "до Владивостока — до " ~ deal.delivery_weeks ~ " недель"},
-          {"photo": "vlad", "title": "Владивосток", "text": "Таможня, утильсбор, СБКТС и ЭПТС — оформляем сами, каждую сумму подтверждаем отчётом.", "meta": ""},
-          {"photo": "truck-ru", "title": "В ваш город", "text": "Автовозом или по железной дороге. Или забираете машину во Владивостоке сами.", "meta": ""},
-          {"photo": "keys", "title": "Ключи у вас", "text": "Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, отчёт по всем расходам.", "meta": "фото с нашей выдачи"}
+          {"photo": "busan", "short": "Пусан", "title": "Выкуп и отгрузка в Пусане", "text": "Проверяем историю и проходимость в РФ, присылаем фото и видео, выкупаем от вашего имени и везём в порт.", "meta": "подбор — до " ~ deal.pick_days ~ " дней"},
+          {"photo": "ship", "short": "Море", "title": "В море", "text": "Судно-автовоз из Пусана или Инчхона во Владивосток — около 1 000 км.", "meta": "до Владивостока — до " ~ deal.delivery_weeks ~ " недель"},
+          {"photo": "vlad", "short": "Владивосток", "title": "Владивосток", "text": "Таможня, утильсбор, СБКТС и ЭПТС — оформляем сами, каждую сумму подтверждаем отчётом.", "meta": ""},
+          {"photo": "truck-ru", "short": "Ваш город", "title": "В ваш город", "text": "Автовозом или по железной дороге. Или забираете машину во Владивостоке сами.", "meta": ""},
+          {"photo": "keys", "short": "Ключи у вас", "title": "Ключи у вас", "text": "Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, отчёт по всем расходам.", "meta": "фото с нашей выдачи"}
         ],
         "cn": [
-          {"photo": "truck-cn", "title": "Выкуп в Китае", "text": "Проверяем историю и проходимость в РФ, присылаем фото и видео, выкупаем и грузим на автовоз.", "meta": "подбор — до " ~ deal.pick_days ~ " дней"},
-          {"photo": "truck-cn", "title": "Граница", "text": "Автовозом через переход Суйфэньхэ — Пограничный во Владивосток, около 700 км.", "meta": "до Владивостока — до " ~ deal.delivery_weeks ~ " недель"},
-          {"photo": "vlad", "title": "Владивосток", "text": "Таможня, утильсбор, СБКТС и ЭПТС — оформляем сами, каждую сумму подтверждаем отчётом.", "meta": ""},
-          {"photo": "truck-ru", "title": "В ваш город", "text": "Автовозом или по железной дороге. Или забираете машину во Владивостоке сами.", "meta": ""},
-          {"photo": "keys", "title": "Ключи у вас", "text": "Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, отчёт по всем расходам.", "meta": "фото с нашей выдачи"}
+          {"photo": "truck-cn", "short": "Китай", "title": "Выкуп в Китае", "text": "Проверяем историю и проходимость в РФ, присылаем фото и видео, выкупаем и грузим на автовоз.", "meta": "подбор — до " ~ deal.pick_days ~ " дней"},
+          {"photo": "truck-cn", "short": "Граница", "title": "Граница", "text": "Автовозом через переход Суйфэньхэ — Пограничный во Владивосток, около 700 км.", "meta": "до Владивостока — до " ~ deal.delivery_weeks ~ " недель"},
+          {"photo": "vlad", "short": "Владивосток", "title": "Владивосток", "text": "Таможня, утильсбор, СБКТС и ЭПТС — оформляем сами, каждую сумму подтверждаем отчётом.", "meta": ""},
+          {"photo": "truck-ru", "short": "Ваш город", "title": "В ваш город", "text": "Автовозом или по железной дороге. Или забираете машину во Владивостоке сами.", "meta": ""},
+          {"photo": "keys", "short": "Ключи у вас", "title": "Ключи у вас", "text": "Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, отчёт по всем расходам.", "meta": "фото с нашей выдачи"}
         ]
       }|tojson }}</script>
     </div>

@@ -499,37 +499,74 @@ body.pop-sheet .cta-bar { display: none; }
 .port-page .terminal { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
 .voyage { --water: #144452; --land: #8b929a; margin-top: 0; border-radius: 0 0 20px 20px; overflow: hidden; background: var(--card);
   border: 1px solid var(--line); border-top: 0; box-shadow: var(--shadow); }
-.vy-band { position: relative; height: 150px; background: var(--land); overflow: hidden; }
-.vy-sea { position: absolute; inset: 0 50% 0 0; background: linear-gradient(180deg, var(--water), #0f3a47); transition: right .5s ease; }
-.vy-waves { position: absolute; inset: 0; opacity: .35;
+.vy-band { --road: 62px; position: relative; height: 164px; overflow: hidden; background: #b8c2a3; }
+/* земля сверху: лес точками и поля пятнами; дорога с белыми кромками и жёлтой разметкой */
+.vy-land { position: absolute; inset: 0; background-color: #b8c2a3;
+  background-image: radial-gradient(ellipse 140px 50px at 30% 20%, rgba(226,214,160,.55), transparent 70%),
+    radial-gradient(ellipse 180px 40px at 80% 85%, rgba(226,214,160,.5), transparent 70%),
+    radial-gradient(circle, rgba(70,102,60,.3) 0 2.5px, transparent 3.5px),
+    radial-gradient(circle, rgba(70,102,60,.2) 0 2px, transparent 3px);
+  background-size: 520px 164px, 640px 164px, 34px 23px, 23px 31px; background-position: 0 0, 0 0, 0 0, 12px 9px; }
+.vy-road { position: absolute; left: 0; right: 0; top: var(--road); height: 30px; transform: translateY(-50%); background: #4a4f57;
+  box-shadow: 0 0 0 3px #a3a597, inset 0 2px 0 #e9ecef, inset 0 -2px 0 #e9ecef; }
+.vy-road::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px;
+  background: repeating-linear-gradient(90deg, #f2c94c 0 14px, transparent 14px 26px); }
+/* море из Кореи: до Владивостока вода, у берега песок и причал */
+.vy-sea { position: absolute; inset: 0 50% 0 0; background: linear-gradient(180deg, #175063, #0f3a47); transition: right .5s ease; }
+.vy-waves { position: absolute; inset: 0; opacity: .3;
   background: repeating-linear-gradient(100deg, transparent 0 38px, rgba(255,255,255,.35) 38px 40px, transparent 40px 90px);
   animation: vy-waves 14s linear infinite; }
 @keyframes vy-waves { to { background-position: 360px 0; } }
-.vy-land { position: absolute; inset: 0 0 0 50%; background: #9aa1a8; transition: left .5s ease; }
-.vy-road { position: absolute; left: 0; right: 0; top: 50%; height: 34px; transform: translateY(-50%); background: #4b5058;
-  border-block: 2px solid #d6d9dc; }
-.vy-road::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px dashed #f2c94c; }
-.vy-pier { position: absolute; left: 50%; top: 0; bottom: 0; width: 16px; margin-left: -8px; background: #cfd3d6; box-shadow: 0 0 0 2px rgba(0,0,0,.08); }
-.vy-pier span, .vy-border span { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 800;
-  color: #fff; background: rgba(15,16,18,.75); padding: 3px 8px; border-radius: 999px; }
-.vy-border { position: absolute; left: 27%; top: 0; bottom: 0; border-left: 3px dashed #dd1f1f; opacity: 0; transition: opacity .3s; }
-.vy-ship, .vy-truck { position: absolute; top: 50%; left: 0; transform: translate(-50%, -50%); transition: opacity .3s; will-change: left; }
+.vy-coast { position: absolute; top: 0; bottom: 0; right: -8px; width: 10px; background: #dccfa3; border-radius: 4px; box-shadow: -3px 0 0 rgba(255,255,255,.35); }
+.vy-quay { position: absolute; left: calc(50% - 4px); top: calc(var(--road) - 34px); width: 26px; height: 68px; background: #cfd3d6;
+  box-shadow: inset 0 0 0 2px #b5bbc0; border-radius: 2px; transition: opacity .3s; }
+/* города: кварталы крыш по обе стороны дороги */
+.vy-town { position: absolute; left: var(--x); top: 0; width: 92px; height: 100%; transform: translateX(-50%); pointer-events: none; }
+.vy-town.big { width: 128px; transform: translateX(-12%); }
+.vy-town::before, .vy-town::after { content: ""; position: absolute; left: 8px; width: 14px; height: 10px; border-radius: 2px; background: #efebe3;
+  box-shadow: 0 1px 0 rgba(0,0,0,.12), 19px 0 #d6dade, 38px 0 #efebe3, 57px 0 #d6dade, 0 -14px #d6dade, 19px -14px #efebe3, 38px -14px #cf9b86, 57px -14px #efebe3; }
+.vy-town::before { top: calc(var(--road) - 30px); }
+.vy-town::after { top: calc(var(--road) + 34px); }
+.vy-town.big { width: 120px; }
+.vy-town.big::before, .vy-town.big::after { left: 16px; box-shadow: 19px 0 #d6dade, 38px 0 #efebe3, 57px 0 #d6dade, 76px 0 #efebe3,
+  0 -14px #d6dade, 19px -14px #efebe3, 38px -14px #cf9b86, 57px -14px #efebe3, 76px -14px #d6dade; }
+.vy-town.small { width: 44px; transform: translateX(-70%); }
+.vy-town.small::before, .vy-town.small::after { box-shadow: 19px 0 #d6dade, 0 -14px #cf9b86, 19px -14px #efebe3; }
+/* граница из Китая: линия через поля, шлагбаум на дороге, КНР слева и РФ справа */
+.vy-border { position: absolute; left: 27%; top: 0; bottom: 0; width: 0; opacity: 0; transition: opacity .3s; }
+.vy-border::before { content: ""; position: absolute; top: 0; bottom: 0; left: -1px; border-left: 2px dashed rgba(160,30,30,.6); }
+.vy-gate { position: absolute; left: -4px; top: calc(var(--road) - 24px); width: 8px; height: 48px; border-radius: 3px;
+  background: repeating-linear-gradient(180deg, #dd1f1f 0 6px, #fff 6px 12px); box-shadow: 0 2px 4px rgba(0,0,0,.3); }
+.vy-gate::after { content: ""; position: absolute; left: 12px; top: -12px; width: 14px; height: 12px; border-radius: 2px; background: #e8e3d8; box-shadow: inset 0 0 0 2px #9aa0a6; }
+.vy-flag { position: absolute; top: 10px; right: 8px; font: 800 11px/1 Onest, system-ui, sans-serif; letter-spacing: .04em; color: #7a1a1a;
+  background: rgba(255,255,255,.75); padding: 3px 6px; border-radius: 4px; }
+.vy-flag.ru { right: auto; left: 8px; color: #0b3d63; }
+.voyage.land .vy-sea { right: 100%; } .voyage.land .vy-quay, .voyage.land .vy-coast { opacity: 0; } .voyage.land .vy-border { opacity: 1; } .voyage.land .vy-wake { opacity: 0; }
+/* транспорт */
+.vy-ship, .vy-truck { position: absolute; top: var(--road); left: 0; transform: translate(-50%, -50%); transition: opacity .3s; will-change: left; }
 .vy-ship { width: 190px; height: 45px; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)); }
 .vy-ship > img { width: 190px; height: 45px; display: block; }
-.vy-ship .vy-deck { position: absolute; left: 92px; top: 13px; }
-.vy-deck img { width: 9px; height: 18px; transform: rotate(90deg); display: inline-block; margin: 0 4px; }
-.vy-wake { position: absolute; top: 50%; height: 26px; transform: translateY(-50%); left: 0; width: 0; border-radius: 13px;
+.vy-ship .vy-deck { position: absolute; left: 100px; top: 50%; }
+.vy-deck img, .vy-trailer img { position: absolute; top: 50%; max-width: none; width: 10px; height: 20px; transform: translate(-50%, -50%) rotate(90deg); }
+.vy-wake { position: absolute; top: var(--road); height: 26px; transform: translateY(-50%); left: 0; width: 0; border-radius: 13px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.45)); transition: opacity .3s; }
-.vy-truck { width: 112px; height: 26px; border-radius: 4px; background: #334155; box-shadow: 0 6px 8px rgba(0,0,0,.3); opacity: 0; }
-.vy-truck .vy-cab { position: absolute; right: -16px; top: 1px; width: 18px; height: 24px; border-radius: 5px; background: #e2e8f0; border: 2px solid #334155; }
-.vy-truck .vy-deck { position: absolute; left: 4px; top: -2px; display: flex; gap: 14px; }
-.vy-truck .vy-deck img { width: 13px; height: 26px; margin: 0 10px; }
-.voyage.land .vy-sea { right: 100%; } .voyage.land .vy-land { left: 0; } .voyage.land .vy-border { opacity: .9; } .voyage.land .vy-wake { opacity: 0; }
-.vy-pins { list-style: none; margin: 0; padding: 0; position: absolute; left: 0; right: 0; bottom: 10px; height: 26px; }
-.vy-pins li { position: absolute; left: var(--x); transform: translateX(-50%); }
-.vy-pins i { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font: 800 12px/1 Onest, system-ui, sans-serif; font-style: normal;
-  background: #fff; color: var(--sea); border: 2px solid var(--sea); transition: background .25s, color .25s, border-color .25s; }
-.vy-pins li.done i { background: var(--sea); color: #fff; } .vy-pins li.on i { background: var(--accent); border-color: #fff; color: #fff; transform: scale(1.15); }
+.vy-truck { width: 112px; height: 24px; opacity: 0; filter: drop-shadow(0 4px 4px rgba(0,0,0,.35)); }
+.vy-trailer { position: absolute; left: 0; top: 0; width: 88px; height: 24px; border-radius: 3px; background: #dfe3e7;
+  box-shadow: inset 0 0 0 2px #39404a, inset 0 6px 0 -4px #39404a, inset 0 -6px 0 -4px #39404a; }
+.vy-trailer img:nth-child(1) { left: 16px; } .vy-trailer img:nth-child(2) { left: 44px; } .vy-trailer img:nth-child(3) { left: 72px; }
+.vy-trailer img { width: 11px; height: 22px; }
+.vy-cab { position: absolute; left: 91px; top: 1px; width: 21px; height: 22px; border-radius: 3px 7px 7px 3px; background: #dd1f1f; }
+.vy-cab::after { content: ""; position: absolute; right: 3px; top: 3px; width: 5px; height: 16px; border-radius: 2px; background: #1f2937; }
+/* станции: номер и короткая подпись */
+.vy-pins { list-style: none; margin: 0; padding: 0; position: absolute; left: 0; right: 0; bottom: 12px; height: 26px; }
+.vy-pins li { position: absolute; left: var(--x); transform: translateX(-50%); display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px;
+  border-radius: 999px; background: rgba(255,255,255,.9); box-shadow: 0 2px 8px rgba(15,23,42,.12); white-space: nowrap; transition: background .25s; }
+.vy-pins li:first-child { transform: translateX(-13px); } .vy-pins li:last-child { transform: translateX(calc(-100% + 13px)); }
+.vy-pins i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 800 11.5px/1 Onest, system-ui, sans-serif; font-style: normal;
+  background: #fff; color: var(--sea); box-shadow: inset 0 0 0 2px var(--sea); transition: background .25s, color .25s; }
+.vy-pins span { font: 700 12.5px/1 Onest, system-ui, sans-serif; color: #0f172a; }
+.vy-pins li.done i { background: var(--sea); color: #fff; }
+.vy-pins li.on { background: #0f1012; } .vy-pins li.on span { color: #fff; } .vy-pins li.on i { background: var(--accent); color: #fff; box-shadow: none; }
 .vy-info { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px 24px; padding: 18px 22px 22px; align-items: start; }
 .vy-head { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .vy-car { flex: 1 1 300px; min-width: 0; font-size: 15.5px; color: var(--muted); font-weight: 600; }
@@ -558,11 +595,13 @@ body.pop-sheet .cta-bar { display: none; }
 .vy-steps li.on i { background: var(--accent); color: #fff; }
 .port-page .terminal-note { margin-top: 10px; }
 @media (max-width: 900px) {
-  .vy-band { height: 116px; }
-  .vy-ship { width: 130px; height: 31px; } .vy-ship > img { width: 130px; height: 31px; } .vy-ship .vy-deck { left: 62px; top: 8px; }
-  .vy-deck img { width: 7px; height: 14px; margin: 0 2px; }
-  .vy-truck { width: 84px; height: 20px; } .vy-truck .vy-cab { width: 14px; height: 18px; right: -13px; } .vy-truck .vy-deck img { width: 10px; height: 20px; margin: 0 6px; }
-  .vy-pier span, .vy-border span { font-size: 10.5px; }
+  .vy-band { height: 132px; --road: 50px; }
+  .vy-ship { width: 130px; height: 31px; } .vy-ship > img { width: 130px; height: 31px; } .vy-ship .vy-deck { left: 68px; }
+  .vy-deck img { width: 7px; height: 14px; }
+  .vy-truck { transform: translate(-50%, -50%) scale(.78); }
+  .vy-town { transform: translateX(-50%) scale(.8); } .vy-town.big { transform: translateX(-12%) scale(.8); } .vy-town.small { transform: translateX(-70%) scale(.8); }
+  .vy-pins li { padding: 2px; } .vy-pins li span { display: none; } .vy-pins li.on { padding-right: 9px; } .vy-pins li.on span { display: inline; }
+  .vy-flag { font-size: 10px; }
   .vy-info { grid-template-columns: minmax(0, 1fr); padding: 14px; }
   .vy-card { grid-column: 1; grid-row: auto; grid-template-columns: minmax(0, 1fr); }
   .vy-card img { width: 100%; height: auto; aspect-ratio: 16 / 10; }
