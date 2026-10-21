@@ -81,7 +81,8 @@
           chip: [sx, sy + (a > sy ? 32 : -32)],  // ценник — на асфальте у въезда на место
           in: [[-60, road], [cx, road], [cx, a], [sx, a], [sx, sy]],
           out: [[sx, sy], [sx, a], [cx, a], [cx, road], [-60, road]],
-          ramp: [[sx, sy], [sx, a], [cx, a], [cx, apron], [rampX, apron], [rampX, quay + 34]],
+          ramp: z.zone === 'CN' ? [[sx, sy], [sx, a], [cx, a], [cx, road + 36]]  // Китай — к дороге, там забирает автовоз
+            : [[sx, sy], [sx, a], [cx, a], [cx, apron], [rampX, apron], [rampX, quay + 34]],
         });
       }
     }
@@ -109,7 +110,7 @@
         chip: [lane + side * 110, sy],
         in: [[lane, -50], [lane, sy], [sx, sy]],
         out: [[sx, sy], [lane, sy], [lane, -50]],
-        ramp: [[sx, sy], [lane, sy], [lane, quay + 30]],
+        ramp: z.zone === 'CN' ? [[sx, sy], [lane, sy], [lane, z.y0 + 6]] : [[sx, sy], [lane, sy], [lane, quay + 30]],
       });
     }
     return {
@@ -293,23 +294,51 @@
     });
     svg.querySelector('.glint-band').animate([{transform: 'translateX(0)'}, {transform: 'translateX(140px)'}], {duration: 16000, iterations: Infinity});
   }
-  function truck(mine) {
-    if (!L.truck || reduce.matches || document.hidden) return;
+  function makeTruck(mine) {
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'truck');
     let load = '';
     for (let i = 0; i < 3; i++) {
       const d = i === 0 && mine ? mine : {body: pick(['sedan', 'suv', 'hatch']), color: pick(Object.values(PAINTS))};
-      load += `<g class="${i === 0 && mine ? 'mine' : ''}" transform="translate(${-14 - i * 27} 0) rotate(90) scale(.78)">${carShape(d)}</g>`;
+      load += `<g class="${i === 0 && mine ? 'mine' : ''}" transform="translate(${-14 - i * 27} 0) rotate(90) scale(.78)"${i === 0 && !mine ? ' data-free opacity="0"' : ''}>${carShape(d)}</g>`;
     }
     g.innerHTML = `${NIGHT ? '<path class="beam on" d="M14 -8 L60 -16 L60 16 L14 8 Z" fill="url(#t-beam)" transform="rotate(0)"/>' : ''}
       <rect class="trailer" x="-86" y="-11" width="92" height="22" rx="2"/><rect class="rail" x="-84" y="-8.5" width="88" height="2"/><rect class="rail" x="-84" y="6.5" width="88" height="2"/>
       ${load}<rect class="cab" x="7" y="-10" width="17" height="20" rx="3"/><rect class="cab-glass" x="18" y="-8" width="4" height="16" rx="1"/>`;
     svg.querySelector('.t-trucks').appendChild(g);
-    const a = mine  // с выбранной машиной автовоз трогается от рампы и уходит направо
-      ? g.animate([{transform: `translate(${L.rampX}px, ${L.truck}px)`}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 6000, easing: 'ease-in'})
-      : g.animate([{transform: `translate(-140px, ${L.truck}px)`}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 12000, easing: 'linear'});
-    a.onfinish = () => g.remove();
+    return g;
+  }
+  function truck() {  // проезжающий автовоз без остановки
+    if (!L.truck || reduce.matches || document.hidden) return;
+    const g = makeTruck(null);
+    g.querySelector('[data-free]')?.setAttribute('opacity', '1');
+    g.animate([{transform: `translate(-140px, ${L.truck}px)`}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 12000, easing: 'linear'})
+      .onfinish = () => g.remove();
+  }
+  // Машина из Китая уезжает только автовозом: он подъезжает по дороге, машина заезжает на прицеп, автовоз уходит.
+  // На телефоне автовоза нет — машина уезжает по проезду наверх, через ворота.
+  function truckPickup(car, done) {
+    const end = L.slots[car.slot].ramp.at(-1);
+    const gone = () => { occupied[car.slot] = null; remove(car); done && done(); };
+    if (!L.truck || reduce.matches) {
+      drive(car, [end, [end[0], -60]], 'out', gone);
+      return;
+    }
+    const g = makeTruck(null), stop = end[0] + 40, from = `translate(-140px, ${L.truck}px)`, at = `translate(${stop}px, ${L.truck}px)`;
+    g.animate([{transform: from}, {transform: at}], {duration: 4200, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards'}).onfinish = () => {
+      drive(car, [end, [end[0], L.truck]], 'board', () => {
+        car.g.classList.add('boarding');
+        g.querySelector('[data-free]')?.remove();  // первое место на прицепе ждало эту машину
+        const mine = document.createElementNS(NS, 'g');
+        mine.setAttribute('class', 'mine');
+        mine.setAttribute('transform', 'translate(-14 0) rotate(90) scale(.78)');
+        mine.innerHTML = carShape(car.d);
+        g.insertBefore(mine, g.querySelector('.cab'));
+        setTimeout(gone, 400);
+        g.animate([{transform: at}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 6000, easing: 'ease-in', delay: 500, fill: 'forwards'})
+          .onfinish = () => g.remove();
+      });
+    };
   }
 
   // --- камера: приближение к выбранной машине ---------------------------------------------
@@ -594,6 +623,7 @@
       chipOn(car);
     });
   }
+  function depart(car) { if (car.d.country === 'CN') truckPickup(car); else load(car); }
   function load(car) {
     occupied[car.slot] = null;
     car.g.classList.add('boarding');
@@ -609,7 +639,7 @@
   function deliver(car) {
     if (delivering || car.state !== 'parked') return;
     delivering = true;
-    const d = car.d, byShip = d.country !== 'CN' && ship.state === 'docked';
+    const d = car.d, byShip = d.country !== 'CN';
     hidePop();
     dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey, manual: true,
       sprite: `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`}}));
@@ -622,7 +652,8 @@
       toast(`<b>${esc(label(d))}</b> во Владивостоке: таможня, документы — и к вам. <a href="#" data-lead-open>Хочу так же →</a>`);
       setTimeout(() => { delivering = false; arrive(d, true); hud(); }, reduce.matches ? 0 : 1200);
     };
-    setTimeout(() => toRamp(car, () => {
+    const whenDocked = fn => (ship.state === 'docked' ? fn() : setTimeout(() => whenDocked(fn), 500));
+    setTimeout(() => toRamp(car, () => whenDocked(() => {
       cam.follow = null; unfocus();
       if (byShip) {
         load(car);
@@ -640,22 +671,17 @@
           });
         }, reduce.matches ? 0 : 700);
       } else {
-        car.g.classList.add('boarding');
-        setTimeout(() => remove(car), reduce.matches ? 0 : 500);
-        occupied[car.slot] = null;
         routeAt(0.25);
-        truck(d);
-        window.RenalRoute?.run(0.25, 0.75, 6000);
-        setTimeout(done, reduce.matches ? 0 : 6000);
+        truckPickup(car, () => { window.RenalRoute?.run(0.25, 0.75, 6000); setTimeout(done, reduce.matches ? 0 : 6000); });
       }
-    }), reduce.matches ? 0 : 500);
+    })), reduce.matches ? 0 : 500);
   }
 
   // --- судно: периодически уходит с машинами и приходит новое ------------------------
   function shipCycle() {
     if (delivering || reduce.matches || document.hidden || ship.state !== 'docked' || [...cars.values()].some(c => c.state === 'ramp' || c.state === 'at-ramp')) return;
     // перед отходом на борт заезжают 2–3 самые давние машины
-    const old = [...cars.values()].filter(c => c.state === 'parked').sort((a, b) => a.since - b.since).slice(0, 3);
+    const old = [...cars.values()].filter(c => c.state === 'parked' && c.d.country !== 'CN').sort((a, b) => a.since - b.since).slice(0, 3);
     old.forEach((c, i) => setTimeout(() => toRamp(c, () => load(c)), i * 900));
     setTimeout(() => {
       if ([...cars.values()].some(c => c.state === 'ramp' || c.state === 'at-ramp')) return;
@@ -667,6 +693,12 @@
         moveShip(0, 7, () => { ship.state = 'docked'; });
       });
     }, old.length * 900 + 4500);
+  }
+  function truckCycle() {
+    if (delivering || reduce.matches || document.hidden) return;
+    const c = [...cars.values()].filter(x => x.state === 'parked' && x.d.country === 'CN' && x !== cam.car).sort((a, b) => a.since - b.since)[0];
+    if (!c || !L.truck) { truck(); return; }
+    toRamp(c, () => truckPickup(c));
   }
   function moveShip(to, seconds, done) {
     const body = gShip.querySelector('.ship-body');
@@ -940,7 +972,7 @@
     const car = formCar;
     formCar = null;
     if (!car || !cars.has(car.d.key)) { cam.follow = null; unfocus(); return; }
-    if (sent) { load(car); toast('Заявка принята · менеджер посчитает итоговую цену'); }
+    if (sent) { depart(car); toast('Заявка принята · менеджер посчитает итоговую цену'); }
     else if (car.state === 'at-ramp') backToSlot(car);
     else car.g.classList.remove('chosen');
     cam.follow = null;
@@ -1093,7 +1125,7 @@
       feed.t = setTimeout(feed, 900);
       setInterval(shipCycle, 42000);
       setTimeout(truck, 6000);
-      setInterval(truck, 26000);
+      setInterval(truckCycle, 26000);
     } else {
       queue.splice(0).forEach(d => arrive(d, true));
     }
