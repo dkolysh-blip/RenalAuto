@@ -3,6 +3,7 @@
 {% block title %}{% if matched %}{{ matched }} из Кореи и Китая под ключ{% else %}Авто из Кореи и Китая под ключ{% endif %} — с проверкой проходимости | {{ company }}{% endblock %}
 {% block description %}Свежие объявления из Кореи и Китая с ценой под ключ до вашего города. Проверка проходимости по утильсбору и VIN, агентский договор, фиксированное вознаграждение.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
+{% block html_attrs %} data-theme="light"{% endblock %}
 {% block body_class %}has-cta port-page{% endblock %}
 {% block head %}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">{% endblock %}
@@ -172,8 +173,32 @@
 <section class="port-section band band-white" id="vydachi" aria-labelledby="vydachi-title">
   <div class="sec-head">
     <span class="sec-eyebrow">Отзывы</span>
-    <h2 id="vydachi-title">Выдачи клиентам</h2>
-    <p class="sec-lead">Настоящие клиенты и их машины — без постановочных фото.</p>
+    <h2 id="vydachi-title">Что говорят клиенты</h2>
+    <p class="sec-lead">Отзывы — из 2ГИС, где их оставляют сами клиенты. Видео — с настоящих выдач.</p>
+  </div>
+  {% set reviews_url = company_2gis ~ '/tab/reviews' if company_2gis else None %}
+  <div class="reviews">
+    {% if company_2gis %}
+    <a class="review-score" href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">
+      <span class="gis-mark">2ГИС</span>
+      {% if company_2gis_rating %}
+      <span class="score-num">{{ company_2gis_rating|replace('.', ',') }}</span>
+      <span class="stars" aria-label="Рейтинг {{ company_2gis_rating }} из 5">★★★★★</span>
+      {% if company_2gis_reviews %}<span class="score-count">{{ company_2gis_reviews }} отзывов</span>{% endif %}
+      {% else %}
+      <span class="score-num small-score">Отзывы о нас</span>
+      {% endif %}
+      <span class="score-cta">Все отзывы в 2ГИС →</span>
+    </a>
+    {% endif %}
+    {% for r in reviews[:6] %}
+    <a class="review" href="{{ reviews_url or '#' }}" {% if reviews_url %}target="_blank" rel="noopener"{% endif %} data-goal="reviews_2gis">
+      <span class="review-top"><b>{{ r.name }}</b>{% if r.rating %}<span class="stars small" aria-label="{{ r.rating }} из 5">{{ '★' * (r.rating|int) }}</span>{% endif %}</span>
+      {% if r.car %}<span class="review-car">{{ r.car }}</span>{% endif %}
+      <span class="review-text">{{ r.text }}</span>
+      <span class="review-src">{% if r.date %}{{ r.date }} · {% endif %}2ГИС</span>
+    </a>
+    {% endfor %}
   </div>
   <div class="vydachi">
     <figure class="vydacha wide">
@@ -189,12 +214,10 @@
       <figcaption>Передача ключей</figcaption>
     </figure>
     <div class="vydachi-more">
-      <b>Больше выдач и отзывов</b>
-      <p class="muted small">Каждую машину, которую привозим, показываем в наших каналах.</p>
+      <b>Больше выдач</b>
+      <p class="muted small">Каждую машину, которую привозим, показываем в нашем канале.</p>
       {% if company_max %}<a class="btn ghost block" href="{{ company_max }}" target="_blank" rel="noopener">Канал в MAX</a>{% endif %}
       {% if company_vk %}<a class="btn ghost block" href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
-      {% if company_2gis %}<a class="btn ghost block" href="{{ company_2gis }}" target="_blank" rel="noopener">Отзывы в 2ГИС</a>{% endif %}
-      {% if company_avito %}<a class="btn ghost block" href="{{ company_avito }}" target="_blank" rel="noopener">Отзывы на Авито</a>{% endif %}
     </div>
   </div>
 </section>
