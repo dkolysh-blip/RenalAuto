@@ -789,7 +789,7 @@
     const facts = [d.year, d.mileage && `${d.mileage} км`, d.cc && `${(d.cc / 1000).toFixed(1).replace('.', ',')} л`,
       d.fuel && d.fuel.toLowerCase()].filter(Boolean).join(' · ');
     const price = d.turnkey
-      ? `<div class="pop-price">${d.turnkey_from ? 'от ' : '≈ '}${mln(d.turnkey)}</div><div class="pop-orig">во Владивостоке с растаможкой, ориентировочно</div>`
+      ? `<div class="pop-price">≈ ${mln(d.turnkey)}</div><div class="pop-orig">во Владивостоке с растаможкой, ориентировочно</div>`
       : d.price ? `<div class="pop-price">≈ ${esc(d.price)} ₽</div><div class="pop-orig">цена на площадке, без доставки и растаможки</div>` : '';
     popEl.innerHTML = `
       <button class="pop-x" type="button" data-act="close" aria-label="Закрыть">×</button>
@@ -916,7 +916,7 @@
     thumb.src = d.photo || `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`;
     thumb.classList.toggle('sprite', !d.photo);
     form.querySelector('[data-cd-title]').textContent = label(d);
-    form.querySelector('[data-cd-price]').textContent = d.turnkey ? `${d.turnkey_from ? 'от ' : '≈ '}${mln(d.turnkey)} с растаможкой`
+    form.querySelector('[data-cd-price]').textContent = d.turnkey ? `≈ ${mln(d.turnkey)} с растаможкой`
       : d.price ? `≈ ${d.price} ₽ на площадке` : '';
     box.hidden = false;
     form.querySelector('[data-car-name]').textContent = '';
