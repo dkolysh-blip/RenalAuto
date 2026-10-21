@@ -45,7 +45,8 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     </nav>
     <div class="contacts">
       {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
-      {% if company_max %}<a class="btn ghost" href="{{ company_max }}" target="_blank" rel="noopener">MAX</a>{% endif %}
+      {% if company_max %}<a class="btn ghost max-btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="20" height="20">MAX</a>{% endif %}
+      {% if company_vk %}<a class="btn ghost max-btn" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img src="/static/brand/vk.webp" alt="" width="20" height="20">ВК</a>{% endif %}
     </div>
   </div>
 </header>
@@ -61,8 +62,8 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     <div class="foot-contacts">
       {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_email %}<a href="mailto:{{ company_email }}">{{ company_email }}</a>{% endif %}
-      {% if company_max %}<a href="{{ company_max }}" target="_blank" rel="noopener">Канал в MAX</a>{% endif %}
-      {% if company_vk %}<a href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
+      {% if company_max %}<a class="max-link" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="18" height="18">Канал в MAX</a>{% endif %}
+      {% if company_vk %}<a class="max-link" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img src="/static/brand/vk.webp" alt="" width="18" height="18">ВКонтакте</a>{% endif %}
       {% if company_2gis %}<a href="{{ company_2gis }}" target="_blank" rel="noopener">Мы в 2ГИС</a>{% endif %}
       {% if company_address %}<span>{{ company_address }}</span>{% endif %}
     </div>

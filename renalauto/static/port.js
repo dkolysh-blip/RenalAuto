@@ -19,14 +19,49 @@
   const rub = n => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ');
   const mln = n => (n / 1e6).toFixed(n < 1e7 ? 2 : 1).replace(/0$/, '').replace('.', ',') + ' млн ₽';
 
-  // видео выдач: своя кнопка воспроизведения, штатные контролы — после запуска
-  document.querySelectorAll('[data-video]').forEach(fig => {
-    const v = fig.querySelector('video');
-    fig.querySelector('.vydacha-play').addEventListener('click', () => {
-      document.querySelectorAll('[data-video] video').forEach(o => { if (o !== v) o.pause(); });
-      v.controls = true; v.play(); fig.classList.add('playing'); goal('video');
+  // ролик с выдач: без звука играет, пока виден на экране; звук — по кнопке
+  const reel = document.querySelector('[data-reel]');
+  if (reel) {
+    const v = reel.querySelector('video'), snd = reel.querySelector('[data-reel-sound]');
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && (!still || !v.muted)) v.play().catch(() => {}); else if (!e.isIntersecting) v.pause();
+    }, {threshold: .4}).observe(reel);
+    snd.addEventListener('click', () => {
+      v.muted = !v.muted;
+      if (!v.muted) { v.currentTime = 0; v.play().catch(() => {}); goal('video'); }
+      snd.setAttribute('aria-pressed', String(!v.muted));
+      snd.textContent = v.muted ? 'Включить звук' : 'Выключить звук';
     });
-  });
+  }
+
+  // карусель отзывов: свайп или стрелки, сама листается раз в 7 секунд, пока её не трогают
+  const rv = document.querySelector('[data-rv]');
+  if (rv) {
+    const track = rv.querySelector('[data-rv-track]'), cards = [...track.children], count = rv.querySelector('[data-rv-count]');
+    const step = () => cards[0].offsetWidth + parseFloat(getComputedStyle(track).columnGap || 0);
+    const at = () => Math.round(track.scrollLeft / step());
+    const perView = () => Math.max(1, Math.round(track.clientWidth / step()));
+    const go = i => track.scrollTo({left: i * step(), behavior: 'smooth'});
+    const upd = () => { count.textContent = `${Math.min(cards.length, at() + perView())} из ${cards.length}`; };
+    const next = () => go(at() + perView() >= cards.length ? 0 : at() + 1);
+    rv.querySelector('[data-rv-next]').addEventListener('click', () => { stop(); next(); });
+    rv.querySelector('[data-rv-prev]').addEventListener('click', () => { stop(); go(Math.max(0, at() - 1)); });
+    track.addEventListener('scroll', () => requestAnimationFrame(upd), {passive: true});
+    let timer = 0, seen = false;
+    const stop = () => { clearInterval(timer); timer = -1; };
+    ['pointerdown', 'focusin', 'wheel'].forEach(ev => track.addEventListener(ev, stop, {passive: true}));
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      new IntersectionObserver(([e]) => {
+        if (timer === -1) return;
+        clearInterval(timer); timer = e.isIntersecting ? setInterval(next, 7000) : 0;
+        seen = seen || e.isIntersecting;
+      }, {threshold: .5}).observe(rv);
+      rv.addEventListener('mouseenter', () => { if (timer > 0) clearInterval(timer); });
+      rv.addEventListener('mouseleave', () => { if (timer > 0) timer = setInterval(next, 7000); });
+    }
+    upd(); addEventListener('resize', upd);
+  }
   document.querySelectorAll('[data-goal]').forEach(a => a.addEventListener('click', () => goal(a.dataset.goal)));
 
   // --- раскладка терминала ----------------------------------------------------

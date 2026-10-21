@@ -99,8 +99,8 @@ class Settings:
         default_factory=lambda: os.getenv("COMPANY_2GIS", "https://2gis.ru/vladivostok/geo/70000001101310074") or None
     )
     # Отзывы из 2ГИС для блока отзывов: рейтинг и число отзывов (их видно на странице компании в 2ГИС)
-    company_2gis_rating: str | None = field(default_factory=lambda: os.getenv("COMPANY_2GIS_RATING") or None)
-    company_2gis_reviews: int | None = field(default_factory=lambda: _int_or_none("COMPANY_2GIS_REVIEWS"))
+    company_2gis_rating: str | None = field(default_factory=lambda: os.getenv("COMPANY_2GIS_RATING", "5,0") or None)
+    company_2gis_reviews: int | None = field(default_factory=lambda: _int_or_none("COMPANY_2GIS_REVIEWS") or 29)
     # Условия агентского договора — показываются на лендинге (как проходит сделка, FAQ)
     deal_fee_rub: int = field(default_factory=lambda: int(os.getenv("DEAL_FEE_RUB", "50000")))
     deal_deposit_rub: int = field(default_factory=lambda: int(os.getenv("DEAL_DEPOSIT_RUB", "120000")))

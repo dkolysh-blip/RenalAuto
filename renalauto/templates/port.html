@@ -18,7 +18,7 @@
     <div class="offer-side">
     <p class="live-lead"><b>Это живая лента:</b> все свежие объявления с площадок Кореи и Китая появляются здесь в реальном времени, без отбора, сразу с ориентировочной ценой в рублях.</p>
     {% if company_max %}<a class="best-pick" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">
-      <span class="best-pick-ico" aria-hidden="true">★</span>
+      <img class="best-pick-ico" src="/static/brand/max.webp" alt="" width="40" height="40">
       <span><b>Хотите лучшие варианты?</b><small>Отбираем вручную и публикуем подборку в нашем канале MAX</small></span>
       <span class="best-pick-go" aria-hidden="true">→</span>
     </a>{% endif %}
@@ -109,71 +109,49 @@
 
 <section class="port-section band band-white trust" id="vydachi" aria-labelledby="vydachi-title">
   {% set reviews_url = company_2gis ~ '/tab/reviews' if company_2gis else None %}
+  {% set months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
   <div class="sec-head">
-    <span class="sec-eyebrow">Доверие</span>
-    <h2 id="vydachi-title">Проверьте нас до оплаты</h2>
-    <p class="sec-lead">Без громких обещаний: всё, что ниже, можно проверить самому — юрлицо, офис, договор и настоящие выдачи.</p>
+    <span class="sec-eyebrow">Отзывы</span>
+    <h2 id="vydachi-title">Что говорят клиенты</h2>
+    <p class="sec-lead">Видео с выдач и отзывы из 2ГИС — без правок, как написали люди.</p>
   </div>
-  <div class="trust-grid">
-    <div class="trust-videos">
-      <figure class="vydacha wide" data-video>
-        <video playsinline preload="none" poster="/static/media/vydacha-1.jpg" width="960" height="540">
-          <source src="/static/media/vydacha-1.mp4" type="video/mp4">
-        </video>
-        <button type="button" class="vydacha-play" aria-label="Смотреть видео: отзыв клиентки"></button>
-        <figcaption><b>Отзыв клиентки</b><span>Получила машину и рассказывает, как всё прошло</span></figcaption>
-      </figure>
-      <figure class="vydacha tall" data-video>
-        <video playsinline preload="none" poster="/static/media/vydacha-2.jpg" width="640" height="900">
-          <source src="/static/media/vydacha-2.mp4" type="video/mp4">
-        </video>
-        <button type="button" class="vydacha-play" aria-label="Смотреть видео: передача ключей"></button>
-        <figcaption><b>Передача ключей</b><span>Клиент забирает машину</span></figcaption>
-      </figure>
+  <div class="rv">
+    <figure class="reel" data-reel>
+      <video muted playsinline loop preload="none" poster="/static/media/reel.jpg" width="720" height="900" aria-label="Видео с выдач машин клиентам">
+        <source src="/static/media/reel.mp4" type="video/mp4">
+      </video>
+      <button type="button" class="reel-sound" data-reel-sound aria-pressed="false">Включить звук</button>
+    </figure>
+    <div class="rv-side">
+      {% if company_2gis_rating %}
+      <a class="rv-score" href="{{ reviews_url or company_2gis }}" target="_blank" rel="noopener" data-goal="reviews_2gis">
+        <span class="gis-mark">2ГИС</span>
+        <span class="rv-score-num">{{ company_2gis_rating }}</span>
+        <span class="rv-score-meta"><span class="stars" aria-hidden="true">★★★★★</span>
+          <span>{% if company_2gis_reviews %}{{ company_2gis_reviews }} оценок · {% endif %}все отзывы в 2ГИС →</span></span>
+      </a>
+      {% endif %}
+      {% if reviews %}
+      <div class="rv-carousel" data-rv>
+        <div class="rv-track" data-rv-track tabindex="0" aria-label="Отзывы из 2ГИС">
+          {% for r in reviews %}
+          <a class="review" href="{{ reviews_url or '#' }}" {% if reviews_url %}target="_blank" rel="noopener"{% endif %} data-goal="reviews_2gis">
+            <span class="review-top"><b>{{ r.name }}</b>{% if r.rating %}<span class="stars small" aria-label="{{ r.rating }} из 5">{{ '★' * (r.rating|int) }}</span>{% endif %}</span>
+            <span class="review-text">{{ r.text }}</span>
+            <span class="review-src">{% if r.date %}{{ r.date[8:10]|int }} {{ months[r.date[5:7]|int - 1] }} {{ r.date[:4] }} · {% endif %}2ГИС</span>
+          </a>
+          {% endfor %}
+        </div>
+        <div class="rv-nav">
+          <button type="button" class="rv-btn" data-rv-prev aria-label="Предыдущие отзывы">←</button>
+          <span class="rv-count" data-rv-count aria-live="polite"></span>
+          <button type="button" class="rv-btn" data-rv-next aria-label="Следующие отзывы">→</button>
+        </div>
+      </div>
+      {% endif %}
+      <p class="rv-legal">{{ company_legal_name or company }}{% if company_inn %}, ИНН {{ company_inn }}{% endif %}{% if company_address %} · офис: {{ company_address }}{% endif %}{% if company_max %} · <a href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">все выдачи в канале MAX</a>{% endif %}</p>
     </div>
-    <ul class="trust-checks">
-      <li class="tc">
-        <span class="tc-ico" aria-hidden="true">№</span>
-        <div><b>Юрлицо, а не частник</b>
-          <p>{{ company_legal_name or company }}{% if company_inn %}, ИНН <span class="tc-mono">{{ company_inn }}</span>{% endif %}{% if company_ogrn %}, ОГРН <span class="tc-mono">{{ company_ogrn }}</span>{% endif %}.</p>
-          <div class="tc-links">
-            <a href="https://egrul.nalog.ru/" target="_blank" rel="noopener">Проверить в ФНС →</a>
-            {% if company_inn %}<button type="button" data-copy="{{ company_inn }}">Скопировать ИНН</button>{% endif %}
-          </div></div>
-      </li>
-      <li class="tc">
-        <span class="tc-ico" aria-hidden="true">⌂</span>
-        <div><b>Офис во Владивостоке</b>
-          <p>{{ company_address or 'Владивосток' }}.</p>
-          {% if company_2gis %}<div class="tc-links"><a href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="reviews_2gis">Офис на карте 2ГИС →</a>
-            {% if reviews_url %}<a href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">Отзывы в 2ГИС →</a>{% endif %}</div>{% endif %}</div>
-      </li>
-      <li class="tc">
-        <span class="tc-ico" aria-hidden="true">₽</span>
-        <div><b>Деньги — по договору</b>
-          <p>Агентский договор, расчёты в рублях на расчётный счёт или в кассу офиса. Не подобрали машину за {{ deal.pick_days }} дней — вернём предоплату. Платёж за бронь {{ fmt(deal.deposit) }} ₽ возвращаем за 1 рабочий день после оплаты инвойса.</p></div>
-      </li>
-      <li class="tc">
-        <span class="tc-ico" aria-hidden="true">▶</span>
-        <div><b>Каждая выдача — в канале</b>
-          <p>Фото и видео машин, которые мы привезли, без постановки.</p>
-          <div class="tc-links">{% if company_max %}<a href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">Канал в MAX →</a>{% endif %}
-            {% if company_vk %}<a href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте →</a>{% endif %}</div></div>
-      </li>
-    </ul>
   </div>
-  {% if reviews %}
-  <div class="reviews">
-    {% for r in reviews[:3] %}
-    <a class="review" href="{{ reviews_url or '#' }}" {% if reviews_url %}target="_blank" rel="noopener"{% endif %} data-goal="reviews_2gis">
-      <span class="review-top"><b>{{ r.name }}</b>{% if r.rating %}<span class="stars small" aria-label="{{ r.rating }} из 5">{{ '★' * (r.rating|int) }}</span>{% endif %}</span>
-      {% if r.car %}<span class="review-car">{{ r.car }}</span>{% endif %}
-      <span class="review-text">{{ r.text }}</span>
-      <span class="review-src">{% if r.date %}{{ r.date }} · {% endif %}2ГИС</span>
-    </a>
-    {% endfor %}
-  </div>
-  {% endif %}
 </section>
 
 <section class="port-section band band-white" id="faq" aria-labelledby="faq-title">
@@ -233,10 +211,12 @@
     {{ consent() }}
     <button class="btn block" type="submit">Получить расчёт</button>
     <div class="form-msg"></div>
+    {% if company_sms %}<p class="muted small sms-alt">Нет MAX? <a href="{{ company_sms }}" data-goal="sms">Напишите нам SMS</a> на {{ company_phone }}</p>{% endif %}
   </form>
 </dialog>
 
-<div class="cta-bar"><button class="btn" type="button" data-lead-open>Подобрать под бюджет</button></div>
+{% if company_max %}<a class="max-float" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="28" height="28"><span>Подборка в MAX</span></a>{% endif %}
+<div class="cta-bar">{% if company_max %}<a class="btn ghost max-btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="22" height="22">MAX</a>{% endif %}{% if company_sms %}<a class="btn ghost sms-btn" href="{{ company_sms }}" data-goal="sms" aria-label="Написать SMS">SMS</a>{% endif %}<button class="btn" type="button" data-lead-open>Подобрать авто</button></div>
 <script type="application/json" id="port-data">{{ scene|safe }}</script>
 {% endblock %}
 {% block scripts %}<script src="/static/port.js?v={{ asset_version }}" defer></script>
