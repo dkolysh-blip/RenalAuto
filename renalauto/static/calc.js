@@ -43,6 +43,18 @@
       `ориентировочно ${total.textContent} под ключ.`;
     setTimeout(() => document.querySelector('#podbor input[name="name"]')?.focus({preventScroll: true}), 400);
   });
+  // «Показать машины в этом бюджете»: пульт терминала получает бюджет, терминал переезжает на нужную стоянку
+  box.querySelector('[data-calc-show]')?.addEventListener('click', () => {
+    const pf = document.querySelector('form[data-port-filter]');
+    if (!pf || !last) return;
+    const sel = pf.elements.budget, sum = last.r.total_rub;
+    const opt = [...sel.options].find(o => o.value && +o.value >= sum);
+    sel.value = opt ? opt.value : '';
+    pf.elements.country.value = last.params.get('country') || '';
+    pf.dispatchEvent(new Event('input', {bubbles: true}));
+    document.getElementById('terminal')?.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center'});
+  });
+
   // Терминал передаёт сюда машину: калькулятор заполняется её параметрами
   const picked = document.createElement('div');
   picked.className = 'calc-picked';

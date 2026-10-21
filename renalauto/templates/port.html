@@ -4,8 +4,10 @@
 {% block description %}Выберите машину на терминале — посчитаем цену под ключ до вашего города. Только проходные авто, проверка VIN, 35–50 дней до ключей.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
 {% block body_class %}has-cta port-page{% endblock %}
+{% block head %}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">{% endblock %}
 {% block content %}
-<section class="port-hero">
+<section class="port-hero band band-dark">
   <div class="port-offer">
     <div class="offer-main">
     <div class="eyebrow"><span class="dot on"></span> Живая лента: новые машины каждую минуту</div>
@@ -48,26 +50,33 @@
         <span data-hud="count"></span>
       </div>
       <div class="terminal-toasts"></div>
+      <div class="lot-sign"></div>
     </div>
     <p class="terminal-note muted small">Машины на терминале — объявления с площадок Кореи и Китая. Наведите или нажмите на машину.</p>
     <div class="port-pop" id="port-pop" hidden></div>
   </div>
 </section>
 
-<section class="port-section" aria-labelledby="now-title">
-  <div class="port-section-head">
+<section class="port-section band" aria-labelledby="now-title">
+  <div class="sec-head">
+    <span class="sec-eyebrow">Живая лента</span>
     <h2 id="now-title">Сейчас на терминале</h2>
-    <a href="/">Весь каталог →</a>
+    <p class="sec-lead">Свежие проходные машины с площадок Кореи и Китая — с ценой на площадке и проверкой проходимости.</p>
+    <a class="sec-link" href="/">Весь каталог →</a>
   </div>
   {% if cars %}
-  <div class="grid">{% for v in cars[:8] %}{{ card(v) }}{% endfor %}</div>
+  <div class="grid rail">{% for v in cars[:8] %}{{ card(v) }}{% endfor %}</div>
   {% else %}
   <div class="empty">Машины появятся здесь, как только придут свежие объявления. Оставьте заявку — менеджер подберёт варианты.</div>
   {% endif %}
 </section>
 
-<section class="port-section" id="calc" aria-labelledby="calc-title">
-  <div class="port-section-head"><h2 id="calc-title">Калькулятор цены под ключ</h2></div>
+<section class="port-section band band-white" id="calc" aria-labelledby="calc-title">
+  <div class="sec-head">
+    <span class="sec-eyebrow">Калькулятор</span>
+    <h2 id="calc-title">Сколько машина будет стоить у вас</h2>
+    <p class="sec-lead">Пошлина, утильсбор и сборы — по действующим ставкам, наше вознаграждение фиксированное. Поменяйте параметры — итог пересчитается сразу.</p>
+  </div>
   <div class="calc">
     <form class="calc-form panel" data-calc>
       <fieldset class="seg"><legend>Откуда</legend>
@@ -100,13 +109,18 @@
       <table class="calc-lines"><tbody data-calc-lines></tbody></table>
       <div class="calc-total"><span>Итого под ключ</span><b data-calc-total>—</b></div>
       <a class="btn block" href="#podbor" data-calc-cta data-goal="form_open">Получить точный расчёт</a>
+      <button class="btn ghost block calc-show" type="button" data-calc-show>Показать машины в этом бюджете</button>
       <p class="muted small">Ориентировочно, по курсу ЦБ и ставкам {{ rules_as_of }}. Итог зависит от курса на день оплаты и ставок на дату декларации — точную сумму подтвердит менеджер.</p>
     </div>
   </div>
 </section>
 
-<section class="port-section journey" id="journey" aria-labelledby="journey-title" data-journey>
-  <div class="port-section-head"><h2 id="journey-title">Путь машины до ваших ключей</h2></div>
+<section class="port-section band journey" id="journey" aria-labelledby="journey-title" data-journey>
+  <div class="sec-head">
+    <span class="sec-eyebrow">Логистика</span>
+    <h2 id="journey-title">Путь машины до ваших ключей</h2>
+    <p class="sec-lead">Из Кореи — морем, из Китая — по суше. Во Владивостоке растаможиваем и оформляем документы, дальше — в ваш город.</p>
+  </div>
   <div class="journey-grid">
     <div class="journey-map">
       <svg viewBox="0 0 800 460" role="img" aria-label="Схема маршрута: из Кореи морем и из Китая через сухопутную границу во Владивосток, дальше по России в ваш город">
@@ -154,8 +168,12 @@
   </div>
 </section>
 
-<section class="port-section" id="vydachi" aria-labelledby="vydachi-title">
-  <div class="port-section-head"><h2 id="vydachi-title">Выдачи клиентам</h2></div>
+<section class="port-section band band-white" id="vydachi" aria-labelledby="vydachi-title">
+  <div class="sec-head">
+    <span class="sec-eyebrow">Отзывы</span>
+    <h2 id="vydachi-title">Выдачи клиентам</h2>
+    <p class="sec-lead">Настоящие клиенты и их машины — без постановочных фото.</p>
+  </div>
   <div class="vydachi">
     <figure class="vydacha wide">
       <video controls playsinline preload="none" poster="/static/media/vydacha-1.jpg" width="1280" height="720">
@@ -179,8 +197,12 @@
   </div>
 </section>
 
-<section class="port-section" id="deal" aria-labelledby="deal-title">
-  <div class="port-section-head"><h2 id="deal-title">Как проходит сделка и оплата</h2></div>
+<section class="port-section band" id="deal" aria-labelledby="deal-title">
+  <div class="sec-head">
+    <span class="sec-eyebrow">Договор</span>
+    <h2 id="deal-title">Как проходит сделка и оплата</h2>
+    <p class="sec-lead">Работаем по агентскому договору. Все суммы и сроки — из него.</p>
+  </div>
   <ol class="deal-steps">
     <li>
       <b>Заявка и договор</b>
@@ -208,8 +230,11 @@
   <p class="muted small">Все расчёты — в рублях: переводом на расчётный счёт или наличными в кассу в офисе во Владивостоке.</p>
 </section>
 
-<section class="port-section" id="faq" aria-labelledby="faq-title">
-  <div class="port-section-head"><h2 id="faq-title">Частые вопросы</h2></div>
+<section class="port-section band band-white" id="faq" aria-labelledby="faq-title">
+  <div class="sec-head">
+    <span class="sec-eyebrow">Вопросы</span>
+    <h2 id="faq-title">Частые вопросы</h2>
+  </div>
   <div class="faq">
     <details>
       <summary>Сколько стоят ваши услуги?</summary>
@@ -242,18 +267,24 @@
   </div>
 </section>
 
-<section id="podbor" class="car-grid">
-  <div class="panel">
-    <h2>Цена под ключ — из чего она складывается</h2>
-    <ol>
-      <li><b>Машина</b> — цена на площадке в Корее или Китае.</li>
-      <li><b>Доставка</b> до Владивостока и дальше до вашего города.</li>
-      <li><b>Таможня и утильсбор</b> — по действующим ставкам на дату ввоза.</li>
-      <li><b>Оформление</b> — СБКТС, ЭПТС, услуги брокера.</li>
-    </ol>
-    <p class="muted small">«Проходит в РФ» значит, что машину можно легально ввезти и она не попадает под заградительный утильсбор. Правила меняются — финальную проверку делает менеджер.</p>
+<section id="podbor" class="band band-dark final" aria-labelledby="final-title">
+  <div class="final-grid">
+    <div class="final-pitch">
+      <span class="sec-eyebrow">Подбор</span>
+      <h2 id="final-title">Не нашли на терминале? Подберём под ваш бюджет</h2>
+      <ul class="final-points">
+        <li>Пришлём варианты из Кореи и Китая с ценой под ключ до вашего города</li>
+        <li>Проверим историю, VIN и проходимость по утильсбору до брони</li>
+        <li>Вознаграждение фиксированное — {{ fmt(deal.fee)|replace(' ', ' ') }} ₽, остальное по отчёту</li>
+      </ul>
+      <div class="final-contacts">
+        {% if company_telegram %}<a class="btn" href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener">Написать в Telegram</a>{% endif %}
+        {% if company_phone %}<a class="final-phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '') }}">{{ company_phone }}</a>{% endif %}
+      </div>
+      {% if company_address %}<p class="final-address">Офис: {{ company_address }}</p>{% endif %}
+    </div>
+    <div class="panel final-form">{{ lead_form(None, 'Оставить заявку на подбор', 'Отправить заявку') }}</div>
   </div>
-  <div class="panel">{{ lead_form(None, 'Подберём авто под ваш бюджет', 'Оставить заявку') }}</div>
 </section>
 
 <dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">

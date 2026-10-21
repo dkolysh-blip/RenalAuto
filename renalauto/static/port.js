@@ -795,20 +795,47 @@
     if (my !== filterSeq) return;
     goal('filter');
     filterOut.innerHTML = resultText(found.length, total);
-    const keep = new Set(found.map(d => d.key));
-    // неподходящие уезжают за ворота по одной, подходящие — в очередь на заезд
-    const gone = [...cars.values()].filter(c => c.state === 'parked' && !keep.has(c.d.key));
-    queue.length = 0;
-    queue.push(...found.filter(d => !cars.has(d.key)));
-    if (reduce.matches) {  // без анимации: сразу новая расстановка
-      gone.forEach(leave);
-      queue.splice(0).forEach(d => arrive(d, true));
+    switchLot(found, lotName());
+  }
+
+  // Смена фильтра — «перелёт» на другую стоянку: сцена уезжает в сторону, приезжает новая,
+  // уже заполненная подходящими машинами. Новые объявления из ленты по-прежнему заезжают через ворота.
+  function lotName() {
+    const f = filterForm.elements, parts = [];
+    if (f.q.value.trim()) parts.push(f.q.value.trim());
+    if (f.body.selectedIndex) parts.push(f.body.selectedOptions[0].text.toLowerCase());
+    if (f.country.selectedIndex) parts.push(f.country.selectedOptions[0].text);
+    if (f.budget.value) parts.push(f.budget.selectedOptions[0].text);
+    return parts.length ? 'Стоянка: ' + parts.join(' · ') : 'Вся стоянка';
+  }
+  let switching = 0;
+  function switchLot(found, name) {
+    const my = ++switching;
+    hidePop(); cam.follow = null; unfocus();
+    const restock = () => {
+      for (const c of [...cars.values()]) remove(c);
+      occupied.fill(null);
+      queue.length = 0;
+      const byZone = {KR: 0, CN: 0}, cap = L.slots.length / 2;
+      for (const d of found) {
+        const z = d.country === 'CN' ? 'CN' : 'KR';
+        if (byZone[z] < cap) { byZone[z]++; arrive(d, true); } else queue.push(d);
+      }
       hud();
-      return;
-    }
-    gone.forEach((c, i) => setTimeout(() => cars.has(c.d.key) && c.state === 'parked' && leave(c), i * 160));
-    clearTimeout(feed.t);
-    feed.t = setTimeout(feed, 700);
+    };
+    if (reduce.matches || !svg.classList.contains('ready')) { restock(); return; }
+    const sign = root.querySelector('.lot-sign');
+    sign.textContent = name;
+    root.classList.add('lot-out');
+    setTimeout(() => {
+      if (my !== switching) return;
+      restock();
+      root.classList.remove('lot-out');
+      root.classList.add('lot-in');
+      requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('lot-in')));
+      setTimeout(() => { if (my === switching) sign.classList.add('show'); }, 60);
+      setTimeout(() => { if (my === switching) sign.classList.remove('show'); }, 1800);
+    }, 320);
   }
   filterForm?.addEventListener('input', () => { clearTimeout(applyFilter.t); applyFilter.t = setTimeout(applyFilter, 350); });
   filterForm?.addEventListener('submit', e => e.preventDefault());

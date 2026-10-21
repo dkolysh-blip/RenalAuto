@@ -473,3 +473,82 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .terminal .t-chips, .terminal .t-board { pointer-events: none; }
 .terminal .arrival-tag .tag-sub { display: none; }
 .terminal .t-flag rect:first-child { stroke: rgba(0,0,0,.25); stroke-width: .6; }
+/* перелёт на другую стоянку при смене фильтра */
+.terminal .terminal-svg { transition: opacity .6s ease, transform .32s cubic-bezier(.55,0,.45,1), filter .32s; }
+.terminal.lot-out .terminal-svg { transform: translateX(-9%) scale(.94); opacity: 0; filter: blur(6px); }
+.terminal.lot-in .terminal-svg { transform: translateX(9%) scale(.94); opacity: 0; filter: blur(6px); transition: none; }
+.lot-sign { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(.96); z-index: 2; pointer-events: none;
+  background: rgba(12,14,17,.86); color: #fff; font-weight: 800; font-size: 15px; letter-spacing: .02em; padding: 10px 18px; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.14); box-shadow: 0 10px 30px rgba(0,0,0,.35); opacity: 0; transition: opacity .25s, transform .25s; white-space: nowrap; }
+.lot-sign.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+@media (prefers-reduced-motion: reduce) { .terminal .terminal-svg { transition: none; } }
+.calc-show { margin-top: 8px; }
+
+/* ===== лендинг «Порт»: дизайн-система ===== */
+body.port-page { font-family: Onest, Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow-x: clip; }
+body.port-page h1, body.port-page h2 { font-family: Unbounded, Onest, system-ui, sans-serif; font-weight: 700; letter-spacing: -.02em; }
+body.port-page main.wrap { padding-bottom: 0; }
+body.port-page footer { margin-top: 0; }
+/* полосы на всю ширину экрана */
+.port-page .band { margin-inline: calc(50% - 50vw); padding: 72px calc(50vw - 50%); }
+.port-page .band-white { background: var(--card); border-block: 1px solid var(--line); }
+.port-page .band-dark { background: var(--ink); color: #f2f3f5; --text: #f2f3f5; --muted: rgba(242,243,245,.62); --line: rgba(255,255,255,.12); --card: #17191d; --bg: #111316; }
+.port-page .port-section { margin-block: 0; }
+/* заголовки разделов */
+.sec-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; align-items: end; margin-bottom: 32px; max-width: none; }
+.sec-head h2 { margin: 0; font-size: clamp(24px, 3.2vw, 40px); line-height: 1.1; grid-column: 1; }
+.sec-eyebrow { grid-column: 1; font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+.sec-lead { grid-column: 1; margin: 6px 0 0; color: var(--muted); font-size: 17px; max-width: 720px; }
+.sec-link { grid-column: 2; grid-row: 1 / span 3; align-self: end; font-weight: 700; white-space: nowrap; }
+/* первый экран: тёмный, единым блоком с шапкой */
+.port-page .top { border-bottom-color: transparent; }
+.port-hero.band { padding-top: 40px; padding-bottom: 56px; }
+.port-hero .port-offer h1 { font-size: clamp(30px, 4vw, 54px); line-height: 1.04; color: #fff; }
+.port-hero .port-offer h1 em { color: #ff3b33; }
+.port-hero .port-offer p { color: var(--muted); font-size: 18px; }
+.port-hero .eyebrow { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: rgba(255,255,255,.8); }
+.port-hero .btn.ghost { color: #fff; border-color: rgba(255,255,255,.28); }
+.port-hero .btn.ghost:hover { background: rgba(255,255,255,.08); }
+.port-hero .port-facts li { color: var(--muted); }
+.port-hero .port-facts b { color: #fff; }
+.port-hero .port-filter { background: rgba(255,255,255,.04); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; margin-bottom: 14px; }
+.port-hero .port-filter label { color: var(--muted); }
+.port-hero .port-filter select, .port-hero .port-filter input { background: #1b1e23; border-color: rgba(255,255,255,.14); color: #fff; }
+.port-hero .port-filter input::placeholder { color: rgba(255,255,255,.4); }
+.port-hero .pf-result b { color: #fff; }
+.port-hero .pf-result a { color: #ff7a72; }
+.port-hero .terminal { box-shadow: 0 30px 80px rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.08); }
+.port-hero .terminal-note { color: var(--muted); }
+/* кнопки и поля крупнее и ровнее */
+.port-page .btn { min-height: 46px; padding: 12px 22px; border-radius: 12px; font-weight: 700; }
+.port-page .panel { border-radius: 18px; padding: 24px; }
+/* карточки «сейчас на терминале» — лентой */
+.grid.rail { grid-auto-flow: column; grid-auto-columns: minmax(250px, 1fr); grid-template-columns: none; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 8px; }
+.grid.rail > * { scroll-snap-align: start; }
+/* калькулятор: панели одной высоты */
+.port-page .calc { align-items: start; }
+.port-page .calc-total b { font-family: Unbounded, Onest, sans-serif; font-size: 30px; }
+/* финальный блок */
+.final-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 440px); gap: 48px; align-items: center; }
+.final-pitch h2 { font-size: clamp(26px, 3.4vw, 44px); line-height: 1.08; margin: 10px 0 20px; color: #fff; }
+.final-points { list-style: none; padding: 0; margin: 0 0 26px; display: grid; gap: 12px; }
+.final-points li { padding-left: 30px; position: relative; color: var(--muted); font-size: 17px; }
+.final-points li::before { content: "✓"; position: absolute; left: 0; top: 0; width: 20px; height: 20px; border-radius: 50%; background: rgba(74,222,128,.14); color: #4ade80;
+  font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.final-contacts { display: flex; gap: 18px; align-items: center; flex-wrap: wrap; }
+.final-phone { color: #fff; font-weight: 800; font-size: 20px; }
+.final-address { color: var(--muted); font-size: 14px; margin: 18px 0 0; }
+.final-form { background: #fff; color: #16191d; --text: #16191d; --muted: #667085; --line: #e4e7ec; --bg: #f5f6f8; --card: #fff; }
+.final-form h2 { font-size: 20px; color: #16191d; }
+@media (max-width: 900px) {
+  .port-page .band { padding-top: 48px; padding-bottom: 48px; }
+  .sec-head { grid-template-columns: minmax(0, 1fr); }
+  .sec-link { grid-column: 1; grid-row: auto; }
+  .final-grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+}
+@media (max-width: 640px) {
+  .port-hero.band { padding-top: 22px; padding-bottom: 36px; }
+  .sec-lead { font-size: 15px; }
+  .port-hero .port-offer p { font-size: 15px; }
+  .port-hero .port-facts li { background: rgba(255,255,255,.05); border-color: var(--line); }
+}
