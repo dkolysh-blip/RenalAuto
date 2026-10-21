@@ -81,6 +81,15 @@
   </div>
   <div class="calc">
     <form class="calc-form panel" data-calc>
+      <div class="calc-pick">
+        <div class="field"><label for="calc-make">Марка</label>
+          <select id="calc-make" data-calc-make><option value="">Все марки</option></select></div>
+        <div class="field"><label for="calc-model">Модель</label>
+          <select id="calc-model" data-calc-model disabled><option value="">Сначала марка</option></select></div>
+        <div class="field"><label for="calc-year">Год</label>
+          <select id="calc-year" data-calc-year disabled><option value="">—</option></select></div>
+      </div>
+      <p class="calc-pick-info" data-calc-info>Выберите машину из объявлений — подставим её параметры и цену. Или задайте всё вручную ниже.</p>
       <fieldset class="seg"><legend>Откуда</legend>
         <label><input type="radio" name="country" value="KR" checked> Корея</label>
         <label><input type="radio" name="country" value="CN"> Китай</label>

@@ -214,3 +214,20 @@ def test_port_filter_api(settings):
         assert client.get("/api/port/cars", params={"country": "CN"}).json() == {"cars": [], "total": 0}
     finally:
         client.__exit__(None, None, None)
+
+
+def test_port_models_catalog(settings):
+    cars = [kb(external_id=str(i), title="기아 K5 1.6 터보", make="기아", model="K5", year=y, price=p,
+               extra={"displacement": "1,598cc"}) for i, (y, p) in enumerate([(2022, 20_000_000), (2022, 22_000_000), (2020, 15_000_000)])]
+    client, app = make_client(settings, cars)
+    try:
+        makes = client.get("/api/port/models").json()["makes"]
+        assert [m["make"] for m in makes] == ["Kia"] and makes[0]["count"] == 3
+        k5 = makes[0]["models"][0]
+        assert k5["model"] == "K5" and k5["country"] == "KR" and k5["engine"] == "ice" and k5["cc"] == 1600
+        assert list(k5["years"]) == ["2022", "2020"] and k5["years"]["2022"]["n"] == 2
+        assert k5["years"]["2022"]["price"] == round(21_000_000 * settings.rate_krw_rub, -4)
+        assert client.get("/api/port/cars", params={"make": "Kia", "model": "K5"}).json()["total"] == 3
+        assert client.get("/api/port/cars", params={"make": "Kia", "model": "K3"}).json()["total"] == 0
+    finally:
+        client.__exit__(None, None, None)

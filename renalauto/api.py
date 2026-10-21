@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import statistics
 import time
 from collections import defaultdict, deque
 from collections.abc import AsyncIterator
@@ -376,6 +377,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         country: Literal["KR", "CN"] | None = None,
         body: Literal["sedan", "suv", "hatch", "van"] | None = None,
         q: str | None = Query(None, max_length=60),
+        make: str | None = Query(None, max_length=40),
+        model: str | None = Query(None, max_length=60),
     ) -> dict[str, Any]:
         """Пульт терминала: машины под бюджет под ключ, страну, кузов, марку/модель (до 20 в зоне)."""
         rows = storage_of(request).search(country=country, passable_only=True, limit=PORT_SCAN)
@@ -384,6 +387,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         found = []
         for l in rows:
             v = car_view(l, rates)
+            if (make and v.make != make) or (model and v.model != model):
+                continue  # марка и модель из справочника калькулятора — точное совпадение
             text = f"{l.title} {l.make or ''} {l.model or ''} {v.title}".lower()
             if not all(any(a in text for a in aliases) for aliases in words):
                 continue
@@ -395,6 +400,40 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             found.append(car)
         shown = [c for c in found if c["country"] == "KR"][:PORT_PER_ZONE] + [c for c in found if c["country"] == "CN"][:PORT_PER_ZONE]
         return {"cars": shown, "total": len(found)}
+
+    catalog_cache: dict[str, Any] = {"at": 0.0, "data": None}
+
+    @app.get("/api/port/models", include_in_schema=False)
+    async def port_models(request: Request) -> dict[str, Any]:
+        """Справочник калькулятора: марки и модели из свежей ленты с типичными параметрами по годам."""
+        if catalog_cache["data"] is not None and time.monotonic() - catalog_cache["at"] < 300:
+            return catalog_cache["data"]
+        groups: dict[tuple[str, str], list] = defaultdict(list)
+        for l in storage_of(request).search(passable_only=True, limit=PORT_SCAN):
+            v = car_view(l, rates)
+            if v.make and v.model and v.price_rub and l.year:
+                groups[(v.make, v.model)].append(v)
+        makes: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for (make, model), vs in groups.items():
+            by_year: dict[int, list] = defaultdict(list)
+            for v in vs:
+                by_year[v.listing.year].append(v)
+            ccs = [v.eligibility.displacement_cc for v in vs if v.eligibility.displacement_cc]
+            countries = [v.listing.country for v in vs]
+            engines = [engine_kind(v.listing) for v in vs]
+            makes[make].append({
+                "model": model, "count": len(vs),
+                "country": max(set(countries), key=countries.count),
+                "engine": max(set(engines), key=engines.count),
+                "cc": round(statistics.median(ccs) / 100) * 100 if ccs else None,
+                "years": {str(y): {"n": len(g), "price": int(round(statistics.median(v.price_rub for v in g), -4))}
+                          for y, g in sorted(by_year.items(), reverse=True)},
+            })
+        data = {"makes": [{"make": m, "count": sum(x["count"] for x in ms),
+                           "models": sorted(ms, key=lambda x: (-x["count"], x["model"]))}
+                          for m, ms in sorted(makes.items(), key=lambda kv: (-sum(x["count"] for x in kv[1]), kv[0]))]}
+        catalog_cache.update(at=time.monotonic(), data=data)
+        return data
 
     @app.get("/api/port/{source}/{external_id}", include_in_schema=False)
     async def port_car(request: Request, source: str, external_id: str) -> Response:
