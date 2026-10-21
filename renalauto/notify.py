@@ -85,7 +85,7 @@ class TelegramNotifier:
         if lead.phone:
             lines.append(f"📞 {html.escape(lead.phone)}")
         if lead.telegram:
-            lines.append(f"✈️ {html.escape(lead.telegram)}")
+            lines.append(f"💬 MAX: {html.escape(lead.telegram)}")
         if lead.city:
             lines.append(f"📍 {html.escape(lead.city)}")
         if lead.budget_rub:

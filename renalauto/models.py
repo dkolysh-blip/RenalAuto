@@ -101,7 +101,7 @@ class LeadIn(BaseModel):
 
     name: str = Field(min_length=1, max_length=100)
     phone: str | None = Field(default=None, max_length=40)
-    telegram: str | None = Field(default=None, max_length=64)
+    telegram: str | None = Field(default=None, max_length=64)  # контакт в мессенджере (MAX); имя поля — для старых заявок
     comment: str | None = Field(default=None, max_length=2000)
     city: str | None = Field(default=None, max_length=100)
     budget_rub: int | None = Field(default=None, ge=0, le=1_000_000_000)

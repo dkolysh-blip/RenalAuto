@@ -375,6 +375,7 @@
     g.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') showPop(car, false); });
     g.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !pop.pinned) hidePopSoon(); });
     g.addEventListener('click', () => { goal('car_click'); showPop(car, true); if (pop.car === car) focusOn(car); });
+    g.addEventListener('dblclick', () => { if (car.d.path) openCard(car); });
     gCars.appendChild(g);
     const car = {d, g, slot: -1, state: 'new', path: null, dist: 0, len: 0, x: 0, y: 0, ang: 0, since: performance.now()};
     cars.set(d.key, car);
@@ -683,8 +684,13 @@
           ${d.calc && window.RenalCalc ? '<button class="btn" type="button" data-act="breakdown">Разобрать цену под ключ</button>' : ''}
           <button class="btn${d.calc && window.RenalCalc ? ' ghost' : ''}" type="button" data-act="want">Хочу эту</button>
         </div>
-        ${d.path ? `<a class="small" href="${esc(d.path)}">Подробнее о машине →</a>` : ''}
+        ${d.path ? `<a class="small" href="${esc(d.path)}" data-act="more">Подробнее о машине →</a>` : ''}
       </div>`;
+    popEl.querySelector('[data-act="more"]')?.addEventListener('click', e => {
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;  // в новой вкладке — как обычная ссылка
+      e.preventDefault();
+      openCard(car);
+    });
     popEl.querySelector('[data-act="breakdown"]')?.addEventListener('click', () => {
       hidePop();
       goal('car_calc');
@@ -722,6 +728,37 @@
     popEl.hidden = true;
     if (!cam.follow) unfocus();
   }
+
+  // --- переход к карточке машины: фото «вылетает» из сцены на весь экран, потом открывается страница
+  function openCard(car) {
+    const d = car.d;
+    if (!d.path) return;
+    goal('car_open');
+    if (reduce.matches) { location.href = d.path; return; }
+    const src = popEl.hidden ? null : popEl.querySelector('.pop-ph img');
+    const from = (src || car.g).getBoundingClientRect();
+    hidePop();
+    const fly = document.createElement('div');
+    fly.className = 'car-fly';
+    const sprite = `${ASSETS}/cars/${LENGTH[d.body] ? d.body : 'sedan'}-${paintOf(d.color)}.webp?v=${V}`;
+    fly.innerHTML = `<div class="car-fly-bg"></div><div class="car-fly-card">
+      <img class="${d.photo ? '' : 'sprite'}" src="${esc(d.photo || sprite)}" alt="">
+      <div class="car-fly-info"><b>${esc(label(d))}</b>${d.turnkey ? `<span>под ключ от ${mln(d.turnkey)}</span>` : ''}</div></div>`;
+    document.body.appendChild(fly);
+    const card = fly.querySelector('.car-fly-card');
+    const w = Math.min(innerWidth - 32, 980), h = Math.min(innerHeight - 96, w * 0.66);
+    const to = {left: (innerWidth - w) / 2, top: (innerHeight - h) / 2, width: w, height: h};
+    const px = r => ({left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px'});
+    card.animate([{...px(from), borderRadius: '8px', opacity: 0.6}, {...px(to), borderRadius: '20px', opacity: 1}],
+      {duration: 560, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'forwards'});
+    fly.querySelector('.car-fly-bg').animate([{opacity: 0}, {opacity: 1}], {duration: 420, fill: 'forwards'});
+    // браузеры с переходами между страницами «доводят» фото до места на странице машины
+    if (d.photo) fly.querySelector('img').style.viewTransitionName = 'car-photo';
+    try { sessionStorage.setItem('car-fly', '1'); } catch (err) { /* приватный режим */ }
+    setTimeout(() => { location.href = d.path; }, 600);
+  }
+  // вернулись «назад» из карточки — убираем заставку
+  addEventListener('pageshow', () => document.querySelectorAll('.car-fly').forEach(el => el.remove()));
 
   // --- форма заявки с подставленной машиной ---------------------------------------------
   const dialog = document.getElementById('car-dialog');

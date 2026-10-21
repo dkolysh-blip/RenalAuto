@@ -191,7 +191,7 @@
     <div class="vydachi-more">
       <b>Больше выдач и отзывов</b>
       <p class="muted small">Каждую машину, которую привозим, показываем в наших каналах.</p>
-      {% if company_telegram %}<a class="btn ghost block" href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener">Telegram-канал</a>{% endif %}
+      {% if company_max %}<a class="btn ghost block" href="{{ company_max }}" target="_blank" rel="noopener">MAX</a>{% endif %}
       {% if company_vk %}<a class="btn ghost block" href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
       {% if company_avito %}<a class="btn ghost block" href="{{ company_avito }}" target="_blank" rel="noopener">Отзывы на Авито</a>{% endif %}
     </div>
@@ -279,7 +279,7 @@
         <li>Вознаграждение фиксированное — {{ fmt(deal.fee)|replace(' ', ' ') }} ₽, остальное по отчёту</li>
       </ul>
       <div class="final-contacts">
-        {% if company_telegram %}<a class="btn" href="https://t.me/{{ company_telegram|replace('@', '') }}" target="_blank" rel="noopener">Написать в Telegram</a>{% endif %}
+        {% if company_max %}<a class="btn" href="{{ company_max }}" target="_blank" rel="noopener">Написать в MAX</a>{% endif %}
         {% if company_phone %}<a class="final-phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '') }}">{{ company_phone }}</a>{% endif %}
       </div>
       {% if company_address %}<p class="final-address">Офис: {{ company_address }}</p>{% endif %}
@@ -297,7 +297,7 @@
     <input type="hidden" name="external_id">
     <div class="field"><label for="cd-name">Имя *</label><input id="cd-name" name="name" required maxlength="100" autocomplete="name"></div>
     <div class="field"><label for="cd-phone">Телефон</label><input id="cd-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+7"></div>
-    <div class="field"><label for="cd-tg">или Telegram</label><input id="cd-tg" name="telegram" maxlength="64" placeholder="@username"></div>
+    <div class="field"><label for="cd-tg">или MAX</label><input id="cd-tg" name="telegram" maxlength="64" placeholder="ник или номер в MAX"></div>
     <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
     {{ consent() }}
     <button class="btn block" type="submit">Получить расчёт</button>

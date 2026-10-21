@@ -1,10 +1,10 @@
 (() => {
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 
-  // --- цели Метрики: переход в Telegram с любой страницы ------------------------
+  // --- цели Метрики: переход в MAX с любой страницы ------------------------------
   document.addEventListener('click', e => {
-    const a = e.target.closest('a[href^="https://t.me/"]');
-    if (a && window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', 'telegram');
+    const a = e.target.closest('a[href*="max.ru/"]');
+    if (a && window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', 'max');
   });
 
   // --- заявки --------------------------------------------------------------
@@ -16,7 +16,7 @@
       for (const k of Object.keys(data)) if (data[k] === '') delete data[k];
       delete data.consent;  // галочка обязательна в форме, на сервер не уходит
       if (!data.phone && !data.telegram) {
-        msg.innerHTML = '<p class="error">Укажите телефон или Telegram, чтобы менеджер мог ответить.</p>';
+        msg.innerHTML = '<p class="error">Укажите телефон или MAX, чтобы менеджер мог ответить.</p>';
         return;
       }
       if (data.budget_rub) data.budget_rub = parseInt(data.budget_rub, 10);
@@ -36,6 +36,14 @@
       }
     });
   });
+
+  // --- пришли с лендинга «вылетом» машины: фото на странице машины проявляется
+  try {
+    if (sessionStorage.getItem('car-fly')) {
+      sessionStorage.removeItem('car-fly');
+      document.documentElement.classList.add('from-fly');
+    }
+  } catch (err) { /* приватный режим */ }
 
   // --- галерея -------------------------------------------------------------
   const main = document.getElementById('main-photo');

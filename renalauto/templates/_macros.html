@@ -36,13 +36,13 @@
   {% endif %}
   <div class="field"><label>Имя *</label><input name="name" required maxlength="100" autocomplete="name"></div>
   <div class="field"><label>Телефон</label><input name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+7"></div>
-  <div class="field"><label>Telegram</label><input name="telegram" maxlength="64" placeholder="@username"></div>
+  <div class="field"><label>Или MAX</label><input name="telegram" maxlength="64" placeholder="ник или номер в MAX"></div>
   <div class="field"><label>Город получения</label><input name="city" maxlength="100" placeholder="Москва"></div>
   <div class="field"><label>Комментарий</label><textarea name="comment" maxlength="2000" placeholder="{{ 'Что важно в этой машине?' if car else 'Марка, модель, год, пробег…' }}"></textarea></div>
   <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
   {{ consent() }}
   <button class="btn block" type="submit">{{ button }}</button>
-  <p class="muted small">Нужен телефон или Telegram — чтобы менеджер мог ответить.</p>
+  <p class="muted small">Нужен телефон или MAX — чтобы менеджер мог ответить.</p>
   <div class="form-msg"></div>
 </form>
 {%- endmacro %}

@@ -90,7 +90,8 @@ class Settings:
         )
         or None
     )
-    company_telegram: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM", "RenalautoChina") or None)
+    # Мессенджер MAX: ссылка на профиль или канал компании (https://max.ru/…). Пусто — кнопки MAX не показываются
+    company_max: str | None = field(default_factory=lambda: os.getenv("COMPANY_MAX") or None)
     # Яндекс Метрика: номер счётчика. Пусто — счётчик на сайт не ставится
     ym_id: int | None = field(default_factory=lambda: _int_or_none("YM_ID") if os.getenv("YM_ID") is not None else 113699503)
     company_vk: str | None = field(default_factory=lambda: os.getenv("COMPANY_VK", "https://vk.ru/renal_auto") or None)

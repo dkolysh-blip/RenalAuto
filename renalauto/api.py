@@ -195,7 +195,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         lead_kinds=LEAD_KIND_LABELS,
         company=settings.company_name,
         company_phone=settings.company_phone,
-        company_telegram=settings.company_telegram,
+        company_max=settings.company_max,
         company_email=settings.company_email,
         company_legal_name=settings.company_legal_name,
         company_requisites=settings.company_requisites,
@@ -568,7 +568,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if lead.website:  # бот заполнил скрытое поле — делаем вид, что всё хорошо
             return {"ok": True}
         if not (lead.phone or lead.telegram):
-            raise HTTPException(422, "Укажите телефон или Telegram")
+            raise HTTPException(422, "Укажите телефон или контакт в MAX")
         ip = client_ip(request)
         hits = lead_hits[ip]
         now = time.monotonic()
