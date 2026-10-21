@@ -160,6 +160,8 @@ footer { background: var(--card); border-top: 3px solid var(--accent); margin-to
 .foot-contacts a { color: var(--text); }
 .foot-contacts .phone { font-size: 18px; font-weight: 800; }
 .foot-legal p { margin: 14px 0 0; }
+.foot-legal a { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.foot-legal a:hover { color: var(--text); text-decoration-color: currentColor; }
 
 /* admin */
 table.leads { width: 100%; border-collapse: collapse; font-size: 14px; }
