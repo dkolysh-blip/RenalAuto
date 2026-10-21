@@ -21,3 +21,9 @@
 		flush_interval -1
 	}
 }
+
+# Дополнительные домены (например, реналавто.рф в punycode) — постоянный редирект на основной.
+# В .env: REDIRECT_DOMAINS="xn--80aagj5akljy.xn--p1ai, www.xn--80aagj5akljy.xn--p1ai". Пусто — блок слушает только localhost.
+{$REDIRECT_DOMAINS:localhost} {
+	redir https://{$DOMAIN:renal-auto.asia}{uri} permanent
+}
