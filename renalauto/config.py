@@ -70,7 +70,7 @@ class Settings:
     # Публичный адрес сайта — для ссылок в Telegram и sitemap.xml
     site_url: str = field(default_factory=lambda: os.getenv("SITE_URL", "https://renal-auto.asia:8443").rstrip("/"))
     company_name: str = field(default_factory=lambda: os.getenv("COMPANY_NAME", "Renal Auto"))
-    company_phone: str | None = field(default_factory=lambda: os.getenv("COMPANY_PHONE", "8-800-250-57-78") or None)
+    company_phone: str | None = field(default_factory=lambda: os.getenv("COMPANY_PHONE", "+7 (914) 066-88-08") or None)
     company_email: str | None = field(
         default_factory=lambda: os.getenv("COMPANY_EMAIL", "ren125primorye@gmail.com") or None
     )

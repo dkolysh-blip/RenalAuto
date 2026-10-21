@@ -121,77 +121,111 @@
   <div class="sec-head">
     <span class="sec-eyebrow">Логистика</span>
     <h2 id="journey-title">Путь машины до ваших ключей</h2>
-    <p class="sec-lead">Из Кореи — морем, из Китая — по суше. Во Владивостоке растаможиваем и оформляем документы, дальше — в ваш город.</p>
+    <p class="sec-lead">Листайте вниз — и проследите путь своей машины: из Кореи морем, из Китая по суше, во Владивостоке таможня и документы, дальше — в ваш город.</p>
   </div>
-  <div class="journey-grid">
-    <div class="journey-map">
-      <svg viewBox="0 0 800 460" role="img" aria-label="Схема маршрута: из Кореи морем и из Китая через сухопутную границу во Владивосток, дальше по России в ваш город">
-        <defs>
-          <linearGradient id="j-sea" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe3ee"/><stop offset="1" stop-color="#b6d3e3"/></linearGradient>
-          <pattern id="j-dots" width="10" height="10" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r="1.1" fill="#b9b3a3"/></pattern>
-        </defs>
-        <rect class="j-sea" width="800" height="460" fill="url(#j-sea)"/>
-        {# материк: Россия и Китай; береговая линия к Владивостоку и вдоль Жёлтого моря — схематично #}
-        <path class="j-land" d="M0 0 H800 V96 C760 104 720 92 690 112 C650 138 610 128 585 150 C566 167 552 166 540 178 C528 190 512 196 498 214 C486 230 470 236 452 246 C430 258 404 262 388 282 C372 302 352 312 330 322 C300 336 268 344 238 362 C200 384 150 392 110 410 C70 428 30 436 0 440 Z"/>
-        <path class="j-land" d="M452 246 C462 262 470 282 478 300 C486 322 494 346 506 368 C514 384 528 396 546 392 C560 388 566 372 562 354 C556 330 548 306 536 286 C524 266 510 250 496 238 C484 230 470 236 452 246 Z"/>
-        <path class="j-land" d="M708 300 C726 286 750 290 766 306 C782 322 798 346 800 360 V460 H660 C668 430 682 404 690 380 C698 352 696 318 708 300 Z"/>
-        <path class="j-land j-land-texture" d="M0 0 H800 V96 C760 104 720 92 690 112 C650 138 610 128 585 150 C566 167 552 166 540 178 C528 190 512 196 498 214 C486 230 470 236 452 246 C430 258 404 262 388 282 C372 302 352 312 330 322 C300 336 268 344 238 362 C200 384 150 392 110 410 C70 428 30 436 0 440 Z" fill="url(#j-dots)"/>
-        <path class="j-border" d="M462 40 C470 80 480 120 500 150 C512 168 526 176 538 180"/>
-        <text class="j-country" x="610" y="60">РОССИЯ</text>
-        <text class="j-country" x="230" y="210">КИТАЙ</text>
-        <text class="j-country" x="474" y="322" transform="rotate(62 474 322)">КОРЕЯ</text>
-        <text class="j-sea-label" x="620" y="250">Японское море</text>
-        {# маршруты #}
-        <path class="j-route j-route-kr" id="j-kr" d="M520 378 C560 360 600 316 612 268 C622 226 600 196 562 184"/>
-        <path class="j-route j-route-cn" id="j-cn" d="M300 140 C360 136 420 134 470 138 C500 142 524 160 556 180"/>
-        <path class="j-route j-route-ru" id="j-ru" d="M562 180 C520 150 470 100 400 76 C320 50 220 44 120 40 C80 38 40 36 10 36"/>
-        <path class="j-progress j-route-kr" d="M520 378 C560 360 600 316 612 268 C622 226 600 196 562 184" data-j-progress="kr"/>
-        <path class="j-progress j-route-cn" d="M300 140 C360 136 420 134 470 138 C500 142 524 160 556 180" data-j-progress="cn"/>
-        <path class="j-progress j-route-ru" d="M562 180 C520 150 470 100 400 76 C320 50 220 44 120 40 C80 38 40 36 10 36" data-j-progress="ru"/>
-        {# точки #}
-        <g class="j-point"><circle cx="520" cy="378" r="6"/><text x="532" y="398">Пусан / Инчхон</text></g>
-        <g class="j-point"><circle cx="300" cy="140" r="6"/><text x="300" y="164" text-anchor="middle">Площадки Китая</text></g>
-        <g class="j-point"><circle cx="470" cy="138" r="5"/><text x="456" y="124" text-anchor="end">граница</text></g>
-        <g class="j-point j-hub"><circle cx="562" cy="182" r="9"/><text x="578" y="206">Владивосток</text></g>
-        <g class="j-point"><circle cx="24" cy="36" r="6"/><text x="24" y="60">Ваш город</text></g>
-        <g class="j-car" data-j-car="kr"><circle r="11"/><path d="M-6 -2 h12 l-2 -4 h-8 z M-7 -2 h14 v5 h-14 z" /></g>
-        <g class="j-car" data-j-car="cn"><circle r="11"/><path d="M-6 -2 h12 l-2 -4 h-8 z M-7 -2 h14 v5 h-14 z" /></g>
-        <g class="j-car" data-j-car="ru"><circle r="11"/><path d="M-6 -2 h12 l-2 -4 h-8 z M-7 -2 h14 v5 h-14 z" /></g>
-      </svg>
-      <p class="muted small">Схема условная. Срок доставки до Владивостока — до {{ deal.delivery_weeks }} недель с момента покупки машины.</p>
+  <div class="journey-track">
+    <div class="journey-stage">
+      <div class="journey-map">
+        {# координаты — из design/map/journey_map.py (равнопромежуточная проекция, 112–146° в. д., 32,5–51,5° с. ш.) #}
+        <svg viewBox="260 0 640 752" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Карта маршрута: из Пусана морем и из Харбина через Суйфэньхэ во Владивосток, дальше по России в ваш город">
+          <defs>
+            <linearGradient id="j-sea" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d6e8f3"/><stop offset="1" stop-color="#aecde2"/></linearGradient>
+            <filter id="j-shadow" x="-20%" y="-60%" width="140%" height="220%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0b2846" flood-opacity=".35"/></filter>
+            <filter id="j-coast" x="-5%" y="-5%" width="110%" height="110%"><feMorphology operator="dilate" radius="5" in="SourceAlpha"/><feGaussianBlur stdDeviation="4"/><feComponentTransfer><feFuncA type="linear" slope=".35"/></feComponentTransfer><feFlood flood-color="#ffffff"/><feComposite operator="in" in2="SourceAlpha"/></filter>
+          </defs>
+          <rect class="j-sea" width="1000" height="752" fill="url(#j-sea)"/>
+          <g class="j-grat">{% for x in range(0, 1001, 147) %}<line x1="{{ x }}" y1="0" x2="{{ x }}" y2="752"/>{% endfor %}{% for y in range(0, 753, 198) %}<line x1="0" y1="{{ y }}" x2="1000" y2="{{ y }}"/>{% endfor %}</g>
+          <g class="j-lands">{% include "_journey_land.svg" %}</g>
+          <text class="j-country" x="740" y="250">РОССИЯ</text>
+          <text class="j-country" x="330" y="330">КИТАЙ</text>
+          <text class="j-country j-kr-label" x="466" y="600" transform="rotate(-72 466 600)">КОРЕЯ</text>
+          <text class="j-country" x="760" y="690">ЯПОНИЯ</text>
+          <text class="j-sea-label" x="660" y="520">Японское море</text>
+          {# маршруты: база пунктиром, поверх — пройденная часть #}
+          <path class="j-route" d="M501 649 C540 628 600 560 640 470 C668 408 640 372 598 350"/>
+          <path class="j-route" d="M429 228 C470 250 500 272 518 276 C540 280 552 280 563 281 C575 286 584 294 587 305 C589 316 588 326 586 334"/>
+          <path class="j-route j-route-ru" d="M586 334 C590 318 588 312 587 305 C600 260 640 180 678 120 C660 108 640 104 615 107 C570 90 520 50 485 24 C474 14 466 6 458 -4"/>
+          <path class="j-progress j-kr" data-j-path="kr" d="M501 649 C540 628 600 560 640 470 C668 408 640 372 598 350"/>
+          <path class="j-progress j-cn" data-j-path="cn" d="M429 228 C470 250 500 272 518 276 C540 280 552 280 563 281 C575 286 584 294 587 305 C589 316 588 326 586 334"/>
+          <path class="j-progress j-ru" data-j-path="ru" d="M586 334 C590 318 588 312 587 305 C600 260 640 180 678 120 C660 108 640 104 615 107 C570 90 520 50 485 24 C474 14 466 6 458 -4"/>
+          <g class="j-pt" data-j-pt="kr"><circle class="j-pulse" cx="501" cy="649" r="7"/><circle cx="501" cy="649" r="6"/><text x="516" y="668">Пусан</text></g>
+          <g class="j-pt" data-j-pt="cn"><circle class="j-pulse" cx="429" cy="228" r="7"/><circle cx="429" cy="228" r="6"/><text x="414" y="222" text-anchor="end">Харбин</text></g>
+          <g class="j-pt j-small"><circle cx="563" cy="281" r="4.5"/><text x="548" y="306" text-anchor="end">граница · Суйфэньхэ</text></g>
+          <g class="j-pt j-small"><circle cx="678" cy="120" r="4.5"/><text x="692" y="125">Хабаровск</text></g>
+          <g class="j-pt j-hub" data-j-pt="vl"><circle class="j-pulse" cx="586" cy="334" r="10"/><circle cx="586" cy="334" r="9"/><text x="572" y="326" text-anchor="end">Владивосток</text></g>
+          <g class="j-exit"><rect x="476" y="20" width="250" height="36" rx="18"/><text x="601" y="43" text-anchor="middle">→ Ваш город: Москва, Новосибирск…</text></g>
+          {# транспорт: судно с машиной, автовоз из Китая, автовоз по России #}
+          <g class="j-veh" data-j-veh="kr" filter="url(#j-shadow)">
+            <image href="/static/port/ship.webp?v=9" x="-66" y="-16" width="132" height="31.4"/>
+            <g class="j-deck">
+              <g transform="translate(-28 0) rotate(90)"><image href="/static/port/cars/sedan-silver.webp?v=9" x="-5.5" y="-11" width="11" height="22"/></g>
+              <g transform="translate(-13 0) rotate(90)"><image href="/static/port/cars/suv-grey.webp?v=9" x="-5.5" y="-11" width="11" height="22"/></g>
+              <g transform="translate(5 0) rotate(90)"><image data-j-mine="kr" href="/static/port/cars/suv-white.webp?v=9" x="-5.5" y="-11" width="11" height="22"/></g>
+            </g>
+          </g>
+          {% for id in ('cn', 'ru') %}
+          <g class="j-veh j-truck" data-j-veh="{{ id }}" filter="url(#j-shadow)">
+            <rect class="j-trailer" x="-26" y="-6" width="38" height="12" rx="2"/>
+            <rect class="j-cab" x="13" y="-6" width="12" height="12" rx="3"/>
+            <g transform="translate(-7 0) rotate(90)"><image data-j-mine="{{ id }}" href="/static/port/cars/sedan-red.webp?v=9" x="-5" y="-10" width="10" height="20"/></g>
+          </g>
+          {% endfor %}
+        </svg>
+        <div class="j-hud" data-j-hud>
+          <span class="j-hud-step" data-j-hud-step>Этап 1 из 5</span>
+          <b data-j-hud-title>Выкуп и проверка</b>
+          <span class="j-hud-car" data-j-hud-car hidden></span>
+        </div>
+        <ul class="j-stamps" data-j-stamps aria-hidden="true">
+          <li>Таможенная декларация</li><li>Утильсбор</li><li>СБКТС</li><li>ЭПТС</li>
+        </ul>
+      </div>
+      <ol class="journey-steps">
+        <li data-j-step="0" data-n="1"><b>Выкуп и проверка</b><span>Машина на площадке в Корее или Китае: проверяем историю и проходимость в РФ, присылаем фото и видео, выкупаем от вашего имени.</span><em>подбор — до {{ deal.pick_days }} дней</em></li>
+        <li data-j-step="1" data-n="2"><b>Экспорт</b><span>Из Кореи — морем из Пусана или Инчхона. Из Китая — автовозом через пограничный переход.</span><em>до Владивостока — до {{ deal.delivery_weeks }} недель</em></li>
+        <li data-j-step="2" data-n="3"><b>Владивосток</b><span>Таможня, утильсбор, СБКТС и ЭПТС — оформляем сами, каждую сумму подтверждаем отчётом.</span></li>
+        <li data-j-step="3" data-n="4"><b>В ваш город</b><span>Автовозом или по железной дороге. Или забираете машину во Владивостоке сами.</span></li>
+        <li data-j-step="4" data-n="5"><b>Ключи у вас</b><span>Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС, отчёт по всем расходам.</span><a class="btn" href="#calc" data-goal="form_open">Рассчитать свою машину</a></li>
+      </ol>
+      <div class="j-progressbar" aria-hidden="true"><i data-j-bar></i></div>
     </div>
-    <ol class="journey-steps">
-      <li data-j-step="0"><b>Выкуп и проверка</b><span>Машина на площадке в Корее или Китае: проверяем историю и проходимость, присылаем фото и видео, выкупаем от вашего имени.</span></li>
-      <li data-j-step="1"><b>Экспорт</b><span>Из Кореи — морем из Пусана или Инчхона. Из Китая — по суше через границу.</span></li>
-      <li data-j-step="2"><b>Владивосток</b><span>Таможня, утильсбор, СБКТС и ЭПТС — всё оформляем сами, расходы — по отчёту.</span></li>
-      <li data-j-step="3"><b>В ваш город</b><span>Автовозом или по железной дороге, либо забираете машину во Владивостоке.</span></li>
-      <li data-j-step="4"><b>Ключи</b><span>Передаём машину и документы: ПТД, ТПО, СБКТС, ЭПТС.</span></li>
-    </ol>
   </div>
+  <p class="muted small journey-note">Схема условная: маршрут и сроки зависят от машины и выбранного способа доставки.</p>
 </section>
 
 <section class="port-section band band-white" id="vydachi" aria-labelledby="vydachi-title">
+  {% set reviews_url = company_2gis ~ '/tab/reviews' if company_2gis else None %}
   <div class="sec-head">
     <span class="sec-eyebrow">Отзывы</span>
     <h2 id="vydachi-title">Что говорят клиенты</h2>
-    <p class="sec-lead">Отзывы — из 2ГИС, где их оставляют сами клиенты. Видео — с настоящих выдач.</p>
-  </div>
-  {% set reviews_url = company_2gis ~ '/tab/reviews' if company_2gis else None %}
-  <div class="reviews">
-    {% if company_2gis %}
-    <a class="review-score" href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">
+    <p class="sec-lead">Видео — с настоящих выдач. Письменные отзывы клиенты оставляют сами в 2ГИС.</p>
+    {% if reviews_url %}
+    <a class="gis-pill sec-link" href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">
       <span class="gis-mark">2ГИС</span>
-      {% if company_2gis_rating %}
-      <span class="score-num">{{ company_2gis_rating|replace('.', ',') }}</span>
-      <span class="stars" aria-label="Рейтинг {{ company_2gis_rating }} из 5">★★★★★</span>
-      {% if company_2gis_reviews %}<span class="score-count">{{ company_2gis_reviews }} отзывов</span>{% endif %}
-      {% else %}
-      <span class="score-num small-score">Отзывы о нас</span>
-      {% endif %}
-      <span class="score-cta">Все отзывы в 2ГИС →</span>
+      {% if company_2gis_rating %}<b>{{ company_2gis_rating|replace('.', ',') }}</b><span class="stars" aria-label="Рейтинг {{ company_2gis_rating }} из 5">★★★★★</span>{% endif %}
+      <span>{% if company_2gis_reviews %}{{ company_2gis_reviews }} отзывов{% else %}Читать отзывы{% endif %} →</span>
     </a>
     {% endif %}
-    {% for r in reviews[:6] %}
+  </div>
+  <div class="vydachi">
+    <figure class="vydacha wide" data-video>
+      <video playsinline preload="none" poster="/static/media/vydacha-1.jpg" width="960" height="540">
+        <source src="/static/media/vydacha-1.mp4" type="video/mp4">
+      </video>
+      <button type="button" class="vydacha-play" aria-label="Смотреть видео: отзыв клиентки"></button>
+      <figcaption><b>Отзыв клиентки</b><span>Получила машину и рассказывает, как всё прошло</span></figcaption>
+    </figure>
+    <figure class="vydacha tall" data-video>
+      <video playsinline preload="none" poster="/static/media/vydacha-2.jpg" width="640" height="900">
+        <source src="/static/media/vydacha-2.mp4" type="video/mp4">
+      </video>
+      <button type="button" class="vydacha-play" aria-label="Смотреть видео: передача ключей"></button>
+      <figcaption><b>Передача ключей</b><span>Клиент забирает машину</span></figcaption>
+    </figure>
+  </div>
+  {% if reviews %}
+  <div class="reviews">
+    {% for r in reviews[:3] %}
     <a class="review" href="{{ reviews_url or '#' }}" {% if reviews_url %}target="_blank" rel="noopener"{% endif %} data-goal="reviews_2gis">
       <span class="review-top"><b>{{ r.name }}</b>{% if r.rating %}<span class="stars small" aria-label="{{ r.rating }} из 5">{{ '★' * (r.rating|int) }}</span>{% endif %}</span>
       {% if r.car %}<span class="review-car">{{ r.car }}</span>{% endif %}
@@ -200,24 +234,13 @@
     </a>
     {% endfor %}
   </div>
-  <div class="vydachi">
-    <figure class="vydacha wide">
-      <video controls playsinline preload="none" poster="/static/media/vydacha-1.jpg" width="1280" height="720">
-        <source src="/static/media/vydacha-1.mp4" type="video/mp4">
-      </video>
-      <figcaption>Клиентка получила свою машину — отзыв на видео</figcaption>
-    </figure>
-    <figure class="vydacha tall">
-      <video controls playsinline preload="none" poster="/static/media/vydacha-2.jpg" width="640" height="900">
-        <source src="/static/media/vydacha-2.mp4" type="video/mp4">
-      </video>
-      <figcaption>Передача ключей</figcaption>
-    </figure>
-    <div class="vydachi-more">
-      <b>Больше выдач</b>
-      <p class="muted small">Каждую машину, которую привозим, показываем в нашем канале.</p>
-      {% if company_max %}<a class="btn ghost block" href="{{ company_max }}" target="_blank" rel="noopener">Канал в MAX</a>{% endif %}
-      {% if company_vk %}<a class="btn ghost block" href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
+  {% endif %}
+  <div class="proof-bar">
+    <p><b>Каждую выдачу показываем в канале</b><span class="muted">Фото и видео машин, которые мы привезли, — без постановки.</span></p>
+    <div class="proof-links">
+      {% if company_max %}<a class="btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">Канал в MAX</a>{% endif %}
+      {% if company_vk %}<a class="btn ghost" href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
+      {% if reviews_url %}<a class="btn ghost" href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">Отзывы в 2ГИС</a>{% endif %}
     </div>
   </div>
 </section>
@@ -304,7 +327,7 @@
       </ul>
       <div class="final-contacts">
         {% if company_max %}<a class="btn" href="{{ company_max }}" target="_blank" rel="noopener">Наш канал в MAX</a>{% endif %}
-        {% if company_phone %}<a class="final-phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '') }}">{{ company_phone }}</a>{% endif %}
+        {% if company_phone %}<a class="final-phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       </div>
       {% if company_address %}<p class="final-address">Офис: {{ company_address }}{% if company_2gis %} · <a href="{{ company_2gis }}" target="_blank" rel="noopener">на карте 2ГИС</a>{% endif %}</p>{% endif %}
     </div>

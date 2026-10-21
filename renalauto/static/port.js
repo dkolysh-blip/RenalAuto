@@ -24,6 +24,14 @@
   const rub = n => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ');
   const mln = n => (n / 1e6).toFixed(n < 1e7 ? 2 : 1).replace(/0$/, '').replace('.', ',') + ' млн ₽';
 
+  // видео выдач: своя кнопка воспроизведения, штатные контролы — после запуска
+  document.querySelectorAll('[data-video]').forEach(fig => {
+    const v = fig.querySelector('video');
+    fig.querySelector('.vydacha-play').addEventListener('click', () => {
+      document.querySelectorAll('[data-video] video').forEach(o => { if (o !== v) o.pause(); });
+      v.controls = true; v.play(); fig.classList.add('playing'); goal('video');
+    });
+  });
   document.querySelectorAll('[data-goal]').forEach(a => a.addEventListener('click', () => goal(a.dataset.goal)));
 
   // --- раскладка терминала ----------------------------------------------------
@@ -670,6 +678,9 @@
     pop.pinned = pinned || pop.pinned;
     car.g.classList.add('hover');
     const d = car.d;
+    // выбранная машина «едет» дальше по странице — в блоке логистики
+    if (pinned) dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr',
+      sprite: `${ASSETS}/cars/${LENGTH[d.body] ? d.body : 'sedan'}-${paintOf(d.color)}.webp?v=${V}`}}));
     const pill = d.verdict === 'warn' ? '<span class="pill warn">✓ Проходит, есть нюансы</span>' : '<span class="pill ok">✓ Проходит в РФ</span>';
     popEl.innerHTML = `
       ${d.photo ? `<div class="pop-ph"><img src="${esc(d.photo)}" alt=""></div>` : ''}

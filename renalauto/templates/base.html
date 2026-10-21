@@ -43,7 +43,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <a href="/#podbor">Подбор под бюджет</a>
     </nav>
     <div class="contacts">
-      {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '') }}">{{ company_phone }}</a>{% endif %}
+      {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_max %}<a class="btn ghost" href="{{ company_max }}" target="_blank" rel="noopener">MAX</a>{% endif %}
     </div>
   </div>
@@ -58,7 +58,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <p>Авто из Кореи и Китая под заказ: подбор, проверка, выкуп и доставка до вашего города.</p>
     </div>
     <div class="foot-contacts">
-      {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '') }}">{{ company_phone }}</a>{% endif %}
+      {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_email %}<a href="mailto:{{ company_email }}">{{ company_email }}</a>{% endif %}
       {% if company_max %}<a href="{{ company_max }}" target="_blank" rel="noopener">Канал в MAX</a>{% endif %}
       {% if company_vk %}<a href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
