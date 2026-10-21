@@ -112,6 +112,27 @@ class LeadIn(BaseModel):
     website: str | None = None  # ловушка для ботов: поле скрыто, люди его не заполняют
 
 
+PostStatus = Literal["draft", "published", "skipped", "failed"]
+# car — одна машина с фото, digest — подборка из нескольких машин
+PostKind = Literal["car", "digest"]
+
+
+class Post(BaseModel):
+    """Пост для Telegram-канала, подготовленный агентом-маркетологом."""
+
+    id: int | None = None
+    created_at: str | None = None
+    status: PostStatus = "draft"
+    kind: PostKind
+    text: str  # HTML в разметке Telegram: <b>, <i>, <a>
+    photo: str | None = None
+    cars: list[str] = Field(default_factory=list)  # ключи «площадка/id»
+    writer: str = "template"  # кто написал текст: claude или template
+    published_at: str | None = None
+    message_id: int | None = None
+    error: str | None = None
+
+
 class Lead(LeadIn):
     id: int
     created_at: str

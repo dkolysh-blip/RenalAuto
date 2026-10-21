@@ -13,7 +13,8 @@
         return;
       }
       if (data.budget_rub) data.budget_rub = parseInt(data.budget_rub, 10);
-      data.page = location.pathname;
+      // с UTM-метками: по ним видно, какой канал (например, пост в Telegram) привёл заявку
+      data.page = (location.pathname + location.search).slice(0, 500);
       const btn = form.querySelector('button[type=submit]');
       btn.disabled = true;
       try {

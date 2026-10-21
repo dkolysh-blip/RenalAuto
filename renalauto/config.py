@@ -13,6 +13,11 @@ def _bool(name: str, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _opt_int(name: str, default: str) -> int | None:
+    value = os.getenv(name, default).strip()
+    return int(value) if value else None
+
+
 def _list(name: str, default: str) -> list[str]:
     return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
 
@@ -92,6 +97,23 @@ class Settings:
     rate_cny_rub: float = field(default_factory=lambda: float(os.getenv("RATE_CNY_RUB", "11.2")))
     rate_usd_rub: float = field(default_factory=lambda: float(os.getenv("RATE_USD_RUB", "80")))
     rate_eur_rub: float = field(default_factory=lambda: float(os.getenv("RATE_EUR_RUB", "93")))
+
+    # --- Агент-маркетолог: посты для Telegram-канала компании ---
+    # Включает фоновую подготовку постов (иначе — только кнопкой в /admin/marketing)
+    marketing_enabled: bool = field(default_factory=lambda: _bool("MARKETING_ENABLED", False))
+    # Канал, куда публикуются посты: @username или числовой id (-100…). Бот должен быть его администратором
+    marketing_channel_id: str | None = field(default_factory=lambda: os.getenv("MARKETING_CHANNEL_ID") or None)
+    # Ключ Claude API; без него посты собираются по шаблону
+    anthropic_api_key: str | None = field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY") or None)
+    marketing_model: str = field(default_factory=lambda: os.getenv("MARKETING_MODEL", "claude-opus-5-5"))
+    # Как часто готовить новую порцию постов, часы
+    marketing_interval_hours: float = field(default_factory=lambda: float(os.getenv("MARKETING_INTERVAL_HOURS", "24")))
+    # Сколько постов «машина дня» готовить за раз
+    marketing_posts_per_run: int = field(default_factory=lambda: int(os.getenv("MARKETING_POSTS_PER_RUN", "3")))
+    # День недели для подборки (0 — понедельник … 6 — воскресенье); пусто — без подборок
+    marketing_digest_weekday: int | None = field(default_factory=lambda: _opt_int("MARKETING_DIGEST_WEEKDAY", "0"))
+    # Публиковать сразу, без проверки человеком. По умолчанию посты ждут одобрения в /admin/marketing
+    marketing_autopublish: bool = field(default_factory=lambda: _bool("MARKETING_AUTOPUBLISH", False))
 
     def to_usd(self, amount: float | None, currency: str) -> float | None:
         if amount is None:

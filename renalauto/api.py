@@ -25,7 +25,8 @@ from . import __version__
 from .config import Settings
 from .eligibility import RULES_AS_OF
 from .events import EventHub
-from .models import LEAD_KIND_LABELS, Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter
+from .marketing import MarketingAgent, PostNotFound, PublishError, sanitize
+from .models import LEAD_KIND_LABELS, Lead, LeadIn, LeadStatus, Listing, ListingEvent, Post, SavedFilter
 from .notify import TelegramNotifier
 from .poller import Poller
 from .rates import Rates
@@ -76,6 +77,10 @@ class IngestBody(BaseModel):
 class LeadUpdate(BaseModel):
     status: LeadStatus | None = None
     manager_note: str | None = None
+
+
+class PostUpdate(BaseModel):
+    text: str = Field(min_length=1, max_length=4096)
 
 
 class PageFilters(BaseModel):
@@ -151,8 +156,12 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         poller = Poller(settings, storage, srcs, hub, notifier)
         app.state.storage, app.state.sources, app.state.hub, app.state.poller = storage, srcs, hub, poller
         app.state.notifier = notifier
+        marketing = MarketingAgent(settings, storage, rates, notifier)
+        app.state.marketing = marketing
         if settings.poller_enabled:
             poller.start()
+        if settings.marketing_enabled:
+            marketing.start()
         rates_task = asyncio.create_task(refresh_rates_forever()) if settings.rates_live else None
         if not settings.admin_token:
             log.warning("ADMIN_TOKEN не задан: заявки и служебные функции недоступны")
@@ -164,6 +173,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                 with suppress(asyncio.CancelledError):
                     await rates_task
             await poller.stop()
+            await marketing.stop()
             await notifier.aclose()
             for source in srcs.values():
                 await source.aclose()
@@ -336,6 +346,16 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         storage = storage_of(request)
         return render(request, "admin.html", leads=storage.list_leads(status), stats=storage.lead_stats())
 
+    @app.get("/admin/marketing", response_class=HTMLResponse, include_in_schema=False)
+    async def admin_marketing_page(request: Request, status: str | None = None) -> HTMLResponse:
+        require_admin(request)
+        agent: MarketingAgent = request.app.state.marketing
+        return render(
+            request, "admin_marketing.html", posts=storage_of(request).list_posts(status),
+            channel=settings.marketing_channel_id, uses_claude=agent.writer.uses_claude,
+            enabled=settings.marketing_enabled, autopublish=settings.marketing_autopublish,
+        )
+
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon() -> Response:
         svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚗</text></svg>"
@@ -481,6 +501,49 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if lead is None:
             raise HTTPException(404, "Заявка не найдена")
         return lead
+
+    # --- API: агент-маркетолог ------------------------------------------------------
+
+    @app.get("/api/marketing/posts", response_model=list[Post], dependencies=[Depends(require_admin)])
+    async def list_posts(request: Request, status: str | None = None) -> list[Post]:
+        return storage_of(request).list_posts(status)
+
+    @app.post("/api/marketing/run", response_model=list[Post], dependencies=[Depends(require_admin)])
+    async def marketing_run(request: Request) -> list[Post]:
+        """Подготовить порцию постов сейчас, не дожидаясь расписания."""
+        return await request.app.state.marketing.run_once()
+
+    def get_post_or_404(request: Request, post_id: int) -> Post:
+        post = storage_of(request).get_post(post_id)
+        if post is None:
+            raise HTTPException(404, "Пост не найден")
+        return post
+
+    @app.patch("/api/marketing/posts/{post_id}", response_model=Post, dependencies=[Depends(require_admin)])
+    async def edit_post(request: Request, post_id: int, patch: PostUpdate) -> Post:
+        post = get_post_or_404(request, post_id)
+        if post.status == "published":
+            raise HTTPException(409, "Пост уже опубликован")
+        text = sanitize(patch.text)
+        if text is None:
+            raise HTTPException(422, 'Разметка Telegram: только <b>, <i> и <a href="https://…">')
+        return storage_of(request).save_post(post.model_copy(update={"text": text, "writer": "edited"}))
+
+    @app.post("/api/marketing/posts/{post_id}/publish", response_model=Post, dependencies=[Depends(require_admin)])
+    async def publish_post(request: Request, post_id: int) -> Post:
+        try:
+            return await request.app.state.marketing.publish(post_id)
+        except PostNotFound:
+            raise HTTPException(404, "Пост не найден") from None
+        except PublishError as exc:
+            raise HTTPException(502, f"Не удалось опубликовать: {exc}") from None
+
+    @app.post("/api/marketing/posts/{post_id}/skip", response_model=Post, dependencies=[Depends(require_admin)])
+    async def skip_post(request: Request, post_id: int) -> Post:
+        post = get_post_or_404(request, post_id)
+        if post.status == "published":
+            raise HTTPException(409, "Пост уже опубликован")
+        return storage_of(request).save_post(post.model_copy(update={"status": "skipped"}))
 
     # --- API: удалённые сборщики ----------------------------------------------------
 

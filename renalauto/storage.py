@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from typing import Literal
 
 from . import i18n
-from .models import Lead, LeadIn, Listing, SavedFilter
+from .models import Lead, LeadIn, Listing, Post, SavedFilter
 
 UpsertStatus = Literal["new", "price_changed", "updated", "unchanged"]
 
@@ -61,6 +61,15 @@ CREATE TABLE IF NOT EXISTS filters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     data TEXT NOT NULL
 );
+
+-- Посты агента-маркетолога для Telegram-канала
+CREATE TABLE IF NOT EXISTS posts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'draft',
+    data TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS ix_posts_created ON posts (created_at);
 """
 
 
@@ -350,6 +359,56 @@ class Storage:
         stats.update({r["status"]: r["n"] for r in rows})
         stats["total"] = sum(v for k, v in stats.items() if k != "total")
         return stats
+
+    # --- посты агента-маркетолога ------------------------------------------------
+
+    def add_post(self, post: Post) -> Post:
+        with self._lock:
+            now = _now()
+            data = post.model_dump_json(exclude={"id", "created_at", "status"})
+            cur = self._conn.execute(
+                "INSERT INTO posts (created_at, status, data) VALUES (?, ?, ?)", (now, post.status, data)
+            )
+            self._conn.commit()
+            return post.model_copy(update={"id": cur.lastrowid, "created_at": now})
+
+    def _post_from_row(self, row: sqlite3.Row) -> Post:
+        return Post(id=row["id"], created_at=row["created_at"], status=row["status"], **json.loads(row["data"]))
+
+    def get_post(self, post_id: int) -> Post | None:
+        row = self._conn.execute("SELECT id, created_at, status, data FROM posts WHERE id = ?", (post_id,)).fetchone()
+        return self._post_from_row(row) if row else None
+
+    def list_posts(self, status: str | None = None, limit: int = 100) -> list[Post]:
+        sql, params = "SELECT id, created_at, status, data FROM posts", []
+        if status:
+            sql += " WHERE status = ?"
+            params.append(status)
+        rows = self._conn.execute(sql + " ORDER BY id DESC LIMIT ?", (*params, limit)).fetchall()
+        return [self._post_from_row(r) for r in rows]
+
+    def save_post(self, post: Post) -> Post:
+        with self._lock:
+            data = post.model_dump_json(exclude={"id", "created_at", "status"})
+            self._conn.execute("UPDATE posts SET status = ?, data = ? WHERE id = ?", (post.status, data, post.id))
+            self._conn.commit()
+            return post
+
+    def last_post_at(self, kind: str | None = None) -> datetime | None:
+        sql, params = "SELECT MAX(created_at) FROM posts", []
+        if kind:
+            sql += " WHERE json_extract(data, '$.kind') = ?"
+            params.append(kind)
+        value = self._conn.execute(sql, params).fetchone()[0]
+        return datetime.fromisoformat(value) if value else None
+
+    def post_car_keys(self, since: datetime) -> set[str]:
+        """Машины, о которых уже писали (кроме отклонённых постов) — чтобы не повторяться."""
+        rows = self._conn.execute(
+            "SELECT data FROM posts WHERE created_at >= ? AND status != 'skipped'",
+            (since.isoformat(timespec="seconds"),),
+        ).fetchall()
+        return {key for r in rows for key in json.loads(r["data"]).get("cars", [])}
 
     def recent_listing_keys(self, limit: int = 5000) -> list[tuple[str, str, str]]:
         rows = self._conn.execute(

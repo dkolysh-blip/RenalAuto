@@ -104,5 +104,45 @@ class TelegramNotifier:
             log.warning("telegram lead send failed: %s", exc)
             return False
 
+    async def _call(self, method: str, payload: dict) -> dict:
+        """Вызов Bot API. Ошибку отдаём наверх с текстом от Telegram — его видно в /admin/marketing."""
+        if not self.token:
+            raise RuntimeError("TELEGRAM_BOT_TOKEN не задан")
+        response = await self._client.post(f"https://api.telegram.org/bot{self.token}/{method}", json=payload)
+        try:
+            body = response.json()
+        except ValueError:
+            body = {}
+        if not response.is_success or not body.get("ok"):
+            raise RuntimeError(f"Telegram {method}: {body.get('description') or response.status_code}")
+        return body["result"]
+
+    async def post_to_channel(self, chat_id: str, text: str, photo: str | None = None) -> int:
+        """Публикует пост; с фото — одним сообщением с подписью. Возвращает id сообщения."""
+        if photo:
+            try:
+                result = await self._call(
+                    "sendPhoto", {"chat_id": chat_id, "photo": photo, "caption": text, "parse_mode": "HTML"}
+                )
+                return result["message_id"]
+            except RuntimeError as exc:
+                # фото с площадки Telegram мог не скачать (хотлинк, таймаут) — публикуем текстом
+                log.warning("sendPhoto failed, falling back to text: %s", exc)
+        result = await self._call("sendMessage", {"chat_id": chat_id, "text": text, "parse_mode": "HTML"})
+        return result["message_id"]
+
+    async def send_manager(self, text: str) -> bool:
+        chat_id = self.manager_chat or self.default_chat
+        if not self.token or not chat_id:
+            return False
+        try:
+            await self._call(
+                "sendMessage", {"chat_id": chat_id, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}
+            )
+            return True
+        except (RuntimeError, httpx.HTTPError) as exc:
+            log.warning("telegram manager message failed: %s", exc)
+            return False
+
     async def aclose(self) -> None:
         await self._client.aclose()
