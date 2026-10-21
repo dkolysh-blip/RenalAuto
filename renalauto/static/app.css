@@ -555,7 +555,7 @@ body.pop-sheet .cta-bar { display: none; }
 .port-page .terminal { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 0; }
 .voyage { --water: #144452; --land: #8b929a; margin-top: -1px; position: relative; border-radius: 0 0 20px 20px; overflow: hidden; background: var(--card);
   border: 1px solid var(--line); border-top: 0; box-shadow: var(--shadow); }
-.vy-band { --road: 70px; --dock: 155px; --shore: 16px; position: relative; height: 170px; overflow: hidden; background: #12424f; }
+.vy-band { --road: 206px; --dock: 155px; --shore: 16px; position: relative; height: 280px; overflow: hidden; background: #12424f; }
 /* земля сверху: лес точками и поля пятнами; дорога с белыми кромками и жёлтой разметкой */
 .vy-land { position: absolute; inset: var(--shore) 0 0 0; background-color: #b8c2a3; box-shadow: 0 -5px 0 #dccfa3;
   background-image: radial-gradient(ellipse 140px 50px at 30% 20%, rgba(226,214,160,.55), transparent 70%),
@@ -597,10 +597,6 @@ body.pop-sheet .cta-bar { display: none; }
   opacity: 0; transition: opacity .4s ease, transform .4s ease; }
 .voyage.arrived .vy-home img { opacity: 1; transform: translate(-50%, -60%); }
 .vy-trailer img:first-child { transition: opacity .3s; } .voyage.arrived .vy-trailer img:first-child { opacity: 0; }
-/* расстояния над участками пути */
-.vy-dist { position: absolute; left: var(--x); top: 6px; transform: translateX(-50%); font: 600 12px/1 Onest, system-ui, sans-serif; color: #fff;
-  white-space: nowrap; padding: 3px 8px; border-radius: 999px; background: rgba(15,23,42,.45); }
-.voyage.land .vy-dist { background: rgba(15,23,42,.55); }
 /* города: кварталы крыш по обе стороны дороги */
 .vy-town { position: absolute; left: var(--x); top: 0; width: 92px; height: 100%; transform: translateX(-50%); pointer-events: none; }
 .vy-town.big { width: 128px; transform: translateX(-12%); }
@@ -619,7 +615,7 @@ body.pop-sheet .cta-bar { display: none; }
 .vy-gate { position: absolute; left: -4px; top: calc(var(--road) - 24px); width: 8px; height: 48px; border-radius: 3px;
   background: repeating-linear-gradient(180deg, #dd1f1f 0 6px, #fff 6px 12px); box-shadow: 0 2px 4px rgba(0,0,0,.3); }
 .vy-gate::after { content: ""; position: absolute; left: 12px; top: -12px; width: 14px; height: 12px; border-radius: 2px; background: #e8e3d8; box-shadow: inset 0 0 0 2px #9aa0a6; }
-.vy-flag { position: absolute; top: 10px; right: 8px; font: 800 11px/1 Onest, system-ui, sans-serif; letter-spacing: .04em; color: #7a1a1a;
+.vy-flag { position: absolute; top: calc(var(--road) - 52px); right: 8px; font: 800 11px/1 Onest, system-ui, sans-serif; letter-spacing: .04em; color: #7a1a1a;
   background: rgba(255,255,255,.75); padding: 3px 6px; border-radius: 4px; }
 .vy-flag.ru { right: auto; left: 8px; color: #0b3d63; }
 .voyage.land .vy-sea { right: 100%; } .voyage.land .vy-coast { opacity: 0; } .voyage.land .vy-border { opacity: 1; } .voyage.land .vy-wake { opacity: 0; }
@@ -639,65 +635,56 @@ body.pop-sheet .cta-bar { display: none; }
 .vy-trailer img { width: 11px; height: 22px; }
 .vy-cab { position: absolute; left: 91px; top: 1px; width: 21px; height: 22px; border-radius: 3px 7px 7px 3px; background: #dd1f1f; }
 .vy-cab::after { content: ""; position: absolute; right: 3px; top: 3px; width: 5px; height: 16px; border-radius: 2px; background: #1f2937; }
-/* станции: номер и короткая подпись */
-.vy-pins { list-style: none; margin: 0; padding: 0; position: absolute; left: 0; right: 0; bottom: 12px; height: 26px; }
-.vy-pins li { position: absolute; left: var(--x); transform: translateX(-50%); display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px;
-  border-radius: 999px; background: rgba(255,255,255,.9); box-shadow: 0 2px 8px rgba(15,23,42,.12); white-space: nowrap; transition: background .25s; }
-.vy-pins li:first-child { transform: translateX(-13px); } .vy-pins li:last-child { transform: translateX(calc(-100% + 13px)); }
+/* станции: номер и короткая подпись; по нажатию — этот этап */
+.vy-art { position: absolute; inset: 0; }
+.vy-pins { list-style: none; margin: 0; padding: 0; position: absolute; left: 0; right: 0; bottom: 12px; height: 28px; }
+.vy-pins li { position: absolute; left: var(--x); transform: translateX(-50%); }
+.vy-pins li:first-child { transform: translateX(-14px); } .vy-pins li:last-child { transform: translateX(calc(-100% + 14px)); }
+.vy-pins button { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; border: 0; border-radius: 999px; cursor: pointer;
+  background: rgba(255,255,255,.92); box-shadow: 0 2px 8px rgba(15,23,42,.14); white-space: nowrap; transition: background .25s; }
 .vy-pins i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font: 800 11.5px/1 Onest, system-ui, sans-serif; font-style: normal;
   background: #fff; color: var(--sea); box-shadow: inset 0 0 0 2px var(--sea); transition: background .25s, color .25s; }
 .vy-pins span { font: 700 12.5px/1 Onest, system-ui, sans-serif; color: #0f172a; }
 .vy-pins li.done i { background: var(--sea); color: #fff; }
-.vy-pins li.on { background: #0f1012; } .vy-pins li.on span { color: #fff; } .vy-pins li.on i { background: var(--accent); color: #fff; box-shadow: none; }
-.vy-info { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 16px 28px; padding: 20px 24px 24px; align-items: start;
-  background: linear-gradient(180deg, #eaf2f8, #f7fafc 70%); }
-.vy-head { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
-.vy-car { flex: 1 1 300px; min-width: 0; font-size: 15.5px; color: #475467; font-weight: 600; }
-.voyage.picked .vy-car { color: #0f172a; }
-.vy-tabs { display: inline-flex; padding: 3px; border-radius: 999px; background: #fff; border: 1px solid #d5e2ec; }
-.vy-tabs button { border: 0; background: none; padding: 8px 14px; border-radius: 999px; font: 700 13.5px/1 Onest, system-ui, sans-serif; color: #475467; cursor: pointer; }
+.vy-pins li.on button { background: #0f1012; } .vy-pins li.on span { color: #fff; } .vy-pins li.on i { background: var(--accent); color: #fff; box-shadow: none; }
+.vy-pins button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+/* переключатель и выбранная машина — в углу полосы */
+.vy-ui { position: absolute; left: 12px; right: 12px; top: 10px; display: flex; align-items: center; gap: 10px; pointer-events: none; }
+.vy-ui > * { pointer-events: auto; }
+.vy-tabs { display: inline-flex; padding: 3px; border-radius: 999px; background: rgba(255,255,255,.95); box-shadow: 0 4px 14px rgba(0,0,0,.18); flex: 0 0 auto; }
+.vy-tabs button { border: 0; background: none; padding: 7px 13px; border-radius: 999px; font: 700 13px/1 Onest, system-ui, sans-serif; color: #475467; cursor: pointer; }
 .vy-tabs button[aria-pressed="true"] { background: #0f1012; color: #fff; }
-.vy-card { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: stretch; grid-column: 2; grid-row: 2;
-  border-radius: 20px; background: #fff; overflow: hidden; box-shadow: 0 18px 44px rgba(11,40,70,.16); animation: vy-card .35s ease; }
-.vy-card.swap { animation: none; }
-@keyframes vy-card { from { opacity: 0; transform: translateY(8px); } }
-.vy-card img { width: 100%; height: 100%; min-height: 210px; object-fit: cover; display: block; background: var(--line); }
-.vy-card figcaption { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; }
-.vy-num { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 14px; }
-.vy-card b { font: 700 19px/1.25 Unbounded, Onest, sans-serif; color: #0f172a; }
-.vy-card figcaption > span:not(.vy-num) { font-size: 14.5px; line-height: 1.55; color: #475467; }
-.vy-card em { align-self: flex-start; margin-top: auto; font-style: normal; font-size: 13px; font-weight: 700; color: var(--sea); background: #e2eef7;
-  padding: 5px 10px; border-radius: 999px; }
-.vy-card em:empty { display: none; }
-.vy-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; grid-column: 1; grid-row: 2; }
-.vy-steps li { position: relative; }
-.vy-steps li:not(:last-child)::after { content: ""; position: absolute; left: 25px; top: calc(50% + 14px); height: calc(100% - 22px); border-left: 2px dashed #b9cfe0; }
-.vy-steps li.done:not(:last-child)::after { border-left-style: solid; border-color: var(--sea); }
-.vy-steps button { position: relative; width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0; border-radius: 14px; background: none;
-  cursor: pointer; font: 600 15px/1.3 Onest, system-ui, sans-serif; color: #344054; text-align: left; transition: background .2s, color .2s; }
-.vy-steps button:hover { background: #fff; }
-.vy-steps i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 12.5px; font-weight: 800;
-  background: #fff; color: var(--sea); box-shadow: inset 0 0 0 2px var(--sea); flex: 0 0 auto; }
-.vy-steps li.done i { background: var(--sea); color: #fff; box-shadow: none; }
-.vy-steps li.on button { background: #0f1012; color: #fff; box-shadow: 0 10px 24px rgba(15,16,18,.22); }
-.vy-steps li.on i { background: var(--accent); color: #fff; box-shadow: none; }
+.vy-car { margin-left: auto; min-width: 0; max-width: 50%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 700;
+  color: #fff; background: rgba(15,16,18,.6); padding: 7px 12px; border-radius: 999px; }
+/* выноска этапа: фото, заголовок, пояснение, срок — над текущей станцией */
+.vy-call { position: absolute; top: 54px; left: 12px; width: 400px; margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px;
+  padding: 10px; border-radius: 16px; background: #fff; box-shadow: 0 16px 36px rgba(11,40,70,.28); transition: left .45s cubic-bezier(.2,.8,.2,1);
+  animation: vy-call .35s ease; z-index: 2; }
+.vy-call.swap { animation: none; }
+@keyframes vy-call { from { opacity: 0; transform: translateY(6px); } }
+.vy-call img { width: 96px; height: 100%; min-height: 84px; max-height: 112px; object-fit: cover; border-radius: 10px; background: var(--line); }
+.vy-call figcaption { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.vy-call b { display: flex; align-items: center; gap: 8px; font: 700 15px/1.2 Unbounded, Onest, sans-serif; color: #0f172a; }
+.vy-num { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font: 800 12px/1 Onest, sans-serif; flex: 0 0 auto; }
+.vy-call figcaption > span { font-size: 13px; line-height: 1.45; color: #475467; }
+.vy-call em { align-self: flex-start; font-style: normal; font-size: 12px; font-weight: 700; color: var(--sea); background: #e2eef7; padding: 3px 9px; border-radius: 999px; }
+.vy-call em:empty { display: none; }
+.vy-lead { position: absolute; width: 0; border-left: 2px dashed rgba(255,255,255,.85); filter: drop-shadow(0 1px 1px rgba(0,0,0,.35));
+  transition: left .45s cubic-bezier(.2,.8,.2,1); z-index: 1; pointer-events: none; }
 .port-page .terminal-note { margin-top: 10px; }
 @media (max-width: 900px) {
-  .vy-band { height: 136px; --road: 56px; --dock: 112px; --shore: 12px; }
-  .vy-dist { display: none; }
+  .vy-band { height: 318px; --road: 248px; --dock: 112px; --shore: 12px; }
+  .vy-ui { flex-wrap: wrap; } .vy-tabs { width: 100%; } .vy-tabs button { flex: 1; padding: 8px 6px; } .vy-car { display: none; }
+  .vy-call { left: 10px; right: 10px; width: auto; top: 56px; grid-template-columns: 84px minmax(0, 1fr); }
+  .vy-call img { width: 84px; }
   .vy-town:not(.big) { display: none; } .vy-home { left: 93%; }
   .vy-port, .vy-home { transform: scale(.8); transform-origin: 0 var(--road); }
   .vy-ship { width: 160px; height: 38px; } .vy-ship > img { width: 160px; height: 38px; }
   .vy-deck img { width: 8px; height: 16px; }
   .vy-truck { transform: translate(-50%, -50%) scale(.78); }
   .vy-town { transform: translateX(-50%) scale(.8); } .vy-town.big { transform: translateX(-12%) scale(.8); } .vy-town.small { transform: translateX(-70%) scale(.8); }
-  .vy-pins li { padding: 2px; } .vy-pins li span { display: none; } .vy-pins li.on { padding-right: 9px; } .vy-pins li.on span { display: inline; }
+  .vy-pins button { padding: 2px; } .vy-pins li span { display: none; } .vy-pins li.on button { padding-right: 9px; } .vy-pins li.on span { display: inline; }
   .vy-flag { font-size: 10px; }
-  .vy-info { grid-template-columns: minmax(0, 1fr); padding: 14px; }
-  .vy-card { grid-column: 1; grid-row: auto; grid-template-columns: minmax(0, 1fr); }
-  .vy-card img { width: 100%; height: auto; min-height: 0; aspect-ratio: 16 / 10; }
-  .vy-card figcaption { padding: 16px; }
-  .vy-steps { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .vy-waves { animation: none; } }
 

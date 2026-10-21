@@ -11,6 +11,7 @@
   const pins = $$('[data-vy-pin]'), steps = $$('[data-vy-step]');
   const card = {el: $('[data-vy-card]'), photo: $('[data-vy-photo]'), num: $('[data-vy-num]'),
     title: $('[data-vy-title]'), text: $('[data-vy-text]'), meta: $('[data-vy-meta]')};
+  const lead = $('[data-vy-lead]'), band = $('.vy-band'), XS = [4, 27, 50, 73, 96];
   const carEl = $('[data-route-car]');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
@@ -18,9 +19,7 @@
   let mode = 'kr', stage = -1, t = 0, raf = 0, locked = false, lockY = 0;
 
   function fillSteps() {
-    steps.forEach((b, i) => { b.querySelector('[data-vy-step-title]').textContent = DATA[mode][i].title; });
     pins.forEach((p, i) => { p.querySelector('[data-vy-pin-label]').textContent = DATA[mode][i].short; });
-    $$('.vy-dist').forEach(d => { d.textContent = d.dataset[mode]; });
   }
   function showCard(i) {
     const s = DATA[mode][i];
@@ -31,6 +30,17 @@
     card.text.textContent = s.text;
     card.meta.textContent = s.meta;
     card.el.classList.add('swap'); void card.el.offsetWidth; card.el.classList.remove('swap');  // заново проиграть появление
+    stage = i;
+    placeCard();
+  }
+  // выноска встаёт над своей станцией (на телефоне — во всю ширину), от неё к станции — пунктир
+  function placeCard() {
+    if (stage < 0) return;
+    const W = band.clientWidth, w = card.el.offsetWidth, x = W * XS[stage] / 100;
+    const wide = matchMedia('(min-width: 901px)').matches;
+    card.el.style.left = wide ? `${Math.max(12, Math.min(W - w - 12, x - w / 2))}px` : '';
+    const top = card.el.offsetTop + card.el.offsetHeight, pin = pins[stage].getBoundingClientRect().top - band.getBoundingClientRect().top;
+    lead.style.cssText = wide ? `left: ${x}px; top: ${top}px; height: ${Math.max(0, pin - top)}px` : 'display: none';
   }
 
   // t: 0…1 по всему пути; станции — на 4 %, 27 %, 50 %, 73 %, 96 % ширины полосы
@@ -51,9 +61,8 @@
     }
     const s = Math.round(t * 4);
     pins.forEach((p, i) => { p.classList.toggle('done', i < s); p.classList.toggle('on', i === s); });
-    steps.forEach((b, i) => { b.parentElement.classList.toggle('done', i < s); b.parentElement.classList.toggle('on', i === s); });
     box.classList.toggle('arrived', t > 0.97);  // машина съехала с автовоза к дому
-    if (s !== stage) { stage = s; showCard(s); }
+    if (s !== stage) showCard(s);
   }
 
   function setMode(m) {
@@ -87,7 +96,7 @@
   }
   let ticking = false;
   addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; onScroll(); }); } }, {passive: true});
-  addEventListener('resize', onScroll);
+  addEventListener('resize', () => { onScroll(); placeCard(); });
 
   $$('[data-vy-mode]').forEach(b => b.addEventListener('click', () => { setMode(b.dataset.vyMode); run(0, 1, 3600); }));
   steps.forEach((b, i) => b.addEventListener('click', () => run(t, i / 4, 700)));
