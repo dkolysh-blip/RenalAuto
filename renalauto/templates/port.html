@@ -200,22 +200,37 @@
 </section>
 
 <dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">
-  <form class="lead-form" data-lead>
+  <form class="lead-form cd" data-lead>
     <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
-    <h2 id="car-dialog-title">Узнать итоговую цену</h2>
-    <p class="muted small" data-car-name></p>
-    <input type="hidden" name="source">
-    <input type="hidden" name="external_id">
-    <div class="field"><label for="cd-name">Имя *</label><input id="cd-name" name="name" required maxlength="100" autocomplete="name"></div>
-    <div class="field"><label for="cd-phone">Телефон</label><input id="cd-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+7"></div>
-    <div class="field"><label for="cd-tg">или MAX</label><input id="cd-tg" name="telegram" maxlength="64" placeholder="ник или номер в MAX"></div>
-    <div class="field"><label for="cd-city">Город получения</label><input id="cd-city" name="city" maxlength="100" placeholder="Москва"></div>
-    <input type="hidden" name="comment">
-    <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
-    {{ consent() }}
-    <button class="btn block" type="submit">Получить расчёт</button>
-    <div class="form-msg"></div>
-    {% if company_sms %}<p class="muted small sms-alt">Нет MAX? <a href="{{ company_sms }}" data-goal="sms">Напишите нам SMS</a> на {{ company_phone }}</p>{% endif %}
+    <div class="cd-head">
+      <span class="cd-eyebrow">Расчёт бесплатный</span>
+      <h2 id="car-dialog-title">Рассчитать стоимость</h2>
+      <div class="cd-car" data-cd-car hidden>
+        <img data-cd-thumb src="" alt="" width="96" height="64">
+        <div><b data-cd-title></b><span data-cd-price></span></div>
+      </div>
+      <p class="cd-note" data-car-name></p>
+      <ul class="cd-what" aria-label="Что посчитаем"><li>Доставка</li><li>Таможня</li><li>Утильсбор</li><li>Оформление</li></ul>
+    </div>
+    <div class="cd-body">
+      <input type="hidden" name="source">
+      <input type="hidden" name="external_id">
+      <input type="hidden" name="comment">
+      <div class="field"><label for="cd-name">Как к вам обращаться</label><input id="cd-name" name="name" required maxlength="100" autocomplete="name" placeholder="Имя"></div>
+      <div class="field"><label for="cd-phone">Телефон</label><input id="cd-phone" name="phone" type="tel" required maxlength="40" autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__"></div>
+      <fieldset class="cd-via">
+        <legend>Куда прислать расчёт</legend>
+        <label><input type="radio" name="contact_via" value="звонок" checked><span>Позвонить</span></label>
+        <label><input type="radio" name="contact_via" value="MAX"><span><img src="/static/brand/max.webp" alt="" width="18" height="18">MAX</span></label>
+        <label><input type="radio" name="contact_via" value="SMS"><span>SMS</span></label>
+      </fieldset>
+      <div class="field"><label for="cd-city">Город получения</label><input id="cd-city" name="city" maxlength="100" placeholder="Начните вводить: Москва, Новосибирск…"></div>
+      <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
+      <button class="btn block cd-submit" type="submit">Получить расчёт</button>
+      {{ consent() }}
+      <p class="cd-foot">Расчёт ни к чему не обязывает: решение о покупке — после того, как увидите все суммы.</p>
+      <div class="form-msg"></div>
+    </div>
   </form>
 </dialog>
 

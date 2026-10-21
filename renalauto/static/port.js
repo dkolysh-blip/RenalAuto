@@ -894,6 +894,7 @@
     goal('form_open');
     if (!form.querySelector('[name="name"]')) form.innerHTML = blank;
     form.querySelector('#car-dialog-title').textContent = title;
+    form.querySelector('[data-cd-car]').hidden = true;
     form.querySelector('[data-car-name]').textContent = note;
     form.querySelector('[name="source"]').value = '';
     form.querySelector('[name="external_id"]').value = '';
@@ -910,7 +911,15 @@
   function openForm(d, car) {
     goal('form_open');
     if (!form.querySelector('[name="name"]')) form.innerHTML = blank; // после прошлой отправки
-    form.querySelector('[data-car-name]').textContent = `${label(d)}${d.price ? ' · ≈ ' + d.price + ' ₽ на площадке' : ''}. Посчитаем доставку, таможню, утильсбор и оформление до вашего города.`;
+    // в шапке формы — та самая машина: фото (или вид сверху), название, ориентир по цене
+    const box = form.querySelector('[data-cd-car]'), thumb = form.querySelector('[data-cd-thumb]');
+    thumb.src = d.photo || `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`;
+    thumb.classList.toggle('sprite', !d.photo);
+    form.querySelector('[data-cd-title]').textContent = label(d);
+    form.querySelector('[data-cd-price]').textContent = d.turnkey ? `${d.turnkey_from ? 'от ' : '≈ '}${mln(d.turnkey)} с растаможкой`
+      : d.price ? `≈ ${d.price} ₽ на площадке` : '';
+    box.hidden = false;
+    form.querySelector('[data-car-name]').textContent = '';
     form.querySelector('[name="source"]').value = d.demo ? '' : d.source;
     form.querySelector('[name="external_id"]').value = d.demo ? '' : d.id;
     form.querySelector('#car-dialog-title').textContent = 'Рассчитать стоимость';

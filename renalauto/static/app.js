@@ -15,6 +15,10 @@
       const data = Object.fromEntries(new FormData(form).entries());
       for (const k of Object.keys(data)) if (data[k] === '') delete data[k];
       delete data.consent;  // галочка обязательна в форме, на сервер не уходит
+      if (data.contact_via) {  // как удобнее ответить — менеджер видит в комментарии
+        data.comment = `Ответить: ${data.contact_via}` + (data.comment ? `. ${data.comment}` : '');
+        delete data.contact_via;
+      }
       if (!data.phone && !data.telegram) {
         msg.innerHTML = '<p class="error">Укажите телефон или MAX, чтобы менеджер мог ответить.</p>';
         return;
@@ -27,7 +31,8 @@
         const res = await fetch('/api/leads', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
         const body = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(body.detail && typeof body.detail === 'string' ? body.detail : 'Не удалось отправить');
-        form.innerHTML = '<div class="thanks">Заявка отправлена! Менеджер свяжется с вами в ближайшее время.</div>';
+        form.innerHTML = '<div class="thanks"><span class="thanks-ico" aria-hidden="true">✓</span><b>Заявка у менеджера</b>' +
+          '<span>Он посчитает стоимость и свяжется с вами в ближайшее время.</span></div>';
         form.dispatchEvent(new CustomEvent('lead:sent', {bubbles: true}));
         if (window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', 'lead');
       } catch (err) {
