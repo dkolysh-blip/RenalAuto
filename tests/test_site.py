@@ -250,7 +250,8 @@ def test_not_found_page_favicon_and_share_image(settings):
         assert client.get("/api/nope").json() == {"detail": "Not Found"}
         assert client.get("/favicon.ico").headers["content-type"] == "image/x-icon"
         port = client.get("/port").text
-        assert "/static/brand/og.jpg" in port and "data-cookie-note" in port
+        assert "/static/brand/og.jpg" in port and 'href="/credits"' in port
+        assert "Hyundai Tucson" in client.get("/credits").text
         assert client.get("/static/brand/og.jpg").status_code == 200
     finally:
         client.__exit__(None, None, None)

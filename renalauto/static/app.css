@@ -680,13 +680,48 @@ body.port-page footer { margin-top: 0; }
 .port-page .sec-head h2 { color: #0f172a; }
 .port-page footer { border-top: 1px solid var(--line); }
 
-/* плашка про cookie и страница 404 */
-.cookie-note { position: fixed; left: 16px; bottom: 16px; z-index: 30; max-width: 420px; display: flex; gap: 12px; align-items: center;
-  padding: 12px 14px; border-radius: 14px; background: var(--card); color: var(--text); border: 1px solid var(--line); box-shadow: 0 12px 32px rgba(16,24,40,.18); font-size: 13.5px; }
-.cookie-note p { margin: 0; }
-.cookie-note .btn { flex: 0 0 auto; padding: 8px 14px; }
-@media (max-width: 760px) { .cookie-note { left: 8px; right: 8px; bottom: calc(76px + env(safe-area-inset-bottom)); max-width: none; } }
+/* страница 404 */
 .nf { min-height: 60vh; display: grid; place-content: center; justify-items: center; text-align: center; gap: 12px; padding: 48px 16px; }
 .nf h1 { margin: 8px 0 0; font-size: clamp(26px, 4vw, 40px); }
 .nf p { margin: 0; max-width: 460px; }
 .nf-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 8px; }
+
+/* калькулятор: результат как ценник — машина, крупный итог, доли цены полосой, строки по запросу */
+.port-page .calc { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; }
+.port-page .calc-result { position: sticky; top: 84px; display: grid; gap: 14px; padding: 0; overflow: hidden; }
+.port-page .calc-result > :not(.cr-ticket) { margin-inline: 20px; }
+.port-page .calc-result > :last-child { margin-bottom: 20px; }
+.port-page .calc-result p { margin-top: 0; }
+.cr-ticket { position: relative; display: grid; gap: 4px; padding: 20px 20px 22px; background: #0f1012; color: #fff; }
+.cr-ticket::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 12px;
+  background: radial-gradient(circle at 8px 12px, var(--card) 6px, transparent 6.5px) 0 0 / 16px 12px repeat-x; }  /* край бирки */
+.cr-car { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.cr-sprite { position: relative; width: 104px; height: 52px; flex: 0 0 auto; border-radius: 12px; background: #2b2f35; overflow: hidden; }
+.cr-sprite img { position: absolute; left: 30px; top: -18px; width: 44px; height: 88px; transform: rotate(90deg); }  /* спрайт со стоянки, носом вправо */
+.cr-car > span:last-child { display: grid; gap: 2px; min-width: 0; }
+.cr-car b { font-size: 17px; }
+.cr-car small { color: rgba(255,255,255,.65); font-size: 13px; }
+.cr-label { font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.6); }
+.cr-total { font: 700 clamp(30px, 3.6vw, 40px)/1.05 Unbounded, Onest, sans-serif; letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cr-note { font-size: 13px; color: rgba(255,255,255,.62); max-width: 40ch; }
+.cr-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; gap: 2px; background: var(--line); }
+.cr-bar i { min-width: 4px; }
+.cr-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 14px; }
+.cr-legend li { display: grid; grid-template-columns: 12px minmax(0, 1fr) auto 44px; gap: 10px; align-items: center; }
+.cr-legend li > i { width: 12px; height: 12px; border-radius: 3px; }
+.cr-legend b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.cr-legend small { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.port-page .calc-verdict { margin: 0; font-size: 14px; }
+.cr-details > summary { cursor: pointer; font-weight: 700; color: var(--sea); list-style: none; display: flex; gap: 6px; align-items: center; }
+.cr-details > summary::-webkit-details-marker { display: none; }
+.cr-details > summary::after { content: "▾"; transition: transform .2s; }
+.cr-details:not([open]) > summary::after { transform: rotate(-90deg); }
+.cr-details .calc-lines { margin-top: 8px; }
+.port-page .calc-result .btn + .btn { margin-top: -6px; }
+/* единицы внутри поля */
+.unit { position: relative; display: block; }
+.unit::after { content: attr(data-unit); position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; pointer-events: none; }
+.unit input { padding-right: 52px; width: 100%; }
+#calc-price { font-variant-numeric: tabular-nums; }
+.port-page .calc-result .btn.block { width: auto; }
+@media (max-width: 900px) { .port-page .calc { grid-template-columns: minmax(0, 1fr); } .port-page .calc-result { position: static; } }

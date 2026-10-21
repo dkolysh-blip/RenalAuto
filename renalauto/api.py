@@ -35,7 +35,7 @@ from .rates import Rates
 from .sources import REGISTRY, Source, build_sources
 from .storage import Storage
 from .describe import describe
-from .view import car_view, fmt_int, scene_car
+from .view import car_view, fmt_int, scene_car, sprite_file
 from .vin.decoder import VinDecoded, decode
 from .vin.report import VinReport, build_report, build_report_for_plate, looks_like_plate
 
@@ -435,7 +435,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             countries = [v.listing.country for v in vs]
             engines = [engine_kind(v.listing) for v in vs]
             makes[make].append({
-                "model": model, "count": len(vs),
+                "model": model, "count": len(vs), "sprite": sprite_file(vs[0]),
                 "country": max(set(countries), key=countries.count),
                 "engine": max(set(engines), key=engines.count),
                 "cc": round(statistics.median(ccs) / 100) * 100 if ccs else None,
@@ -526,6 +526,11 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             return render(request, "404.html", status_code=404, detail=detail)
         from fastapi.exception_handlers import http_exception_handler
         return await http_exception_handler(request, exc)
+
+    @app.get("/credits", response_class=HTMLResponse, include_in_schema=False)
+    async def credits(request: Request) -> HTMLResponse:
+        """Авторы 3D-моделей машин на стоянке: лицензия CC BY требует их указать."""
+        return render(request, "credits.html")
 
     @app.get("/privacy", response_class=HTMLResponse, include_in_schema=False)
     async def privacy(request: Request) -> HTMLResponse:

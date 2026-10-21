@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Авторы 3D-моделей | {{ company }}{% endblock %}
+{% block content %}
+<section class="panel" style="max-width: 760px; margin: 32px auto;">
+  <h1>Авторы 3D-моделей машин</h1>
+  <p class="muted">Машины на стоянке на главной странице нарисованы по 3D-моделям с Sketchfab. Модели распространяются по лицензии
+    <a href="https://creativecommons.org/licenses/by/4.0/deed.ru" target="_blank" rel="noopener">CC BY 4.0</a>. Мы их изменили: перекрасили и отрисовали вид сверху.</p>
+  <ul>
+    {% for m in model_credits %}<li><a href="{{ m.url }}" target="_blank" rel="noopener">{{ m.name }}</a> — {{ m.author|replace(' ✓', '') }}</li>{% endfor %}
+  </ul>
+</section>
+{% endblock %}

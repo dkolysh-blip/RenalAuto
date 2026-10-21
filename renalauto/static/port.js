@@ -776,7 +776,7 @@
     popEl.querySelector('[data-act="breakdown"]')?.addEventListener('click', () => {
       hidePop();
       goal('car_calc');
-      window.RenalCalc.fill(d.calc, label(d));
+      window.RenalCalc.fill(d.calc, label(d), `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`);
     });
     popEl.querySelector('[data-act="trip"]').addEventListener('click', () => { goal('car_trip'); deliver(car); });
     popEl.querySelector('[data-act="want"]').addEventListener('click', () => {

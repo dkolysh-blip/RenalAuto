@@ -72,13 +72,9 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     <p>Объявления собираются с открытых площадок (KB Chachacha, Encar, Dongchedi, Che168) и обновляются в реальном времени.
     Цены в рублях — {{ 'по курсу ЦБ РФ' if rates_source == 'ЦБ РФ' else 'по ориентировочному курсу' }}, без доставки, растаможки и утильсбора; итоговую стоимость рассчитывает менеджер.
     Правила ввоза: {{ rules_as_of }}.</p>
-    {% if model_credits %}<p>3D-модели машин на стоянке — лицензия <a href="https://creativecommons.org/licenses/by/4.0/deed.ru" target="_blank" rel="noopener">CC BY 4.0</a>, изменены (перекраска, вид сверху): {% for m in model_credits %}<a href="{{ m.url }}" target="_blank" rel="noopener">{{ m.name }}</a> — {{ m.author }}{{ ', ' if not loop.last }}{% endfor %}.</p>{% endif %}
+    <p>Сайт использует cookie и Яндекс Метрику — подробнее в <a href="/privacy">политике конфиденциальности</a>.{% if model_credits %} <a href="/credits">Авторы 3D-моделей машин</a>.{% endif %}</p>
   </div>
 </footer>
-{% if ym_id %}<div class="cookie-note" data-cookie-note hidden>
-  <p>Мы используем cookie и Яндекс Метрику, чтобы понимать, как работает сайт. <a href="/privacy">Подробнее</a></p>
-  <button class="btn ghost" type="button" data-cookie-ok>Понятно</button>
-</div>{% endif %}
 <script src="/static/app.js?v={{ asset_version }}" defer></script>
 {% block scripts %}{% endblock %}
 </body>

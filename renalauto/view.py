@@ -179,6 +179,17 @@ REAL_SPRITES = [
 ]
 
 
+SINGLE_PAINT = {"byd-seal", "byd-song", "geely-monjaro", "hyundai-santafe24", "chery-tiggo8"}  # кузов не перекрашивается
+
+
+def sprite_file(v: CarView, paint: str = "white") -> str:
+    """Имя спрайта машины в static/port/cars без расширения: настоящая модель или условный кузов."""
+    slug = real_sprite(v)
+    if slug:
+        return f"{slug}-{'native' if slug in SINGLE_PAINT else paint}"
+    return f"{scene_body(v)}-{paint}"
+
+
 def real_sprite(v: CarView) -> str | None:
     text = f" {v.model or ''} {v.title} ".lower()
     for make, word, slug in REAL_SPRITES:

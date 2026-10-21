@@ -117,11 +117,11 @@
         <label><input type="radio" name="age" value="old"> старше 5</label>
       </fieldset>
       <div class="calc-row">
-        <div class="field"><label for="calc-cc">Объём, см³</label><input id="calc-cc" name="cc" type="number" min="0" max="10000" step="100" value="1600" inputmode="numeric"></div>
-        <div class="field"><label for="calc-hp">Мощность, л.с.</label><input id="calc-hp" name="hp" type="number" min="0" max="2000" value="150" inputmode="numeric"></div>
+        <div class="field"><label for="calc-cc">Объём двигателя</label><span class="unit" data-unit="см³"><input id="calc-cc" name="cc" type="number" min="0" max="10000" step="100" value="1600" inputmode="numeric"></span></div>
+        <div class="field"><label for="calc-hp">Мощность</label><span class="unit" data-unit="л.с."><input id="calc-hp" name="hp" type="number" min="0" max="2000" value="150" inputmode="numeric"></span></div>
       </div>
       <div class="calc-row">
-        <div class="field"><label for="calc-price">Цена машины</label><input id="calc-price" name="price" type="number" min="1" step="1000" value="1500000" inputmode="numeric"></div>
+        <div class="field"><label for="calc-price">Цена машины на площадке</label><input id="calc-price" name="price" type="text" value="1 500 000" inputmode="numeric" autocomplete="off" data-money></div>
         <div class="field"><label for="calc-cur">Валюта</label>
           <select id="calc-cur" name="currency"><option value="RUB">₽</option><option value="KRW">₩ воны</option><option value="CNY">¥ юани</option></select></div>
       </div>
@@ -130,12 +130,22 @@
       </details>
     </form>
     <div class="calc-result panel" aria-live="polite">
+      <div class="cr-ticket">
+        <div class="cr-car" data-calc-car hidden><span class="cr-sprite"><img data-calc-sprite alt="" width="48" height="96"></span><span><b data-calc-car-title></b><small data-calc-car-sub></small></span></div>
+        <span class="cr-label">Итого, ориентировочно</span>
+        <b class="cr-total" data-calc-total>—</b>
+        <span class="cr-note">Плюс доставка до Владивостока и оформление — их назовёт менеджер под вашу машину</span>
+      </div>
+      <div class="cr-bar" data-calc-bar aria-hidden="true"></div>
+      <ul class="cr-legend" data-calc-legend></ul>
       <div class="calc-verdict" data-calc-verdict>Введите параметры машины</div>
-      <table class="calc-lines"><tbody data-calc-lines></tbody></table>
-      <div class="calc-total"><span>Итого, ориентировочно</span><b data-calc-total>—</b></div>
+      <details class="cr-details">
+        <summary>Расчёт по строкам</summary>
+        <table class="calc-lines"><tbody data-calc-lines></tbody></table>
+      </details>
       <a class="btn block" href="#podbor" data-calc-cta data-goal="form_open">Получить точный расчёт</a>
       <button class="btn ghost block calc-show" type="button" data-calc-show>Показать машины в этом бюджете</button>
-      <p class="muted small">Ориентировочно, по курсу ЦБ и ставкам {{ rules_as_of }}. Итог зависит от курса на день оплаты и ставок на дату декларации — точную сумму подтвердит менеджер.</p>
+      <p class="muted small">По курсу ЦБ и ставкам {{ rules_as_of }}. Итог зависит от курса на день оплаты и ставок на дату декларации — точную сумму подтвердит менеджер.</p>
     </div>
   </div>
 </section>
