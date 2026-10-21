@@ -5,7 +5,7 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '10';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '11';  // V — поднять после перерендера
   // Порт всегда дневной: светлая сцена продаёт лучше. Ночная подложка — только по ?night=1
   const NIGHT = new URLSearchParams(location.search).get('night') === '1';
   const PLATE = NIGHT ? '-night' : '';
@@ -134,7 +134,7 @@
     return best;
   }
   // спрайт из настоящей 3D-модели, если она есть для этой марки и модели; у трёх моделей — один родной цвет
-  const SINGLE_PAINT = ['byd-seal', 'byd-song', 'geely-monjaro'];
+  const SINGLE_PAINT = ['byd-seal', 'byd-song', 'geely-monjaro', 'hyundai-santafe24', 'chery-tiggo8'];
   function spriteOf(d, body) {
     if (d.model) return `${d.model}-${SINGLE_PAINT.includes(d.model) ? 'native' : paintOf(d.color)}`;
     return `${body}-${paintOf(d.color)}`;
@@ -155,14 +155,14 @@
       ['Kia Carnival', 'van'], ['Hyundai Avante', 'sedan'], ['Kia Seltos', 'suv'], ['Kia Ray', 'hatch'],
       ['Hyundai Santa Fe', 'suv'], ['Genesis G70', 'sedan'], ['Kia Sorento', 'suv'], ['Hyundai Staria', 'van']],
     CN: [['BYD Song Plus', 'suv'], ['Geely Monjaro', 'suv'], ['Changan UNI-K', 'suv'], ['Haval Jolion', 'suv'],
-      ['Chery Tiggo 7', 'suv'], ['Geely Emgrand', 'sedan'], ['BYD Qin Plus', 'sedan'], ['Changan CS55', 'suv'],
+      ['Chery Tiggo 8', 'suv'], ['Geely Emgrand', 'sedan'], ['BYD Qin Plus', 'sedan'], ['Changan CS55', 'suv'],
       ['Toyota Camry', 'sedan'], ['Buick GL8', 'van'], ['Honda Fit', 'hatch'], ['Haval H6', 'suv']],
   };
   const DEMO_COLORS = ['#eceef0', '#eceef0', '#1c1e22', '#8a9099', '#c3c7cc', '#4b5058', '#2f5fa6', '#c62a24', '#f2eee4'];
   let demoSeq = 0;
   function demoCar(country) {
     const [title, body] = pick(DEMO[country]);
-    const model = {'Kia Sportage': 'kia-sportage', 'Kia Sorento': 'kia-sorento', 'Hyundai Tucson': 'hyundai-tucson',
+    const model = {'Hyundai Tucson': 'hyundai-tucson', 'Hyundai Santa Fe': 'hyundai-santafe24', 'Chery Tiggo 8': 'chery-tiggo8',
       'BYD Song Plus': 'byd-song', 'Geely Monjaro': 'geely-monjaro'}[title] || null;
     demoSeq += 1;
     const price = Math.round(rnd(1.2, 3.2) * 20) * 50000, year = 2019 + Math.floor(rnd(0, 5));

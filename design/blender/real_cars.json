@@ -1,46 +1,9 @@
 {
- "kia-sportage": {
-  "length": 4.66,
-  "rot": 180,
-  "body": [
-   "Wolf_Gray"
-  ]
- },
- "kia-sorento": {
-  "length": 4.81,
-  "rot": 180,
-  "body": [
-   "Paint_Color"
-  ]
- },
- "hyundai-tucson": {
-  "length": 4.48,
-  "rot": 180,
-  "body": [
-   "varnish",
-   "panel"
-  ]
- },
- "haval-dargo": {
-  "length": 4.62,
-  "rot": 180,
-  "body": [
-   "body"
-  ]
- },
- "byd-seal": {
-  "length": 4.8,
-  "rot": 180,
-  "body": []
- },
- "byd-song": {
-  "length": 4.78,
-  "rot": 180,
-  "body": []
- },
- "geely-monjaro": {
-  "length": 4.77,
-  "rot": 180,
-  "body": []
- }
+ "hyundai-tucson":    {"length": 4.48, "rot": 180, "body": ["varnish", "panel"]},
+ "hyundai-ioniq5":    {"length": 4.64, "rot": 180, "body": ["Gravity_Gold"]},
+ "hyundai-santafe24": {"length": 4.83, "rot": 180, "body": []},
+ "chery-tiggo8":      {"length": 4.72, "rot": 180, "body": []},
+ "byd-seal":          {"length": 4.80, "rot": 180, "body": []},
+ "byd-song":          {"length": 4.78, "rot": 180, "body": []},
+ "geely-monjaro":     {"length": 4.77, "rot": 180, "body": []}
 }

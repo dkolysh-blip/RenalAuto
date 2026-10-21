@@ -1,19 +1,5 @@
 [
  {
-  "slug": "kia-sportage",
-  "name": "Kia Sportage",
-  "author": "karaman.arman",
-  "license": "CC Attribution",
-  "url": "https://sketchfab.com/3d-models/kia-sportage-98a84407998a4bc6b4dee912b289f15b"
- },
- {
-  "slug": "kia-sorento",
-  "name": "2020 Kia Sorento EX V6",
-  "author": "mvntyyy",
-  "license": "CC Attribution",
-  "url": "https://sketchfab.com/3d-models/2020-kia-sorento-ex-v6-cc8ead2872aa4dbc8b7d82e38e108b46"
- },
- {
   "slug": "hyundai-tucson",
   "name": "2015 Hyundai Tucson",
   "author": "razor24",
@@ -21,11 +7,25 @@
   "url": "https://sketchfab.com/3d-models/2015-hyundai-tucson-7674a3bd168a451daf73fc0a33d39589"
  },
  {
-  "slug": "haval-dargo",
-  "name": "Haval II Big Dog 2024",
-  "author": "ItsDiyor",
+  "slug": "hyundai-ioniq5",
+  "name": "Hyundai Ioniq 5 - Lowpoly",
+  "author": "andikapratamaw",
   "license": "CC Attribution",
-  "url": "https://sketchfab.com/3d-models/haval-ii-big-dog-2024-e147e86ccad6405dbb3b1a6ed67889cf"
+  "url": "https://sketchfab.com/3d-models/hyundai-ioniq-5-lowpoly-675e78311e8440d88714bd212cb7a8fb"
+ },
+ {
+  "slug": "hyundai-santafe24",
+  "name": "2024 Hyundai Santa Fe",
+  "author": "Nazh Design ✔",
+  "license": "CC Attribution",
+  "url": "https://sketchfab.com/3d-models/2024-hyundai-santa-fe-61d49eecdf7648659c8f091e63dcfca9"
+ },
+ {
+  "slug": "chery-tiggo8",
+  "name": "2023 Chery Tiggo 8 Pro",
+  "author": "Nazh Design ✔",
+  "license": "CC Attribution",
+  "url": "https://sketchfab.com/3d-models/2023-chery-tiggo-8-pro-b8d34fba89ca45918e851eaab3b5b679"
  },
  {
   "slug": "byd-seal",

@@ -173,9 +173,9 @@ def scene_color(v: CarView) -> str:
 
 # машины, у которых есть спрайт из настоящей 3D-модели (design/blender/real_cars.py): (марка, слово в модели) → файл
 REAL_SPRITES = [
-    ("Kia", "Sportage", "kia-sportage"), ("Kia", "Sorento", "kia-sorento"), ("Hyundai", "Tucson", "hyundai-tucson"),
-    ("Haval", "Dargo", "haval-dargo"), ("Haval", "Big Dog", "haval-dargo"), ("BYD", "Seal", "byd-seal"),
-    ("BYD", "Song", "byd-song"), ("Geely", "Monjaro", "geely-monjaro"), ("Geely", "Xingyue L", "geely-monjaro"),
+    ("Hyundai", "Tucson", "hyundai-tucson"), ("Hyundai", "Santa Fe", "hyundai-santafe24"), ("Hyundai", "Ioniq 5", "hyundai-ioniq5"),
+    ("Chery", "Tiggo 8", "chery-tiggo8"), ("BYD", "Seal", "byd-seal"), ("BYD", "Song", "byd-song"),
+    ("Geely", "Monjaro", "geely-monjaro"), ("Geely", "Xingyue L", "geely-monjaro"),
 ]
 
 
