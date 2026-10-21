@@ -173,6 +173,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         storage = Storage(settings.db_path)
+        storage.only_sources = settings.sources or None  # на сайте — только площадки из SOURCES
         srcs = sources if sources is not None else build_sources(settings)
         hub = EventHub()
         notifier = TelegramNotifier(settings)

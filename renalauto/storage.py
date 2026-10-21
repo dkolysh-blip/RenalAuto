@@ -81,6 +81,8 @@ class Storage:
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.executescript(SCHEMA)
         self._lock = threading.Lock()
+        # площадки, объявления которых показываем на сайте; None — все. Старые записи других площадок остаются в базе
+        self.only_sources: list[str] | None = None
         self._migrate()
 
     def _migrate(self) -> None:
@@ -226,6 +228,9 @@ class Storage:
         offset: int = 0,
     ) -> list[Listing]:
         where, params = [], []
+        if self.only_sources and not source:
+            where.append("source IN (" + ",".join("?" for _ in self.only_sources) + ")")
+            params.extend(self.only_sources)
         for column, value in (("source", source), ("country", country), ("vin", vin)):
             if value:
                 where.append(f"{column} = ?")

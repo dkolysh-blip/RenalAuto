@@ -24,6 +24,7 @@ def settings(tmp_path, monkeypatch):
     s.telegram_bot_token = None
     s.admin_token = "secret"
     s.rates_live = False
+    s.sources = ["kbchachacha", "encar", "dongchedi"]  # тестовые объявления — с KB Chachacha
     return s
 
 

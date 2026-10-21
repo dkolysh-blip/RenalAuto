@@ -95,4 +95,4 @@ docker compose -f docker-compose.collector.yml up -d --build
 - Яндекс Метрика: в настройках счётчика 113699503 адрес сайта — `https://renal-auto.ru`.
 - Директ: в `docs/direct-campaign.xlsx`, лист «Настройки», адрес лендинга — `https://renal-auto.ru/port`.
 - `renal-auto.asia` можно тоже перевести на новый сервер и добавить в `REDIRECT_DOMAINS` — старые ссылки продолжат работать.
-- Остальные площадки (KB Chachacha, Dongchedi, Che168) сервер опрашивает сам. Если какая-то не отвечает с российского IP — перенесём её в сборщик на Bulgogi, как Encar.
+- Dongchedi сервер опрашивает сам. Если площадка не отвечает с российского IP — перенесём её в сборщик на Bulgogi, как Encar.

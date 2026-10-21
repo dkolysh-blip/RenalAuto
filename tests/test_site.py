@@ -270,3 +270,16 @@ def test_scene_title_without_double_make_and_cn_price_without_engine(settings):
         assert car["turnkey"] and car["turnkey_from"] is True  # объём не указан — 1,5 л по умолчанию, цена «от»
     finally:
         client.__exit__(None, None, None)
+
+
+def test_only_configured_sources_on_site(settings):
+    # на сайте — только площадки из SOURCES; старые объявления других площадок остаются в базе, но не показываются
+    settings.sources = ["encar", "dongchedi"]
+    old = kb(external_id="7", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"})
+    fresh = kb(source="encar", external_id="8", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"})
+    client, app = make_client(settings, [old, fresh])
+    try:
+        r = client.get("/api/port/cars").json()
+        assert [c["source"] for c in r["cars"]] == ["encar"]
+    finally:
+        client.__exit__(None, None, None)
