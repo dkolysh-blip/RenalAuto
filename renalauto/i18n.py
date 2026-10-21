@@ -55,6 +55,23 @@ MODELS: dict[str, str] = {
     "星越": "Xingyue", "博越": "Boyue", "帝豪": "Emgrand", "星瑞": "Preface", "CS75": "CS75",
     "瑞虎": "Tiggo", "艾瑞泽": "Arrizo", "大狗": "Dargo", "H6": "H6", "英朗": "Excelle", "君威": "Regal",
     "君越": "LaCrosse", "昂科威": "Envision", "蒙迪欧": "Mondeo", "探险者": "Explorer",
+    "阿特兹": "Atenza", "昂克赛拉": "Axela", "威驰": "Vios", "致炫": "Yaris L", "荣放": "RAV4", "普拉多": "Prado",
+    "兰德酷路泽": "Land Cruiser", "皇冠": "Crown", "锐志": "Reiz", "埃尔法": "Alphard", "赛那": "Sienna",
+    "威兰达": "Wildlander", "凌放": "Harrier", "锋兰达": "Frontlander", "锐放": "Cross", "飞度": "Fit",
+    "缤智": "Vezel", "冠道": "Avancier", "皓影": "Breeze", "奥德赛": "Odyssey", "艾力绅": "Elysion",
+    "型格": "Integra", "享域": "Envix", "骐达": "Tiida", "楼兰": "Murano", "劲客": "Kicks", "高尔夫": "Golf",
+    "捷达": "Jetta", "途岳": "Tharu", "探歌": "T-Roc", "威然": "Viloran", "辉昂": "Phideon", "凌渡": "Lamando",
+    "途铠": "T-Cross", "揽境": "Talagon", "威朗": "Verano", "昂科拉": "Encore", "昂科旗": "Enclave",
+    "科鲁兹": "Cruze", "迈锐宝": "Malibu", "探界者": "Equinox", "创酷": "Trax", "福克斯": "Focus",
+    "福睿斯": "Escort", "锐界": "Edge", "领界": "Territory", "翼虎": "Kuga", "金牛座": "Taurus",
+    "伊兰特": "Elantra", "索纳塔": "Sonata", "途胜": "Tucson", "名图": "Mistra", "菲斯塔": "Lafesta",
+    "胜达": "Santa Fe", "领动": "Celesta", "智跑": "Sportage", "狮跑": "Sportage", "缤越": "Coolray",
+    "缤瑞": "Binrui", "博瑞": "Borui", "豪越": "Haoyue", "嘉际": "Jiaji", "银河": "Galaxy", "几何": "Geometry",
+    "逸动": "Eado", "欧尚": "Oshan", "枭龙": "Xiaolong", "海狮": "Sealion", "驱逐舰": "Destroyer",
+    "护卫舰": "Frigate", "欧蓝德": "Outlander", "劲炫": "ASX", "森林人": "Forester", "傲虎": "Outback",
+    "揽胜": "Range Rover", "发现": "Discovery", "卫士": "Defender", "卡宴": "Cayenne", "帕拉梅拉": "Panamera",
+    "宏光": "Hongguang", "指南者": "Compass", "自由光": "Cherokee", "大切诺基": "Grand Cherokee", "牧马人": "Wrangler",
+    "自由侠": "Renegade", "途锐": "Touareg", "雅阁混动": "Accord Hybrid", "缤果": "Bingo", "风云": "Fengyun", "星纪元": "Sterra",
 }
 
 TERMS: dict[str, str] = {
@@ -74,7 +91,7 @@ TERMS: dict[str, str] = {
     "豪华": "Luxury", "舒适": "Comfort", "精英": "Elite", "尊贵": "Premium", "旗舰": "Flagship",
     "进取": "Progressive", "创世": "Genesis", "尊享": "Premium", "运动": "Sport", "时尚": "Fashion",
     "领先": "Leading", "标准": "Standard", "超长续航": "Long Range", "长续航": "Long Range",
-    "版": "", "型": "",
+    "版": "", "型": "", "进口": "", "(进口)": "",
 }
 
 FUEL: dict[str, str] = {
@@ -170,7 +187,7 @@ def model(value: str | None) -> str | None:
     if not value:
         return value
     translated = title(value)
-    return translated or value
+    return translated or None  # непереведённое китайское или корейское название модели на сайт не выводим
 
 
 def fuel(value: str | None) -> str | None:

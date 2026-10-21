@@ -191,7 +191,7 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
   .mobile-price .big { font-size: 26px; font-weight: 800; }
   .cta-bar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
     background: var(--card); border-top: 1px solid var(--line); gap: 10px; align-items: center; }
-  .cta-bar .btn { flex: 1; }
+  .cta-bar .btn { flex: 1; white-space: nowrap; padding-left: 12px; padding-right: 12px; }
   body.has-cta { padding-bottom: 76px; }
   .filters { grid-template-columns: 1fr 1fr; }
   .filters .btn { grid-column: 1 / -1; }
@@ -293,7 +293,10 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .port-pop .pop-ph img { width: 100%; height: 100%; object-fit: cover; }
 .port-pop .pop-demo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--warn); background: var(--warn-bg); padding: 4px 12px; }
 .port-pop .pop-body { padding: 10px 12px 12px; display: flex; flex-direction: column; gap: 6px; }
-.port-pop .pop-price { font-size: 18px; font-weight: 800; }
+.port-pop .pop-title { font-size: 17px; line-height: 1.25; color: #0f172a; }
+.port-pop .pop-facts { font-size: 13.5px; color: #475467; font-variant-numeric: tabular-nums; }
+.port-pop .pop-price { font: 700 20px/1.1 Unbounded, Onest, sans-serif; color: #0f172a; margin-top: 4px; }
+.port-pop .pop-note { margin: 2px 0 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
 .port-pop .pop-price small { font-size: 12px; color: var(--muted); font-weight: 500; }
 .port-pop .pop-actions { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 4px; }
 .port-pop .btn { padding: 8px 12px; font-size: 14px; }
@@ -453,7 +456,7 @@ body.pop-sheet .cta-bar { display: none; }
 .pf-result { grid-column: 1 / -1; margin: 0; font-size: 13.5px; color: var(--muted); min-height: 1em; }
 .pf-result:empty { display: none; }
 .pf-result b { color: var(--text); }
-.port-pop .pop-orig { font-size: 12px; color: var(--muted); margin-top: -4px; }
+.port-pop .pop-orig { font-size: 12px; color: var(--muted); margin-top: -2px; }
 .calc-picked { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; font-size: 13.5px; padding: 10px 12px; border-radius: 10px;
   background: color-mix(in srgb, var(--accent) 8%, var(--card)); border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); margin-bottom: 10px; }
 .calc-picked button { border: 0; background: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 0 4px; }
@@ -498,28 +501,29 @@ body.pop-sheet .cta-bar { display: none; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .pr-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--sea); }
 /* путь машины: вода из порта переходит в эту полосу — судно выходит из терминала; из Китая — автовоз по суше */
-.port-page .terminal { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
-.voyage { --water: #144452; --land: #8b929a; margin-top: 0; border-radius: 0 0 20px 20px; overflow: hidden; background: var(--card);
+.port-page .terminal { border-bottom-left-radius: 0; border-bottom-right-radius: 0; border-bottom: 0; }
+.voyage { --water: #144452; --land: #8b929a; margin-top: -1px; position: relative; border-radius: 0 0 20px 20px; overflow: hidden; background: var(--card);
   border: 1px solid var(--line); border-top: 0; box-shadow: var(--shadow); }
-.vy-band { --road: 64px; --dock: 125px; position: relative; height: 164px; overflow: hidden; background: #b8c2a3; }
+.vy-band { --road: 70px; --dock: 155px; --shore: 16px; position: relative; height: 170px; overflow: hidden; background: #12424f; }
 /* земля сверху: лес точками и поля пятнами; дорога с белыми кромками и жёлтой разметкой */
-.vy-land { position: absolute; inset: 0; background-color: #b8c2a3;
+.vy-land { position: absolute; inset: var(--shore) 0 0 0; background-color: #b8c2a3; box-shadow: 0 -5px 0 #dccfa3;
   background-image: radial-gradient(ellipse 140px 50px at 30% 20%, rgba(226,214,160,.55), transparent 70%),
     radial-gradient(ellipse 180px 40px at 80% 85%, rgba(226,214,160,.5), transparent 70%),
     radial-gradient(circle, rgba(70,102,60,.3) 0 2.5px, transparent 3.5px),
     radial-gradient(circle, rgba(70,102,60,.2) 0 2px, transparent 3px);
   background-size: 520px 164px, 640px 164px, 34px 23px, 23px 31px; background-position: 0 0, 0 0, 0 0, 12px 9px; }
-.vy-road { position: absolute; left: 0; right: 0; top: var(--road); height: 30px; transform: translateY(-50%); background: #4a4f57;
+.vy-road { position: absolute; left: 0; right: 0; top: calc(var(--road) - var(--shore)); height: 30px; transform: translateY(-50%); background: #4a4f57;
   box-shadow: 0 0 0 3px #a3a597, inset 0 2px 0 #e9ecef, inset 0 -2px 0 #e9ecef; }
 .vy-road::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; margin-top: -1px;
   background: repeating-linear-gradient(90deg, #f2c94c 0 14px, transparent 14px 26px); }
 /* море из Кореи: до Владивостока вода, у берега песок и причал */
-.vy-sea { position: absolute; inset: 0 50% 0 0; background: linear-gradient(180deg, #175063, #0f3a47); transition: right .5s ease; }
-.vy-waves { position: absolute; inset: 0; opacity: .3;
-  background: repeating-linear-gradient(100deg, transparent 0 38px, rgba(255,255,255,.35) 38px 40px, transparent 40px 90px);
-  animation: vy-waves 14s linear infinite; }
-@keyframes vy-waves { to { background-position: 360px 0; } }
-.vy-coast { position: absolute; left: calc(50% - 20px); top: 0; width: 40px; height: 100%; fill: #b8c2a3; stroke: #dccfa3; stroke-width: 5px;
+.vy-sea { position: absolute; inset: 0 50% 0 0; background: #12424f; transition: right .5s ease; }
+.vy-waves { position: absolute; inset: 0; opacity: .1; mix-blend-mode: screen;
+  background-image: radial-gradient(14px 1.2px at 20px 8px, #fff 98%, transparent), radial-gradient(20px 1.4px at 88px 20px, #fff 98%, transparent),
+    radial-gradient(10px 1px at 55px 31px, #fff 98%, transparent);
+  background-size: 140px 36px; animation: vy-waves 18s linear infinite; }
+@keyframes vy-waves { to { background-position: 140px 0; } }
+.vy-coast { position: absolute; left: calc(50% - 20px); top: var(--shore); width: 40px; height: calc(100% - var(--shore)); fill: #b8c2a3; stroke: #dccfa3; stroke-width: 5px;
   vector-effect: non-scaling-stroke; transition: opacity .3s; }
 /* порт Владивостока: причал в воду, два крана над судном, штабели контейнеров */
 .vy-port { position: absolute; left: 50%; top: 0; bottom: 0; width: 0; transition: opacity .3s; }
@@ -570,10 +574,11 @@ body.pop-sheet .cta-bar { display: none; }
 .voyage.land .vy-sea { right: 100%; } .voyage.land .vy-coast { opacity: 0; } .voyage.land .vy-border { opacity: 1; } .voyage.land .vy-wake { opacity: 0; }
 /* транспорт */
 .vy-ship, .vy-truck { position: absolute; top: var(--road); left: 0; transform: translate(-50%, -50%); transition: opacity .3s; will-change: left; }
-.vy-ship { width: 190px; height: 45px; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)); }
-.vy-ship > img { width: 190px; height: 45px; display: block; }
-.vy-ship .vy-deck { position: absolute; left: 100px; top: 50%; }
-.vy-deck img, .vy-trailer img { position: absolute; top: 50%; max-width: none; width: 10px; height: 20px; transform: translate(-50%, -50%) rotate(90deg); }
+.vy-ship { width: 250px; height: 59px; filter: drop-shadow(0 6px 6px rgba(0,0,0,.35)); }
+.vy-ship > img { width: 250px; height: 59px; display: block; }
+.vy-ship .vy-deck { position: absolute; inset: 0; }
+.vy-ship .vy-deck img { left: var(--cx); top: var(--cy); }
+.vy-deck img, .vy-trailer img { position: absolute; top: 50%; max-width: none; width: 13px; height: 25px; transform: translate(-50%, -50%) rotate(90deg); }
 .vy-wake { position: absolute; top: var(--road); height: 26px; transform: translateY(-50%); left: 0; width: 0; border-radius: 13px;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.45)); transition: opacity .3s; }
 .vy-truck { width: 112px; height: 24px; opacity: 0; filter: drop-shadow(0 4px 4px rgba(0,0,0,.35)); }
@@ -593,47 +598,54 @@ body.pop-sheet .cta-bar { display: none; }
 .vy-pins span { font: 700 12.5px/1 Onest, system-ui, sans-serif; color: #0f172a; }
 .vy-pins li.done i { background: var(--sea); color: #fff; }
 .vy-pins li.on { background: #0f1012; } .vy-pins li.on span { color: #fff; } .vy-pins li.on i { background: var(--accent); color: #fff; box-shadow: none; }
-.vy-info { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 14px 24px; padding: 18px 22px 22px; align-items: start; }
+.vy-info { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 16px 28px; padding: 20px 24px 24px; align-items: start;
+  background: linear-gradient(180deg, #eaf2f8, #f7fafc 70%); }
 .vy-head { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
-.vy-car { flex: 1 1 300px; min-width: 0; font-size: 15.5px; color: var(--muted); font-weight: 600; }
+.vy-car { flex: 1 1 300px; min-width: 0; font-size: 15.5px; color: #475467; font-weight: 600; }
 .voyage.picked .vy-car { color: #0f172a; }
-.vy-tabs { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--paper); border: 1px solid var(--line); }
-.vy-tabs button { border: 0; background: none; padding: 7px 14px; border-radius: 999px; font: 700 13.5px/1 Onest, system-ui, sans-serif; color: #475467; cursor: pointer; }
+.vy-tabs { display: inline-flex; padding: 3px; border-radius: 999px; background: #fff; border: 1px solid #d5e2ec; }
+.vy-tabs button { border: 0; background: none; padding: 8px 14px; border-radius: 999px; font: 700 13.5px/1 Onest, system-ui, sans-serif; color: #475467; cursor: pointer; }
 .vy-tabs button[aria-pressed="true"] { background: #0f1012; color: #fff; }
-.vy-card { margin: 0; display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 16px; align-items: start; grid-column: 2; grid-row: 2;
-  padding: 10px; border-radius: 16px; background: var(--paper); border: 1px solid var(--line); animation: vy-card .35s ease; }
+.vy-card { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0; align-items: stretch; grid-column: 2; grid-row: 2;
+  border-radius: 20px; background: #fff; overflow: hidden; box-shadow: 0 18px 44px rgba(11,40,70,.16); animation: vy-card .35s ease; }
 .vy-card.swap { animation: none; }
 @keyframes vy-card { from { opacity: 0; transform: translateY(8px); } }
-.vy-card img { width: 220px; height: 138px; object-fit: cover; border-radius: 12px; display: block; background: var(--line); }
-.vy-card figcaption { display: grid; gap: 4px; padding: 6px 4px 0 0; }
-.vy-num { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 13px; }
-.vy-card b { font-size: 18px; color: #0f172a; }
-.vy-card figcaption > span:not(.vy-num) { font-size: 14px; line-height: 1.5; color: #475467; }
-.vy-card em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--sea); }
-.vy-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; grid-column: 1; grid-row: 2; }
-.vy-steps button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 0; border-radius: 12px; background: none; cursor: pointer;
-  font: 600 14.5px/1.3 Onest, system-ui, sans-serif; color: #475467; text-align: left; }
-.vy-steps button:hover { background: var(--paper); }
-.vy-steps i { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 12px; font-weight: 800;
-  background: #e2e8f0; color: #475467; flex: 0 0 auto; }
-.vy-steps li.done i { background: var(--sea); color: #fff; }
-.vy-steps li.on button { background: #fff; color: #0f172a; box-shadow: 0 6px 18px rgba(11,40,70,.1); }
-.vy-steps li.on i { background: var(--accent); color: #fff; }
+.vy-card img { width: 100%; height: 100%; min-height: 210px; object-fit: cover; display: block; background: var(--line); }
+.vy-card figcaption { display: flex; flex-direction: column; gap: 8px; padding: 20px 22px; }
+.vy-num { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; font-weight: 800; font-size: 14px; }
+.vy-card b { font: 700 19px/1.25 Unbounded, Onest, sans-serif; color: #0f172a; }
+.vy-card figcaption > span:not(.vy-num) { font-size: 14.5px; line-height: 1.55; color: #475467; }
+.vy-card em { align-self: flex-start; margin-top: auto; font-style: normal; font-size: 13px; font-weight: 700; color: var(--sea); background: #e2eef7;
+  padding: 5px 10px; border-radius: 999px; }
+.vy-card em:empty { display: none; }
+.vy-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; grid-column: 1; grid-row: 2; }
+.vy-steps li { position: relative; }
+.vy-steps li:not(:last-child)::after { content: ""; position: absolute; left: 25px; top: calc(50% + 14px); height: calc(100% - 22px); border-left: 2px dashed #b9cfe0; }
+.vy-steps li.done:not(:last-child)::after { border-left-style: solid; border-color: var(--sea); }
+.vy-steps button { position: relative; width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 0; border-radius: 14px; background: none;
+  cursor: pointer; font: 600 15px/1.3 Onest, system-ui, sans-serif; color: #344054; text-align: left; transition: background .2s, color .2s; }
+.vy-steps button:hover { background: #fff; }
+.vy-steps i { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 12.5px; font-weight: 800;
+  background: #fff; color: var(--sea); box-shadow: inset 0 0 0 2px var(--sea); flex: 0 0 auto; }
+.vy-steps li.done i { background: var(--sea); color: #fff; box-shadow: none; }
+.vy-steps li.on button { background: #0f1012; color: #fff; box-shadow: 0 10px 24px rgba(15,16,18,.22); }
+.vy-steps li.on i { background: var(--accent); color: #fff; box-shadow: none; }
 .port-page .terminal-note { margin-top: 10px; }
 @media (max-width: 900px) {
-  .vy-band { height: 132px; --road: 52px; --dock: 92px; }
+  .vy-band { height: 136px; --road: 56px; --dock: 112px; --shore: 12px; }
   .vy-dist { display: none; }
   .vy-town:not(.big) { display: none; } .vy-home { left: 93%; }
   .vy-port, .vy-home { transform: scale(.8); transform-origin: 0 var(--road); }
-  .vy-ship { width: 130px; height: 31px; } .vy-ship > img { width: 130px; height: 31px; } .vy-ship .vy-deck { left: 68px; }
-  .vy-deck img { width: 7px; height: 14px; }
+  .vy-ship { width: 160px; height: 38px; } .vy-ship > img { width: 160px; height: 38px; }
+  .vy-deck img { width: 8px; height: 16px; }
   .vy-truck { transform: translate(-50%, -50%) scale(.78); }
   .vy-town { transform: translateX(-50%) scale(.8); } .vy-town.big { transform: translateX(-12%) scale(.8); } .vy-town.small { transform: translateX(-70%) scale(.8); }
   .vy-pins li { padding: 2px; } .vy-pins li span { display: none; } .vy-pins li.on { padding-right: 9px; } .vy-pins li.on span { display: inline; }
   .vy-flag { font-size: 10px; }
   .vy-info { grid-template-columns: minmax(0, 1fr); padding: 14px; }
   .vy-card { grid-column: 1; grid-row: auto; grid-template-columns: minmax(0, 1fr); }
-  .vy-card img { width: 100%; height: auto; aspect-ratio: 16 / 10; }
+  .vy-card img { width: 100%; height: auto; min-height: 0; aspect-ratio: 16 / 10; }
+  .vy-card figcaption { padding: 16px; }
   .vy-steps { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .vy-waves { animation: none; } }
@@ -707,9 +719,22 @@ body.port-page footer { margin-top: 0; }
 .port-hero .port-filter label { color: var(--muted); }
 .port-hero .port-filter select, .port-hero .port-filter input { background: var(--paper); border-color: var(--line); color: var(--text); }
 .port-hero .port-filter input::placeholder { color: #98a2b3; }
+/* бюджет ползунком: сумма над ним, заполненная часть дорожки — морской синий */
+.port-filter .pf-budget label { display: flex; justify-content: space-between; gap: 8px; }
+.port-filter .pf-budget label b { color: #0f172a; font-weight: 700; font-variant-numeric: tabular-nums; }
+.port-filter input[type="range"] { --fill: 100%; width: 100%; height: 38px; padding: 0; margin: 0; border: 0; background: none; cursor: pointer;
+  -webkit-appearance: none; appearance: none; }
+.port-filter input[type="range"]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--sea) var(--fill), #d9e2ec var(--fill)); }
+.port-filter input[type="range"]::-moz-range-track { height: 6px; border-radius: 3px; background: #d9e2ec; }
+.port-filter input[type="range"]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--sea); }
+.port-filter input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; margin-top: -9px; border-radius: 50%;
+  background: #fff; border: 3px solid var(--sea); box-shadow: 0 2px 6px rgba(11,40,70,.25); }
+.port-filter input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid var(--sea); }
+.port-filter input[type="range"]:focus-visible { outline: 2px solid var(--sea); outline-offset: 2px; border-radius: 6px; }
 .port-hero .pf-result b { color: var(--text); }
 .port-hero .pf-result a { color: var(--accent); }
-.port-hero .terminal { box-shadow: 0 24px 60px rgba(11,40,70,.22); border: 1px solid #d9e2ec; }
+.port-hero .terminal { box-shadow: 0 24px 60px rgba(11,40,70,.22); border: 1px solid #d9e2ec; border-bottom: 0; }
 .port-hero .terminal-note { color: var(--muted); }
 /* кнопки и поля крупнее и ровнее */
 .port-page .btn { min-height: 46px; padding: 12px 22px; border-radius: 12px; font-weight: 700; }

@@ -785,23 +785,25 @@
     // выбранная машина «едет» дальше по странице — в блоке логистики
     if (pinned) dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey,
       sprite: `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`}}));
-    const pill = d.verdict === 'warn' ? '<span class="pill warn">✓ Проходит, есть нюансы</span>' : '<span class="pill ok">✓ Проходит в РФ</span>';
+    // карточка: фото, название, главное о машине и два действия — расчёт у менеджера и страница машины
+    const facts = [d.year, d.mileage && `${d.mileage} км`, d.cc && `${(d.cc / 1000).toFixed(1).replace('.', ',')} л`,
+      d.fuel && d.fuel.toLowerCase()].filter(Boolean).join(' · ');
+    const price = d.turnkey
+      ? `<div class="pop-price">${d.turnkey_from ? 'от ' : '≈ '}${mln(d.turnkey)}</div><div class="pop-orig">во Владивостоке с растаможкой, ориентировочно</div>`
+      : d.price ? `<div class="pop-price">≈ ${esc(d.price)} ₽</div><div class="pop-orig">цена на площадке, без доставки и растаможки</div>` : '';
     popEl.innerHTML = `
       <button class="pop-x" type="button" data-act="close" aria-label="Закрыть">×</button>
       ${d.photo ? `<div class="pop-ph"><img src="${esc(d.photo)}" alt=""></div>` : ''}
       ${d.demo ? '<div class="pop-demo">Тестовые данные</div>' : ''}
       <div class="pop-body">
-        <b>${esc(label(d))}</b>
-        ${d.turnkey ? `<div class="pop-price">${d.turnkey_from ? 'от ' : '≈ '}${rub(d.turnkey)} ₽ <small>с растаможкой*</small></div>
-          <div class="pop-orig">${d.price ? esc(d.price) + ' ₽ на площадке · ' : ''}*при мощности до 160 л.с.</div>`
-        : `<div class="pop-price">${d.price ? '≈ ' + esc(d.price) + ' ₽' : 'Цена по запросу'} <small>на площадке</small></div>`}
-        ${pill}
+        <b class="pop-title">${esc(d.title)}</b>
+        ${facts ? `<div class="pop-facts">${esc(String(facts))}</div>` : ''}
+        ${price}
         <div class="pop-actions">
-          ${d.calc && window.RenalCalc ? '<button class="btn" type="button" data-act="breakdown">Разобрать цену</button>' : ''}
-          <button class="btn${d.calc && window.RenalCalc ? ' ghost' : ''}" type="button" data-act="want">Хочу эту</button>
-          <button class="btn ghost" type="button" data-act="trip">Как она поедет →</button>
+          <button class="btn" type="button" data-act="want">Рассчитать стоимость</button>
+          ${d.path ? `<a class="btn ghost" href="${esc(d.path)}" data-act="more">Подробнее о машине →</a>` : ''}
         </div>
-        ${d.path ? `<a class="small" href="${esc(d.path)}" data-act="more">Подробнее о машине →</a>` : ''}
+        <p class="pop-note">Менеджер посчитает доставку, таможню и оформление до вашего города</p>
       </div>`;
     popEl.querySelector('[data-act="close"]').addEventListener('click', () => { cam.follow = null; hidePop(); });
     popEl.querySelector('[data-act="more"]')?.addEventListener('click', e => {
@@ -809,12 +811,6 @@
       e.preventDefault();
       openCard(car);
     });
-    popEl.querySelector('[data-act="breakdown"]')?.addEventListener('click', () => {
-      hidePop();
-      goal('car_calc');
-      window.RenalCalc.fill(d.calc, label(d), `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`);
-    });
-    popEl.querySelector('[data-act="trip"]').addEventListener('click', () => { goal('car_trip'); deliver(car); });
     popEl.querySelector('[data-act="want"]').addEventListener('click', () => {
       cam.follow = car;
       if (cam.car !== car) focusOn(car);
@@ -917,7 +913,7 @@
     form.querySelector('[data-car-name]').textContent = `${label(d)}${d.price ? ' · ≈ ' + d.price + ' ₽ на площадке' : ''}. Посчитаем доставку, таможню, утильсбор и оформление до вашего города.`;
     form.querySelector('[name="source"]').value = d.demo ? '' : d.source;
     form.querySelector('[name="external_id"]').value = d.demo ? '' : d.id;
-    form.querySelector('#car-dialog-title').textContent = 'Узнать итоговую цену';
+    form.querySelector('#car-dialog-title').textContent = 'Рассчитать стоимость';
     form.querySelector('[name="comment"]').value = '';
     formCar = car || null;
     sent = false;
@@ -951,6 +947,7 @@
   function matches(d) {
     if (filter.country && d.country !== filter.country) return false;
     if (filter.body && d.body !== filter.body) return false;
+    if (filter.year_from && !(d.year && d.year >= +filter.year_from)) return false;
     if (filter.budget && !(d.turnkey && d.turnkey <= +filter.budget)) return false;
     if (filter.q && !d.title.toLowerCase().includes(filter.q.toLowerCase())) return false;
     return true;
@@ -983,12 +980,22 @@
 
   // Смена фильтра — «перелёт» на другую стоянку: сцена уезжает в сторону, приезжает новая,
   // уже заполненная подходящими машинами. Новые объявления из ленты по-прежнему заезжают через ворота.
+  // бюджет — ползунок: крайнее правое положение — «любой»
+  const budgetRange = filterForm?.querySelector('[data-pf-budget]');
+  const budgetText = v => `до ${(v / 1e6).toLocaleString('ru-RU', {maximumFractionDigits: 2})} млн ₽`;
+  budgetRange?.addEventListener('input', () => {
+    const any = +budgetRange.value >= +budgetRange.max, text = any ? 'любой' : budgetText(+budgetRange.value);
+    filterForm.elements.budget.value = any ? '' : budgetRange.value;
+    filterForm.querySelector('[data-pf-budget-out]').textContent = text;
+    budgetRange.setAttribute('aria-valuetext', text);
+    budgetRange.style.setProperty('--fill', `${(budgetRange.value - budgetRange.min) / (budgetRange.max - budgetRange.min) * 100}%`);
+  });
   function lotName() {
     const f = filterForm.elements, parts = [];
     if (f.q.value.trim()) parts.push(f.q.value.trim());
-    if (f.body.selectedIndex) parts.push(f.body.selectedOptions[0].text.toLowerCase());
+    if (f.year_from.selectedIndex) parts.push(f.year_from.selectedOptions[0].text + ' г.');
     if (f.country.selectedIndex) parts.push(f.country.selectedOptions[0].text);
-    if (f.budget.value) parts.push(f.budget.selectedOptions[0].text);
+    if (f.budget.value) parts.push(budgetText(+f.budget.value));
     return parts.length ? parts.join(' · ') : 'Все объявления';
   }
   let switching = 0;
@@ -1026,8 +1033,8 @@
     if (!e.target.closest('[data-pf-lead]')) return;
     e.preventDefault();
     const f = filterForm.elements;
-    const parts = [f.q.value, f.body.selectedIndex ? f.body.selectedOptions[0].text : '', f.country.selectedIndex ? 'из ' + f.country.selectedOptions[0].text : '',
-      f.budget.value ? 'бюджет ' + f.budget.selectedOptions[0].text : ''].filter(Boolean);
+    const parts = [f.q.value, f.year_from.selectedIndex ? f.year_from.selectedOptions[0].text + ' г.' : '', f.country.selectedIndex ? 'из ' + f.country.selectedOptions[0].text : '',
+      f.budget.value ? 'бюджет ' + budgetText(+f.budget.value) : ''].filter(Boolean);
     openLead({title: 'Сообщим, когда появится', note: 'Под этот запрос машин сейчас нет — менеджер напишет, когда найдёт.',
       comment: 'Ищу: ' + parts.join(', ') + '. Сообщите, когда появится.'});
   });

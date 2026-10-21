@@ -417,12 +417,13 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         budget: int | None = Query(None, ge=0),
         country: Literal["KR", "CN"] | None = None,
         body: Literal["sedan", "suv", "hatch", "van"] | None = None,
+        year_from: int | None = Query(None, ge=1990, le=2100),
         q: str | None = Query(None, max_length=60),
         make: str | None = Query(None, max_length=40),
         model: str | None = Query(None, max_length=60),
     ) -> dict[str, Any]:
-        """Пульт терминала: машины под бюджет под ключ, страну, кузов, марку/модель (до 20 в зоне)."""
-        rows = storage_of(request).search(country=country, passable_only=True, limit=PORT_SCAN)
+        """Пульт терминала: машины под бюджет под ключ, страну, год, кузов, марку/модель (до 20 в зоне)."""
+        rows = storage_of(request).search(country=country, year_from=year_from, passable_only=True, limit=PORT_SCAN)
         # «Kia K5»: каждое слово ищем в исходном названии (기아, 起亚…) и в русском
         words = [[a.lower() for a in i18n.search_aliases(w)] for w in (_clean(q) or "").split()]
         found = []

@@ -32,15 +32,13 @@
 
   <div class="port-stage">
     <form class="port-filter" data-port-filter aria-label="Подбор машин">
-      <div class="pf-field"><label for="pf-budget">Бюджет</label>
-        <select id="pf-budget" name="budget">
-          <option value="">Любой</option>
-          {% for b in [1500000, 2000000, 2500000, 3000000, 4000000, 5000000] %}<option value="{{ b }}">до {{ (b / 1000000)|round(1)|string|replace('.0', '')|replace('.', ',') }} млн ₽</option>{% endfor %}
-        </select></div>
+      <div class="pf-field pf-budget"><label for="pf-budget">Бюджет <b data-pf-budget-out>любой</b></label>
+        <input id="pf-budget" type="range" min="1000000" max="6000000" step="250000" value="6000000" data-pf-budget aria-valuetext="любой">
+        <input type="hidden" name="budget" value=""></div>
       <div class="pf-field"><label for="pf-country">Откуда</label>
         <select id="pf-country" name="country"><option value="">Корея и Китай</option><option value="KR">Корея</option><option value="CN">Китай</option></select></div>
-      <div class="pf-field"><label for="pf-body">Кузов</label>
-        <select id="pf-body" name="body"><option value="">Любой</option><option value="sedan">Седан</option><option value="suv">Кроссовер</option><option value="hatch">Хэтчбек</option><option value="van">Минивэн</option></select></div>
+      <div class="pf-field"><label for="pf-year">Год</label>
+        <select id="pf-year" name="year_from"><option value="">Любой</option>{% for y in [2024, 2023, 2022, 2021, 2020, 2018, 2015] %}<option value="{{ y }}">от {{ y }}</option>{% endfor %}</select></div>
       <div class="pf-field pf-q"><label for="pf-q">Марка или модель</label>
         <input id="pf-q" name="q" list="pf-makes" placeholder="Kia K5, Geely…" maxlength="60" value="{{ matched or '' }}" autocomplete="off">
         <datalist id="pf-makes">{% for m in ['Hyundai', 'Kia', 'Genesis', 'BYD', 'Geely', 'Changan', 'Chery', 'Haval', 'Toyota', 'Volkswagen', 'Audi', 'BMW'] %}<option value="{{ m }}">{% endfor %}</datalist></div>
@@ -72,7 +70,7 @@
         <div class="vy-border"><i class="vy-gate"></i><span class="vy-flag">КНР</span><span class="vy-flag ru">РФ</span></div>
         <div class="vy-wake" data-vy-wake></div>
         <div class="vy-ship" data-vy-ship><img src="/static/port/ship.webp?v=11" alt="" width="190" height="45">
-          <span class="vy-deck"><img data-vy-mine src="/static/port/cars/suv-white.webp?v=11" alt=""></span></div>
+          <span class="vy-deck">{% for c in ['sedan-silver', 'suv-black', 'hatch-white', 'sedan-grey', 'suv-white', 'suv-grey', 'sedan-white', 'van-silver', 'sedan-black', 'hatch-blue'] %}<img src="/static/port/cars/{{ c }}.webp?v=11" alt="" style="--cx: {{ [22.5, 35, 47.5, 60, 72.5][loop.index0 % 5] }}%; --cy: {{ 37 if loop.index0 < 5 else 61 }}%">{% endfor %}<img data-vy-mine src="/static/port/cars/suv-white.webp?v=11" alt="" class="mine" style="--cx: 72.5%; --cy: 37%"></span></div>
         <div class="vy-truck" data-vy-truck><span class="vy-trailer"><img data-vy-mine src="/static/port/cars/sedan-red.webp?v=11" alt=""><img src="/static/port/cars/suv-silver.webp?v=11" alt=""><img src="/static/port/cars/sedan-white.webp?v=11" alt=""></span><i class="vy-cab"></i></div>
         <ol class="vy-pins">{% for i in range(5) %}<li data-vy-pin style="--x: {{ [4, 27, 50, 73, 96][i] }}%"><i>{{ i + 1 }}</i><span data-vy-pin-label></span></li>{% endfor %}</ol>
       </div>
