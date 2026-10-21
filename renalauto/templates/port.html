@@ -107,74 +107,6 @@
 </section>
 
 
-<section class="port-section band band-white" id="calc" aria-labelledby="calc-title">
-  <div class="sec-head">
-    <span class="sec-eyebrow">Калькулятор</span>
-    <h2 id="calc-title">Сколько машина будет стоить у вас</h2>
-    <p class="sec-lead">Пошлина, утильсбор и сборы — по действующим ставкам, наше вознаграждение — до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽. Поменяйте параметры — итог пересчитается сразу.</p>
-  </div>
-  <div class="calc">
-    <form class="calc-form panel" data-calc>
-      <div class="calc-pick">
-        <div class="field"><label for="calc-make">Марка</label>
-          <select id="calc-make" data-calc-make><option value="">Все марки</option></select></div>
-        <div class="field"><label for="calc-model">Модель</label>
-          <select id="calc-model" data-calc-model disabled><option value="">Модель</option></select></div>
-        <div class="field"><label for="calc-year">Год</label>
-          <select id="calc-year" data-calc-year disabled><option value="">—</option></select></div>
-      </div>
-      <p class="calc-pick-info" data-calc-info>Выберите машину из объявлений — подставим её параметры и цену. Или задайте всё вручную ниже.</p>
-      <details class="calc-more" data-calc-more open>
-        <summary>Параметры машины</summary>
-        <div class="calc-more-body">
-      <fieldset class="seg"><legend>Откуда</legend>
-        <label><input type="radio" name="country" value="KR" checked> Корея</label>
-        <label><input type="radio" name="country" value="CN"> Китай</label>
-      </fieldset>
-      <fieldset class="seg"><legend>Двигатель</legend>
-        <label><input type="radio" name="engine" value="ice" checked> Бензин / дизель</label>
-        <label><input type="radio" name="engine" value="hybrid"> Гибрид</label>
-        <label><input type="radio" name="engine" value="ev"> Электро</label>
-      </fieldset>
-      <fieldset class="seg"><legend>Возраст</legend>
-        <label><input type="radio" name="age" value="new"> до 3 лет</label>
-        <label><input type="radio" name="age" value="mid" checked> 3–5 лет</label>
-        <label><input type="radio" name="age" value="old"> старше 5</label>
-      </fieldset>
-      <div class="calc-row">
-        <div class="field"><label for="calc-cc">Объём двигателя</label><span class="unit" data-unit="см³"><input id="calc-cc" name="cc" type="number" min="0" max="10000" step="100" value="1600" inputmode="numeric"></span></div>
-        <div class="field"><label for="calc-hp">Мощность</label><span class="unit" data-unit="л.с."><input id="calc-hp" name="hp" type="number" min="0" max="2000" value="150" inputmode="numeric"></span></div>
-      </div>
-      <div class="calc-row">
-        <div class="field"><label for="calc-price">Цена машины на площадке</label><input id="calc-price" name="price" type="text" value="1 500 000" inputmode="numeric" autocomplete="off" data-money></div>
-        <div class="field"><label for="calc-cur">Валюта</label>
-          <select id="calc-cur" name="currency"><option value="RUB">₽</option><option value="KRW">₩ воны</option><option value="CNY">¥ юани</option></select></div>
-      </div>
-      <p class="muted small">Самая выгодная пошлина — для машин 3–5 лет. Льготный утильсбор — до 160 л.с. (гибриды и электро — до 80 л.с.).</p>
-        </div>
-      </details>
-    </form>
-    <div class="calc-result panel" aria-live="polite">
-      <div class="cr-ticket">
-        <div class="cr-car" data-calc-car hidden><span class="cr-sprite"><img data-calc-sprite alt="" width="48" height="96"></span><span><b data-calc-car-title></b><small data-calc-car-sub></small></span></div>
-        <span class="cr-label">Итого, ориентировочно</span>
-        <b class="cr-total" data-calc-total>—</b>
-        <span class="cr-note">Плюс доставка до Владивостока и оформление — их назовёт менеджер под вашу машину</span>
-      </div>
-      <div class="cr-bar" data-calc-bar aria-hidden="true"></div>
-      <ul class="cr-legend" data-calc-legend></ul>
-      <div class="calc-verdict" data-calc-verdict>Введите параметры машины</div>
-      <details class="cr-details">
-        <summary>Расчёт по строкам</summary>
-        <table class="calc-lines"><tbody data-calc-lines></tbody></table>
-      </details>
-      <button class="btn block" type="button" data-calc-cta>Получить точный расчёт</button>
-      <button class="btn ghost block calc-show" type="button" data-calc-show>Показать машины в этом бюджете</button>
-      <p class="muted small">По курсу ЦБ и ставкам {{ rules_as_of }}. Итог зависит от курса на день оплаты и ставок на дату декларации — точную сумму подтвердит менеджер.</p>
-    </div>
-  </div>
-</section>
-
 <section class="port-section band band-white trust" id="vydachi" aria-labelledby="vydachi-title">
   {% set reviews_url = company_2gis ~ '/tab/reviews' if company_2gis else None %}
   <div class="sec-head">
@@ -308,5 +240,4 @@
 <script type="application/json" id="port-data">{{ scene|safe }}</script>
 {% endblock %}
 {% block scripts %}<script src="/static/port.js?v={{ asset_version }}" defer></script>
-<script src="/static/calc.js?v={{ asset_version }}" defer></script>
 <script src="/static/route.js?v={{ asset_version }}" defer></script>{% endblock %}

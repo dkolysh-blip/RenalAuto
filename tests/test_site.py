@@ -172,7 +172,6 @@ def test_calc_api(settings):
         assert r["lines"][0]["rub"] == round(25_000_000 * settings.rate_krw_rub)
         assert any(l["title"] == "Наше вознаграждение" and l["rub"] == 50_000 for l in r["lines"])
         assert client.get("/api/calc", params={"price": 0}).status_code == 422
-        assert 'data-calc' in client.get("/port").text
     finally:
         client.__exit__(None, None, None)
 
