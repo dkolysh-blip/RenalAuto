@@ -358,9 +358,9 @@ def ground(W, H, quay, m_ground, m_water, m_hazard, m_concrete):
 def yard_wide():
     k = WIDE
     W, H, road, apron, quay, zw = k["W"], k["H"], k["road"], k["apron"], k["quay"], k["zone_w"]
-    m_ground = noisy("ground", (0.2, 0.2, 0.19), (0.27, 0.27, 0.26), scale=0.03)
-    m_yard = noisy("yard", (0.075, 0.078, 0.082), (0.11, 0.112, 0.115), scale=0.05, stains=True)
-    m_road = noisy("road", (0.05, 0.052, 0.056), (0.075, 0.077, 0.08), scale=0.06, stains=True)
+    m_ground = noisy("ground", (0.3, 0.3, 0.29), (0.38, 0.38, 0.37), scale=0.03)
+    m_yard = noisy("yard", (0.2, 0.205, 0.21), (0.26, 0.265, 0.27), scale=0.05, stains=True)  # светлый бетон
+    m_road = noisy("road", (0.09, 0.093, 0.1), (0.125, 0.128, 0.135), scale=0.06, stains=True)
     m_white = mat("white", (0.78, 0.78, 0.74), rough=0.7)
     m_yellow = mat("yellow", (0.8, 0.55, 0.06), rough=0.7)
     m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08, stains=True)
@@ -441,9 +441,9 @@ def yard_wide():
 def yard_narrow():
     k = NARROW
     W, H, lane, quay = k["W"], k["H"], k["lane"], k["quay"]
-    m_ground = noisy("ground", (0.2, 0.2, 0.19), (0.27, 0.27, 0.26), scale=0.03)
-    m_yard = noisy("yard", (0.075, 0.078, 0.082), (0.11, 0.112, 0.115), scale=0.05, stains=True)
-    m_road = noisy("road", (0.05, 0.052, 0.056), (0.075, 0.077, 0.08), scale=0.06, stains=True)
+    m_ground = noisy("ground", (0.3, 0.3, 0.29), (0.38, 0.38, 0.37), scale=0.03)
+    m_yard = noisy("yard", (0.2, 0.205, 0.21), (0.26, 0.265, 0.27), scale=0.05, stains=True)  # светлый бетон
+    m_road = noisy("road", (0.09, 0.093, 0.1), (0.125, 0.128, 0.135), scale=0.06, stains=True)
     m_white = mat("white", (0.78, 0.78, 0.74), rough=0.7)
     m_yellow = mat("yellow", (0.8, 0.55, 0.06), rough=0.7)
     m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08, stains=True)
@@ -483,7 +483,7 @@ def render_yard(kind, out):
         moon = sun(0.09)
         moon.data.color = (0.7, 0.8, 1)
     else:
-        sc.view_settings.exposure = -0.9
+        sc.view_settings.exposure = -0.75
         sky()
         sun()
     W, H = yard_wide() if kind == "wide" else yard_narrow()

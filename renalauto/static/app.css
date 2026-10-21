@@ -303,6 +303,7 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
   max-height: 62vh; overflow: auto; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -12px 40px rgba(11,40,70,.3); animation: sheet-in .25s ease-out; }
 .port-pop.sheet .pop-ph { aspect-ratio: 21 / 9; }
 .port-pop.sheet .pop-actions { grid-template-columns: 1fr 1fr; }
+.port-pop.sheet .pop-actions > :first-child:nth-last-child(3) { grid-column: 1 / -1; }
 @keyframes sheet-in { from { transform: translateY(100%); } }
 body.pop-sheet .cta-bar { display: none; }
 .port-section { margin: 32px 0 8px; }

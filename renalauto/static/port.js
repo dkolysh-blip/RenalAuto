@@ -5,7 +5,7 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '9';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '10';  // V — поднять после перерендера
   // Порт всегда дневной: светлая сцена продаёт лучше. Ночная подложка — только по ?night=1
   const NIGHT = new URLSearchParams(location.search).get('night') === '1';
   const PLATE = NIGHT ? '-night' : '';
@@ -755,7 +755,7 @@
         <div class="pop-actions">
           ${d.calc && window.RenalCalc ? '<button class="btn" type="button" data-act="breakdown">Разобрать цену под ключ</button>' : ''}
           <button class="btn${d.calc && window.RenalCalc ? ' ghost' : ''}" type="button" data-act="want">Хочу эту</button>
-          <button class="btn ghost" type="button" data-act="trip">Как она поедет ко мне →</button>
+          <button class="btn ghost" type="button" data-act="trip">Как она поедет →</button>
         </div>
         ${d.path ? `<a class="small" href="${esc(d.path)}" data-act="more">Подробнее о машине →</a>` : ''}
       </div>`;
