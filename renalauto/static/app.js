@@ -112,3 +112,11 @@
   }
 })();
 
+
+// «Скопировать ИНН» и другие кнопки копирования
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-copy]');
+  if (!b) return;
+  const done = () => { const t = b.textContent; b.textContent = 'Скопировано'; b.classList.add('done'); setTimeout(() => { b.textContent = t; b.classList.remove('done'); }, 1800); };
+  navigator.clipboard?.writeText(b.dataset.copy).then(done, () => { window.prompt('Скопируйте:', b.dataset.copy); });
+});

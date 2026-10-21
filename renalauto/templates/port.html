@@ -175,35 +175,60 @@
   </div>
 </section>
 
-<section class="port-section band band-white" id="vydachi" aria-labelledby="vydachi-title">
+<section class="port-section band band-white trust" id="vydachi" aria-labelledby="vydachi-title">
   {% set reviews_url = company_2gis ~ '/tab/reviews' if company_2gis else None %}
   <div class="sec-head">
-    <span class="sec-eyebrow">Отзывы</span>
-    <h2 id="vydachi-title">Что говорят клиенты</h2>
-    <p class="sec-lead">Видео — с настоящих выдач. Письменные отзывы клиенты оставляют сами в 2ГИС.</p>
-    {% if reviews_url %}
-    <a class="gis-pill sec-link" href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">
-      <span class="gis-mark">2ГИС</span>
-      {% if company_2gis_rating %}<b>{{ company_2gis_rating|replace('.', ',') }}</b><span class="stars" aria-label="Рейтинг {{ company_2gis_rating }} из 5">★★★★★</span>{% endif %}
-      <span>{% if company_2gis_reviews %}{{ company_2gis_reviews }} отзывов{% else %}Читать отзывы{% endif %} →</span>
-    </a>
-    {% endif %}
+    <span class="sec-eyebrow">Доверие</span>
+    <h2 id="vydachi-title">Проверьте нас до оплаты</h2>
+    <p class="sec-lead">Без громких обещаний: всё, что ниже, можно проверить самому — юрлицо, офис, договор и настоящие выдачи.</p>
   </div>
-  <div class="vydachi">
-    <figure class="vydacha wide" data-video>
-      <video playsinline preload="none" poster="/static/media/vydacha-1.jpg" width="960" height="540">
-        <source src="/static/media/vydacha-1.mp4" type="video/mp4">
-      </video>
-      <button type="button" class="vydacha-play" aria-label="Смотреть видео: отзыв клиентки"></button>
-      <figcaption><b>Отзыв клиентки</b><span>Получила машину и рассказывает, как всё прошло</span></figcaption>
-    </figure>
-    <figure class="vydacha tall" data-video>
-      <video playsinline preload="none" poster="/static/media/vydacha-2.jpg" width="640" height="900">
-        <source src="/static/media/vydacha-2.mp4" type="video/mp4">
-      </video>
-      <button type="button" class="vydacha-play" aria-label="Смотреть видео: передача ключей"></button>
-      <figcaption><b>Передача ключей</b><span>Клиент забирает машину</span></figcaption>
-    </figure>
+  <div class="trust-grid">
+    <div class="trust-videos">
+      <figure class="vydacha wide" data-video>
+        <video playsinline preload="none" poster="/static/media/vydacha-1.jpg" width="960" height="540">
+          <source src="/static/media/vydacha-1.mp4" type="video/mp4">
+        </video>
+        <button type="button" class="vydacha-play" aria-label="Смотреть видео: отзыв клиентки"></button>
+        <figcaption><b>Отзыв клиентки</b><span>Получила машину и рассказывает, как всё прошло</span></figcaption>
+      </figure>
+      <figure class="vydacha tall" data-video>
+        <video playsinline preload="none" poster="/static/media/vydacha-2.jpg" width="640" height="900">
+          <source src="/static/media/vydacha-2.mp4" type="video/mp4">
+        </video>
+        <button type="button" class="vydacha-play" aria-label="Смотреть видео: передача ключей"></button>
+        <figcaption><b>Передача ключей</b><span>Клиент забирает машину</span></figcaption>
+      </figure>
+    </div>
+    <ul class="trust-checks">
+      <li class="tc">
+        <span class="tc-ico" aria-hidden="true">№</span>
+        <div><b>Юрлицо, а не частник</b>
+          <p>{{ company_legal_name or company }}{% if company_inn %}, ИНН <span class="tc-mono">{{ company_inn }}</span>{% endif %}{% if company_ogrn %}, ОГРН <span class="tc-mono">{{ company_ogrn }}</span>{% endif %}.</p>
+          <div class="tc-links">
+            <a href="https://egrul.nalog.ru/" target="_blank" rel="noopener">Проверить в ФНС →</a>
+            {% if company_inn %}<button type="button" data-copy="{{ company_inn }}">Скопировать ИНН</button>{% endif %}
+          </div></div>
+      </li>
+      <li class="tc">
+        <span class="tc-ico" aria-hidden="true">⌂</span>
+        <div><b>Офис во Владивостоке</b>
+          <p>{{ company_address or 'Владивосток' }}.</p>
+          {% if company_2gis %}<div class="tc-links"><a href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="reviews_2gis">Офис на карте 2ГИС →</a>
+            {% if reviews_url %}<a href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">Отзывы в 2ГИС →</a>{% endif %}</div>{% endif %}</div>
+      </li>
+      <li class="tc">
+        <span class="tc-ico" aria-hidden="true">₽</span>
+        <div><b>Деньги — по договору</b>
+          <p>Агентский договор, расчёты в рублях на расчётный счёт или в кассу офиса. Не подобрали машину за {{ deal.pick_days }} дней — вернём предоплату. Платёж за бронь {{ fmt(deal.deposit) }} ₽ возвращаем за 1 рабочий день после оплаты инвойса.</p></div>
+      </li>
+      <li class="tc">
+        <span class="tc-ico" aria-hidden="true">▶</span>
+        <div><b>Каждая выдача — в канале</b>
+          <p>Фото и видео машин, которые мы привезли, без постановки.</p>
+          <div class="tc-links">{% if company_max %}<a href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">Канал в MAX →</a>{% endif %}
+            {% if company_vk %}<a href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте →</a>{% endif %}</div></div>
+      </li>
+    </ul>
   </div>
   {% if reviews %}
   <div class="reviews">
@@ -217,14 +242,6 @@
     {% endfor %}
   </div>
   {% endif %}
-  <div class="proof-bar">
-    <p><b>Каждую выдачу показываем в канале</b><span class="muted">Фото и видео машин, которые мы привезли, — без постановки.</span></p>
-    <div class="proof-links">
-      {% if company_max %}<a class="btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">Канал в MAX</a>{% endif %}
-      {% if company_vk %}<a class="btn ghost" href="{{ company_vk }}" target="_blank" rel="noopener">ВКонтакте</a>{% endif %}
-      {% if reviews_url %}<a class="btn ghost" href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">Отзывы в 2ГИС</a>{% endif %}
-    </div>
-  </div>
 </section>
 
 <section class="port-section band band-white" id="faq" aria-labelledby="faq-title">

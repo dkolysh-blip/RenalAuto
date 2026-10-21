@@ -6,6 +6,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import re
 import statistics
 import time
 from collections import defaultdict, deque
@@ -221,6 +222,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         company_email=settings.company_email,
         company_legal_name=settings.company_legal_name,
         company_requisites=settings.company_requisites,
+        # ИНН и ОГРН отдельно — для блока «Проверьте нас»: человек проверяет юрлицо в ФНС сам
+        company_inn=(re.search(r"ИНН\s*(\d{10,12})", settings.company_requisites or "") or [None, None])[1],
+        company_ogrn=(re.search(r"ОГРН\s*(\d{13,15})", settings.company_requisites or "") or [None, None])[1],
         company_address=settings.company_address,
         company_vk=settings.company_vk,
         ym_id=settings.ym_id,

@@ -146,6 +146,7 @@ def test_port_landing_scene_and_message_match(settings):
         assert "<em>Kia K5</em>" in page.text
         assert 'id="terminal" aria-hidden="true"' in page.text
         assert "/static/media/vydacha-1.mp4" in page.text and "vk.ru/renal_auto" in page.text
+        assert "Проверьте нас до оплаты" in page.text and 'data-copy="2543160025"' in page.text
         assert client.get("/static/media/vydacha-2.jpg").status_code == 200
         scene = json.loads(page.text.split('id="port-data">')[1].split("</script>")[0])
         assert [c["key"] for c in scene["cars"]] == ["kbchachacha:2"]  # непроходной Palisade 3.8 не попадает
