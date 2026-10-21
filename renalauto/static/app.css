@@ -468,79 +468,44 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .terminal .night .t-zone { fill: rgba(240,236,224,.55); }
 @media (prefers-reduced-motion: reduce) { .terminal .ship-bob, .terminal .night .ship-lights { animation: none; } }
 /* путь машины */
-/* «Путь машины»: сцена прилипает к экрану, прокрутка ведёт судно и автовозы */
-.journey-track { position: relative; height: 330vh; }
-.journey-stage { position: sticky; top: 76px; height: calc(100vh - 96px); min-height: 520px; display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 1fr);
-  grid-template-rows: minmax(0, 1fr) auto; gap: 14px 22px; }
-.journey-map { position: relative; grid-row: 1 / span 2; border-radius: 24px; overflow: hidden; box-shadow: 0 24px 60px rgba(11,40,70,.18); background: #b9d6e8; }
-.journey-map svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.journey .j-grat line { stroke: rgba(255,255,255,.45); stroke-width: 1; }
-.journey .j-land { fill: #f6f2ea; stroke: #d9cfbc; stroke-width: 1.2; stroke-linejoin: round; }
-.journey .land-ru { fill: #f8f6f1; } .journey .land-cn { fill: #f3ede1; } .journey .land-mn { fill: #f1ece2; }
-.journey .land-kr, .journey .land-kp { fill: #fbe9e4; } .journey .land-jp { fill: #eeece7; }
-.journey .j-lands { filter: drop-shadow(0 0 6px rgba(255,255,255,.8)); }
-.journey .j-country { font: 800 15px/1 Onest, system-ui, sans-serif; letter-spacing: .3em; fill: #b5a78e; }
-.journey .j-sea-label { font: italic 600 15px/1 Onest, system-ui, sans-serif; fill: #4f7d99; letter-spacing: .08em; }
-.journey .j-route { fill: none; stroke: #7d93a3; stroke-width: 2.2; stroke-dasharray: 1 8; stroke-linecap: round; opacity: .8; }
-.journey .j-progress { fill: none; stroke: var(--sea); stroke-width: 4; stroke-linecap: round; }
-.journey .j-progress.j-cn { stroke: #d9480f; }
-.journey .j-progress.j-ru { stroke: var(--accent); }
-.journey .j-pt circle { fill: #fff; stroke: #0f172a; stroke-width: 2.2; }
-.journey .j-pt.j-small circle { stroke: #64748b; stroke-width: 2; }
-.journey .j-pt text { font: 700 14px/1 Onest, system-ui, sans-serif; fill: #0f172a; paint-order: stroke; stroke: rgba(255,255,255,.9); stroke-width: 4px; stroke-linejoin: round; }
-.journey .j-pt.j-small text { font-size: 12.5px; fill: #475569; }
-.journey .j-hub circle { fill: var(--accent); stroke: #fff; stroke-width: 3; }
-.journey .j-pulse { fill: none !important; stroke: var(--sea) !important; stroke-width: 2 !important; opacity: 0; transform-box: fill-box; transform-origin: center; }
-.journey .j-hub .j-pulse { stroke: var(--accent) !important; }
-.journey .j-pt.live .j-pulse { animation: j-pulse 1.6s ease-out infinite; }
-@keyframes j-pulse { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(3.2); } }
-.journey .j-exit rect { fill: #0f172a; }
-.journey .j-exit text { font: 700 13px/1 Onest, system-ui, sans-serif; fill: #fff; }
-.journey .j-veh { transition: opacity .3s ease; }
-.journey .j-veh.off { opacity: 0; }
-.journey .j-trailer { fill: #334155; } .journey .j-cab { fill: #e2e8f0; stroke: #334155; stroke-width: 1.2; }
-.journey .dim { opacity: .35; }
-.j-hud { position: absolute; left: 18px; top: 18px; display: grid; gap: 2px; padding: 12px 16px; border-radius: 16px; background: rgba(255,255,255,.92);
-  backdrop-filter: blur(6px); box-shadow: 0 8px 24px rgba(11,40,70,.15); max-width: min(320px, calc(100% - 36px)); }
-.j-hud-step { font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--sea); }
-.j-hud b { font-size: 18px; }
-.j-hud-car { font-size: 13.5px; color: var(--muted); }
-.j-stamps { position: absolute; right: 18px; bottom: 18px; margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; pointer-events: none; }
-.j-stamps li { padding: 7px 12px 7px 30px; position: relative; border-radius: 10px; background: #fff; font-size: 13.5px; font-weight: 700; box-shadow: 0 6px 18px rgba(11,40,70,.16);
-  opacity: 0; transform: translateX(-10px); transition: opacity .25s ease, transform .25s ease; }
-.j-stamps li::before { content: "✓"; position: absolute; left: 10px; color: #12a150; font-weight: 900; }
-.j-stamps li.on { opacity: 1; transform: none; }
-.journey-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; counter-reset: js; align-self: center; }
-.journey-steps li { counter-increment: js; position: relative; padding: 14px 16px 14px 58px; border-radius: 16px; border: 1px solid transparent;
-  display: grid; gap: 4px; color: var(--muted); transition: background .25s ease, border-color .25s ease, color .25s ease; }
-.journey-steps li::before { content: attr(data-n); position: absolute; left: 16px; top: 14px; width: 30px; height: 30px; border-radius: 50%;
-  display: grid; place-items: center; font-weight: 800; font-size: 14px; background: #e2e8f0; color: #475569; transition: background .25s ease, color .25s ease; }
-.journey-steps li b { font-size: 16.5px; color: #334155; }
-.journey-steps li span { font-size: 14.5px; line-height: 1.5; display: none; }
-.journey-steps li em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--sea); display: none; }
-.journey-steps li .btn { justify-self: start; margin-top: 6px; display: none; }
-.journey-steps li.done::before { content: "✓"; background: #dcfce7; color: #12a150; }
-.journey-steps li.on { background: #fff; border-color: var(--line); box-shadow: 0 14px 36px rgba(11,40,70,.12); color: var(--text); }
-.journey-steps li.on::before { background: var(--sea); color: #fff; }
-.journey-steps li.on b { color: #0f172a; font-size: 18px; }
-.journey-steps li.on span, .journey-steps li.on em, .journey-steps li.on .btn { display: block; }
-.j-progressbar { height: 4px; border-radius: 4px; background: #e2e8f0; overflow: hidden; }
-.j-progressbar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--sea), var(--accent)); }
-.journey-note { margin-top: 14px; }
-@media (max-width: 900px) {
-  .journey-track { height: 300vh; }
-  .journey-stage { top: 64px; height: calc(100svh - 150px); min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto auto; gap: 10px; }
-  .journey-map { grid-row: auto; border-radius: 18px; }
-  .journey-steps li:not(.on) { display: none; }
-  .journey-steps li.on { padding: 12px 14px 12px 54px; }
-  .j-hud { left: 10px; top: 10px; padding: 8px 12px; } .j-hud b { font-size: 15px; }
-  .j-stamps { right: 10px; bottom: auto; top: 10px; gap: 4px; }
-  .journey .j-exit { display: none; }
-  .j-stamps.past { opacity: 0; transition: opacity .3s ease; } .j-stamps li { font-size: 12px; padding: 5px 10px 5px 26px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .journey-track { height: auto; } .journey-stage { position: static; height: auto; }
-  .journey-map { min-height: 420px; } .journey-steps li span, .journey-steps li em { display: block; } .journey-steps li:not(.on) { display: grid; }
+/* «Путь машины» под сценой порта: выбранная машина проходит пять шагов */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.port-route { margin-top: 14px; padding: 20px 24px 22px; border-radius: 20px; background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow); display: grid; gap: 18px; }
+.pr-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; }
+.pr-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--sea); }
+.pr-car { flex: 1 1 320px; font-size: 16px; color: var(--muted); font-weight: 600; min-width: 0; }
+.port-route.picked .pr-car { color: #0f172a; font-size: 17px; }
+.pr-cta { flex: 0 0 auto; }
+.pr-cta[hidden] { display: none; }
+.pr-track { position: relative; }
+.pr-line { position: absolute; left: 10%; right: 10%; top: 15px; height: 0; border-top: 2px dotted var(--sea); }
+.pr-line > i { position: absolute; left: 0; top: -3px; height: 4px; width: 0; border-radius: 2px; background: var(--sea); }
+.pr-veh { position: absolute; left: 0; top: -9px; transform: translateX(-50%); opacity: 0; transition: opacity .3s; pointer-events: none; }
+.port-route.picked .pr-veh { opacity: 1; }
+.pr-veh img, .pr-veh svg { display: block; filter: drop-shadow(0 3px 4px rgba(11,40,70,.35)); }
+.pr-veh svg rect { fill: #334155; } .pr-veh svg .cab { fill: #e2e8f0; stroke: #334155; stroke-width: 1.2; }
+.pr-veh .pr-truck, .port-route.cn .pr-veh .pr-ship { display: none; }
+.port-route.cn .pr-veh .pr-truck { display: block; }
+.pr-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; position: relative; }
+.pr-steps li { display: grid; justify-items: center; text-align: center; gap: 4px; align-content: start; min-width: 0; }
+.pr-steps i { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font: 800 14px/1 Onest, system-ui, sans-serif; font-style: normal;
+  background: #fff; color: var(--sea); border: 2px solid var(--sea); position: relative; z-index: 1; transition: background .25s, color .25s, border-color .25s; }
+.pr-steps b { margin-top: 6px; font-size: 15px; color: #0f172a; }
+.pr-steps span { font-size: 13px; line-height: 1.45; color: var(--muted); }
+.pr-steps em { font-style: normal; font-size: 12.5px; font-weight: 700; color: var(--sea); }
+.pr-steps li.done i { background: var(--sea); color: #fff; }
+.pr-steps li.on i { background: var(--accent); border-color: var(--accent); color: #fff; }
+@media (max-width: 760px) {
+  .port-route { padding: 16px; gap: 14px; }
+  .pr-cta { width: 100%; }
+  .pr-steps { gap: 4px; }
+  .pr-steps b { font-size: 12.5px; }
+  .pr-steps span, .pr-steps em { display: none; }
+  /* на телефоне пояснение только у текущего шага — одной строкой под линией */
+  .pr-steps li.on span:not([hidden]), .pr-steps li.on em { display: block; position: absolute; left: 0; right: 0; top: 88px; text-align: left; }
+  .pr-steps li.on em { top: auto; bottom: -22px; }
+  .pr-steps:has(li.on) { padding-bottom: 96px; }
+  .pr-steps b { line-height: 1.2; min-height: 2.4em; }
 }
 
 /* табло цен на стоянке */

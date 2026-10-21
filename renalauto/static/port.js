@@ -679,7 +679,7 @@
     car.g.classList.add('hover');
     const d = car.d;
     // выбранная машина «едет» дальше по странице — в блоке логистики
-    if (pinned) dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr',
+    if (pinned) dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey,
       sprite: `${ASSETS}/cars/${LENGTH[d.body] ? d.body : 'sedan'}-${paintOf(d.color)}.webp?v=${V}`}}));
     const pill = d.verdict === 'warn' ? '<span class="pill warn">✓ Проходит, есть нюансы</span>' : '<span class="pill ok">✓ Проходит в РФ</span>';
     popEl.innerHTML = `
