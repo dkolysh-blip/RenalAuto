@@ -134,6 +134,14 @@ def load_reviews() -> list[dict[str, Any]]:
     return [r for r in items if isinstance(r, dict) and r.get("name") and r.get("text")]
 
 
+def load_model_credits() -> list[dict[str, Any]]:
+    """Авторы 3D-моделей машин на стоянке (лицензия CC BY требует указать автора): renalauto/model_credits.json."""
+    try:
+        return json.loads((HERE / "model_credits.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+
+
 def _asset_version() -> str:
     """Версия статики по содержимому файлов: после обновления браузер сразу берёт новые css/js."""
     digest = hashlib.sha1(__version__.encode())
@@ -217,6 +225,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         ym_id=settings.ym_id,
         company_2gis_rating=settings.company_2gis_rating,
         company_2gis_reviews=settings.company_2gis_reviews,
+        model_credits=load_model_credits(),
         company_2gis=settings.company_2gis,
         deal=dict(fee=settings.deal_fee_rub, deposit=settings.deal_deposit_rub, pick_days=settings.deal_pick_days,
                   invoice_days=settings.deal_invoice_days, delivery_weeks=settings.deal_delivery_weeks),

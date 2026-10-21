@@ -171,6 +171,22 @@ def scene_color(v: CarView) -> str:
     return COMMON_COLORS[key % len(COMMON_COLORS)]
 
 
+# машины, у которых есть спрайт из настоящей 3D-модели (design/blender/real_cars.py): (марка, слово в модели) → файл
+REAL_SPRITES = [
+    ("Kia", "Sportage", "kia-sportage"), ("Kia", "Sorento", "kia-sorento"), ("Hyundai", "Tucson", "hyundai-tucson"),
+    ("Haval", "Dargo", "haval-dargo"), ("Haval", "Big Dog", "haval-dargo"), ("BYD", "Seal", "byd-seal"),
+    ("BYD", "Song", "byd-song"), ("Geely", "Monjaro", "geely-monjaro"), ("Geely", "Xingyue L", "geely-monjaro"),
+]
+
+
+def real_sprite(v: CarView) -> str | None:
+    text = f" {v.model or ''} {v.title} ".lower()
+    for make, word, slug in REAL_SPRITES:
+        if (v.make or "").lower() == make.lower() and word.lower() in text:
+            return slug
+    return None
+
+
 def scene_car(v: CarView) -> dict[str, Any]:
     """Короткая запись для сцены терминала (уходит в браузер JSON-ом)."""
     title = v.title
@@ -189,4 +205,5 @@ def scene_car(v: CarView) -> dict[str, Any]:
         "verdict": v.eligibility.verdict,
         "body": scene_body(v),
         "color": scene_color(v),
+        "model": real_sprite(v),
     }

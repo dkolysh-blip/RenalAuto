@@ -133,13 +133,19 @@
     }
     return best;
   }
+  // спрайт из настоящей 3D-модели, если она есть для этой марки и модели; у трёх моделей — один родной цвет
+  const SINGLE_PAINT = ['byd-seal', 'byd-song', 'geely-monjaro'];
+  function spriteOf(d, body) {
+    if (d.model) return `${d.model}-${SINGLE_PAINT.includes(d.model) ? 'native' : paintOf(d.color)}`;
+    return `${body}-${paintOf(d.color)}`;
+  }
   function carShape(d) {
     const body = LENGTH[d.body] ? d.body : 'sedan';
     const l = LENGTH[body] * M, w = WIDTH[body] * M;
     return `
       <rect class="car-glow" x="${-w / 2 - 4}" y="${-l / 2 - 4}" width="${w + 8}" height="${l + 8}" rx="7"/>
       ${NIGHT ? `<path class="beam" d="M${-w / 2 + 2} ${-l / 2 + 1} L${-w / 2 - 10} ${-l / 2 - 46} L${w / 2 + 10} ${-l / 2 - 46} L${w / 2 - 2} ${-l / 2 + 1} Z" fill="url(#t-beam)"/>` : ''}
-      <image href="${ASSETS}/cars/${body}-${paintOf(d.color)}.webp?v=${V}" x="${-SPRITE.w / 2}" y="${-SPRITE.h / 2}" width="${SPRITE.w}" height="${SPRITE.h}"/>
+      <image href="${ASSETS}/cars/${spriteOf(d, body)}.webp?v=${V}" x="${-SPRITE.w / 2}" y="${-SPRITE.h / 2}" width="${SPRITE.w}" height="${SPRITE.h}"/>
       ${NIGHT ? `<g class="tail"><circle cx="${-w / 2 + 3}" cy="${l / 2 - 1}" r="3.4" fill="url(#t-tail)"/><circle cx="${w / 2 - 3}" cy="${l / 2 - 1}" r="3.4" fill="url(#t-tail)"/></g>` : ''}`;
   }
 
@@ -156,10 +162,12 @@
   let demoSeq = 0;
   function demoCar(country) {
     const [title, body] = pick(DEMO[country]);
+    const model = {'Kia Sportage': 'kia-sportage', 'Kia Sorento': 'kia-sorento', 'Hyundai Tucson': 'hyundai-tucson',
+      'BYD Song Plus': 'byd-song', 'Geely Monjaro': 'geely-monjaro'}[title] || null;
     demoSeq += 1;
     const price = Math.round(rnd(1.2, 3.2) * 20) * 50000, year = 2019 + Math.floor(rnd(0, 5));
     const age = new Date().getFullYear() - year < 3 ? 'new' : 'mid', cc = pick([1598, 1598, 1999, 1497]);
-    return {key: 'demo:' + demoSeq, source: 'demo', id: String(demoSeq), country, title, body, year,
+    return {key: 'demo:' + demoSeq, source: 'demo', id: String(demoSeq), country, title, body, model, year,
       price: rub(price), photo: null, path: null, verdict: 'ok', color: pick(DEMO_COLORS), demo: true,
       turnkey: Math.round(price * rnd(1.22, 1.32) / 1000) * 1000 + 50000, turnkey_from: true,
       calc: {country, engine: 'ice', age, cc, price}};
@@ -740,7 +748,7 @@
     const d = car.d;
     // выбранная машина «едет» дальше по странице — в блоке логистики
     if (pinned) dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey,
-      sprite: `${ASSETS}/cars/${LENGTH[d.body] ? d.body : 'sedan'}-${paintOf(d.color)}.webp?v=${V}`}}));
+      sprite: `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`}}));
     const pill = d.verdict === 'warn' ? '<span class="pill warn">✓ Проходит, есть нюансы</span>' : '<span class="pill ok">✓ Проходит в РФ</span>';
     popEl.innerHTML = `
       <button class="pop-x" type="button" data-act="close" aria-label="Закрыть">×</button>
@@ -824,7 +832,7 @@
     hidePop();
     const fly = document.createElement('div');
     fly.className = 'car-fly';
-    const sprite = `${ASSETS}/cars/${LENGTH[d.body] ? d.body : 'sedan'}-${paintOf(d.color)}.webp?v=${V}`;
+    const sprite = `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`;
     fly.innerHTML = `<div class="car-fly-bg"></div><div class="car-fly-card">
       <img class="${d.photo ? '' : 'sprite'}" src="${esc(d.photo || sprite)}" alt="">
       <div class="car-fly-info"><b>${esc(label(d))}</b>${d.turnkey ? `<span>≈ ${mln(d.turnkey)} с растаможкой</span>` : ''}</div></div>`;
