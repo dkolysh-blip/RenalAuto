@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "_macros.html" import card, consent, lead_form %}
-{% block title %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Авто из Кореи и Китая{% endif %}, которые проходят по утильсбору | {{ company }}{% endblock %}
-{% block description %}Выберите машину на терминале — посчитаем цену под ключ до вашего города. Только проходные авто, проверка VIN, 35–50 дней до ключей.{% endblock %}
+{% block title %}{% if matched %}{{ matched }} из Кореи и Китая под ключ{% else %}Авто из Кореи и Китая под ключ{% endif %} — с проверкой проходимости | {{ company }}{% endblock %}
+{% block description %}Свежие объявления из Кореи и Китая с ценой под ключ до вашего города. Проверка проходимости по утильсбору и VIN, агентский договор, фиксированное вознаграждение.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
 {% block body_class %}has-cta port-page{% endblock %}
 {% block head %}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,24 +11,25 @@
   <div class="port-offer">
     <div class="offer-main">
     <div class="eyebrow"><span class="dot on"></span> Живая лента: новые машины каждую минуту</div>
-    <h1>{% if matched %}<em>{{ matched }}</em> из Кореи и Китая, {% else %}Авто из <em>Кореи</em> и <em>Китая</em>, {% endif %}которые проходят по утильсбору</h1>
+    <h1>{% if matched %}<em>{{ matched }}</em> из Кореи и Китая под ключ{% else %}Авто из <em>Кореи</em> и <em>Китая</em> под ключ{% endif %}</h1>
+    <p class="hero-sub">С проверкой проходимости по утильсбору — до того, как вы заплатите</p>
     </div>
     <div class="offer-side">
-    <p>Выберите машину на терминале — мы посчитаем её цену под ключ до вашего города: доставка, таможня, утильсбор, оформление.</p>
+    <p>Свежие объявления с площадок Кореи и Китая — сразу с ценой под ключ до вашего города: машина, таможня, утильсбор, оформление.</p>
     <div class="hero-cta">
       <a class="btn" href="#podbor" data-goal="form_open">Подобрать под бюджет</a>
       <a class="btn ghost" href="/">Все машины</a>
     </div>
     <ul class="port-facts">
-      <li><b>Только проходные</b> авто по правилам ввоза в РФ</li>
-      <li><b>Проверка VIN</b> и истории до покупки</li>
-      <li><b>35–50 дней</b> от выкупа до ключей</li>
+      <li><b>Проходимость</b> по утильсбору и запрету на вывоз</li>
+      <li><b>Проверка VIN</b> и истории до брони</li>
+      <li><b>{{ fmt(deal.fee)|replace(' ', ' ') }} ₽</b> — фиксированное вознаграждение</li>
     </ul>
     </div>
   </div>
 
   <div class="port-stage">
-    <form class="port-filter" data-port-filter aria-label="Подбор машин на терминале">
+    <form class="port-filter" data-port-filter aria-label="Подбор машин">
       <div class="pf-field"><label for="pf-budget">Бюджет под ключ</label>
         <select id="pf-budget" name="budget">
           <option value="">Любой</option>
@@ -46,13 +47,13 @@
     {# Сцена декоративная: всё, что в ней есть, продублировано ниже обычными карточками #}
     <div class="terminal" id="terminal" aria-hidden="true">
       <div class="terminal-hud">
-        <span class="hud-live"><span class="dot"></span> <span data-hud="status">Терминал</span></span>
+        <span class="hud-live"><span class="dot"></span> <span data-hud="status">Объявления</span></span>
         <span data-hud="count"></span>
       </div>
       <div class="terminal-toasts"></div>
       <div class="lot-sign"></div>
     </div>
-    <p class="terminal-note muted small">Машины на терминале — объявления с площадок Кореи и Китая. Наведите или нажмите на машину.</p>
+    <p class="terminal-note muted small">Каждая машина — реальное объявление с площадки Кореи или Китая, цена под ключ ориентировочная. Наведите или нажмите на машину.</p>
     <div class="port-pop" id="port-pop" hidden></div>
   </div>
 </section>
@@ -60,7 +61,7 @@
 <section class="port-section band" aria-labelledby="now-title">
   <div class="sec-head">
     <span class="sec-eyebrow">Живая лента</span>
-    <h2 id="now-title">Сейчас на терминале</h2>
+    <h2 id="now-title">Свежие объявления</h2>
     <p class="sec-lead">Свежие проходные машины с площадок Кореи и Китая — с ценой на площадке и проверкой проходимости.</p>
     <a class="sec-link" href="/">Весь каталог →</a>
   </div>
@@ -271,7 +272,7 @@
   <div class="final-grid">
     <div class="final-pitch">
       <span class="sec-eyebrow">Подбор</span>
-      <h2 id="final-title">Не нашли на терминале? Подберём под ваш бюджет</h2>
+      <h2 id="final-title">Не нашли подходящую? Подберём под ваш бюджет</h2>
       <ul class="final-points">
         <li>Пришлём варианты из Кореи и Китая с ценой под ключ до вашего города</li>
         <li>Проверим историю, VIN и проходимость по утильсбору до брони</li>

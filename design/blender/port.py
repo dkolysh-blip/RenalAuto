@@ -403,8 +403,6 @@ def yard_wide():
     while x < W + 40:
         ln = random.choice((55, 55, 110))
         container(x + ln / 2, 24, ln)
-        if ln == 110 and n % 2 == 0 and 100 < x < W - 150:
-            roof_logo(x + ln / 2, 24)
         n += 1
         x += ln + 3
     for y in (150, 265, 380, 495):

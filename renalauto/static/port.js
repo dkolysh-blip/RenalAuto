@@ -54,7 +54,7 @@
         scale: {x0: z.x0 + 76, x1: z.x0 + 76 + (COLS - 1) * 50, y: 500}})),
       paint(g) {
         g.innerHTML = `<image href="${ASSETS}/yard-wide${PLATE}.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
-          ${zones.map(z => `${flag(z.zone, z.x0 + 52, 124)}<text x="${z.x0 + 80}" y="124" class="t-zone">${z.zone === 'KR' ? 'ТЕРМИНАЛ КОРЕЯ' : 'ТЕРМИНАЛ КИТАЙ'}</text>`).join('')}
+          ${zones.map(z => `${flag(z.zone, z.x0 + 52, 124)}<text x="${z.x0 + 80}" y="124" class="t-zone">${z.zone === 'KR' ? 'КОРЕЯ' : 'КИТАЙ'}</text>`).join('')}
           ${barrier(28, road, 'v')}`;
       },
     };
@@ -334,7 +334,6 @@
       <g class="ship-bob">
         <image href="${ASSETS}/ship.webp?v=${V}" x="${s.x - 50 * k}" y="${s.y - 30 * k}" width="${640 * k}" height="${152 * k}"/>
         ${marks}
-        <text class="ship-name" x="${s.x + 515 * k}" y="${s.y + s.h / 2}" text-anchor="middle" dominant-baseline="middle" transform="rotate(90 ${s.x + 515 * k} ${s.y + s.h / 2})" font-size="${9 * Math.max(k, 0.7)}">RENAL-AUTO</text>
         <g class="ship-lights">
           <circle cx="${s.x + 470 * k}" cy="${s.y + 3}" r="${7 * k + 3}" fill="url(#t-nav-r)"/>
           <circle cx="${s.x + 470 * k}" cy="${s.y + s.h - 3}" r="${7 * k + 3}" fill="url(#t-nav-g)"/>
@@ -553,12 +552,11 @@
     setTimeout(() => {
       if ([...cars.values()].some(c => c.state === 'ramp' || c.state === 'at-ramp')) return;
       ship.state = 'leaving';
-      toast('Судно ушло во Владивосток · <b>35–50 дней</b> до ключей');
       moveShip(L.W + 40, 7, () => {
         ship.loaded = 0;
         ship.x = -L.ship.x - L.ship.w - 60;
         paintShip();
-        moveShip(0, 7, () => { ship.state = 'docked'; toast('Новое судно у причала · идёт погрузка'); });
+        moveShip(0, 7, () => { ship.state = 'docked'; });
       });
     }, old.length * 900 + 4500);
   }
@@ -594,7 +592,7 @@
     gTags.replaceChildren();  // одновременно — один ценник
     g.setAttribute('transform', `translate(${car.x.toFixed(1)} ${(car.y - 34).toFixed(1)})`);
     g.innerHTML = `<rect rx="7" height="22" y="-11"/><path d="M-5 11 L0 17 L5 11 Z"/><text y="4" text-anchor="middle">${esc(text)}</text>
-      <text class="tag-sub" y="-16" text-anchor="middle">прибыла на терминал</text>`;
+      <text class="tag-sub" y="-16" text-anchor="middle">новое объявление</text>`;
     gTags.appendChild(g);
     const t = g.querySelector('text'), w = t.getComputedTextLength() + 18;
     const r = g.querySelector('rect');
@@ -645,7 +643,7 @@
     const rates = [r.CNY && `¥1 = ${f(r.CNY, 2)} ₽`, r.KRW && `₩1000 = ${f(r.KRW * 1000, 1)} ₽`, r.EUR && `€1 = ${f(r.EUR, 1)} ₽`].filter(Boolean);
     root.querySelector('[data-hud="count"]').textContent = L.W < 600
       ? `${list.length} машин · KR ${kr} · CN ${list.length - kr}`
-      : rates.length ? `${DATA.rates_source === 'ЦБ РФ' ? 'Курс ЦБ' : 'Курс'}: ${rates.join(' · ')}` : `На терминале ${list.length}`;
+      : rates.length ? `${DATA.rates_source === 'ЦБ РФ' ? 'Курс ЦБ' : 'Курс'}: ${rates.join(' · ')}` : `${list.length} объявлений`;
   }
   function setStatus(on, text) {
     root.querySelector('.hud-live .dot').classList.toggle('on', on);
@@ -745,7 +743,7 @@
   form.addEventListener('lead:sent', () => {
     sent = true;
     const close = document.createElement('button');
-    close.type = 'button'; close.className = 'btn ghost block'; close.dataset.close = ''; close.textContent = 'Вернуться к терминалу';
+    close.type = 'button'; close.className = 'btn ghost block'; close.dataset.close = ''; close.textContent = 'Вернуться к машинам';
     form.appendChild(close);
   });
   dialog.addEventListener('close', () => {
@@ -776,7 +774,7 @@
     if (!filterActive()) return '';
     if (!n) return 'Под этот запрос машин сейчас нет — <a href="#podbor" data-pf-lead>оставьте заявку</a>, пришлём, как только появятся.';
     const word = total % 10 === 1 && total % 100 !== 11 ? 'машина' : [2, 3, 4].includes(total % 10) && ![12, 13, 14].includes(total % 100) ? 'машины' : 'машин';
-    return `Под ваш запрос — <b>${total} ${word}</b>. Подходящие заезжают на терминал.`;
+    return `Под ваш запрос — <b>${total} ${word}</b>.`;
   }
   async function applyFilter() {
     filter = Object.fromEntries([...new FormData(filterForm)].filter(([, v]) => v !== ''));
@@ -806,7 +804,7 @@
     if (f.body.selectedIndex) parts.push(f.body.selectedOptions[0].text.toLowerCase());
     if (f.country.selectedIndex) parts.push(f.country.selectedOptions[0].text);
     if (f.budget.value) parts.push(f.budget.selectedOptions[0].text);
-    return parts.length ? 'Стоянка: ' + parts.join(' · ') : 'Вся стоянка';
+    return parts.length ? parts.join(' · ') : 'Все объявления';
   }
   let switching = 0;
   function switchLot(found, name) {
@@ -860,7 +858,7 @@
   }
   function connect() {
     if (DATA.demo) { setStatus(true, 'Тестовые данные'); return; }
-    if (!window.EventSource) { setStatus(false, 'Терминал'); return; }
+    if (!window.EventSource) { setStatus(false, 'Объявления'); return; }
     const es = new EventSource('/api/stream');
     es.onopen = () => setStatus(true, 'Живая лента');
     es.onerror = () => setStatus(false, 'Переподключаемся…');
@@ -889,7 +887,6 @@
     queue.push(...matched.slice(0, 4), ...rest.slice(parkNow), ...matched.slice(4));
     hud();
     connect();
-    if (NIGHT) setTimeout(() => toast('Ночь во Владивостоке · порт работает круглосуточно'), 1500);
     if (!reduce.matches) {
       feed.t = setTimeout(feed, 900);
       setInterval(shipCycle, 42000);

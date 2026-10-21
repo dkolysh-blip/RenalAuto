@@ -552,3 +552,16 @@ body.port-page footer { margin-top: 0; }
   .port-hero .port-offer p { font-size: 15px; }
   .port-hero .port-facts li { background: rgba(255,255,255,.05); border-color: var(--line); }
 }
+.port-hero .hero-sub { margin: 14px 0 0; font-size: clamp(17px, 1.6vw, 21px); font-weight: 600; color: rgba(255,255,255,.86); max-width: 560px; }
+@media (max-width: 640px) { .port-hero .hero-sub { font-size: 16px; margin-top: 10px; } }
+/* лендинг на телефоне: шапка в одну строку, первый экран короче */
+@media (max-width: 640px) {
+  .port-page .top nav, .port-page .top .contacts .phone { display: none; }
+  .port-page .top .wrap { flex-wrap: nowrap; }
+  .port-hero .eyebrow { display: none; }
+  .port-hero .offer-side > p { display: none; }
+  .port-hero .port-offer .hero-cta { margin-top: 4px; }
+  .port-hero .port-offer .hero-cta .btn { width: 100%; }
+  .port-offer .port-facts li { padding: 8px; }
+  .port-hero .port-filter { padding: 10px; }
+}
