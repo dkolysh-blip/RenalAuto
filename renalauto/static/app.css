@@ -295,6 +295,16 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .port-pop .pop-price small { font-size: 12px; color: var(--muted); font-weight: 500; }
 .port-pop .pop-actions { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 4px; }
 .port-pop .btn { padding: 8px 12px; font-size: 14px; }
+.port-pop .pop-x { display: none; position: absolute; right: 8px; top: 8px; z-index: 1; width: 30px; height: 30px; border-radius: 50%; border: 0;
+  background: rgba(255,255,255,.92); color: #0f172a; font-size: 20px; line-height: 1; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.2); }
+.port-pop.docked { width: 300px; box-shadow: 0 24px 60px rgba(11,40,70,.35); }
+.port-pop.docked .pop-x, .port-pop.sheet .pop-x { display: grid; place-items: center; }
+.port-pop.sheet { position: fixed; left: 0; right: 0; bottom: 0; top: auto; width: auto; z-index: 40; border-radius: 18px 18px 0 0;
+  max-height: 62vh; overflow: auto; padding-bottom: env(safe-area-inset-bottom); box-shadow: 0 -12px 40px rgba(11,40,70,.3); animation: sheet-in .25s ease-out; }
+.port-pop.sheet .pop-ph { aspect-ratio: 21 / 9; }
+.port-pop.sheet .pop-actions { grid-template-columns: 1fr 1fr; }
+@keyframes sheet-in { from { transform: translateY(100%); } }
+body.pop-sheet .cta-bar { display: none; }
 .port-section { margin: 32px 0 8px; }
 .port-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }
 .port-section-head h2 { margin: 0; font-size: 22px; }
@@ -520,7 +530,12 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 }
 
 /* табло цен на стоянке */
+.terminal .chip-in { transform: scale(var(--chip-k, 1)); transform-box: fill-box; transform-origin: center; }
 .terminal .chip rect { fill: rgba(12,14,17,.82); stroke: rgba(255,255,255,.18); stroke-width: .8; }
+.terminal .chip.sel rect { fill: var(--accent); stroke: #fff; stroke-width: 1.2; }
+.terminal .focused .chip.sel { opacity: 1; }
+.terminal .focused .arrival-tag { display: none; }  /* пока смотрим машину, ценники новых не мешают */
+.terminal .focused .t-scale, .terminal .focused .t-stats { opacity: 0; transition: opacity .3s; }
 .terminal .chip text { font: 800 10.5px/1 Inter, system-ui, sans-serif; fill: #fff; letter-spacing: .01em; }
 .terminal .chip.none text { fill: rgba(255,255,255,.45); }
 .terminal .focused .chip { opacity: .35; }

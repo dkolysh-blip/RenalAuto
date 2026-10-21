@@ -6,13 +6,8 @@
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
   const ASSETS = '/static/port', V = '9';  // V — поднять после перерендера
-  // Ночь — по времени Владивостока (там порт и офис); ?night=1 / ?night=0 — проверить вручную
-  const NIGHT = (() => {
-    const q = new URLSearchParams(location.search).get('night');
-    if (q === '1' || q === '0') return q === '1';
-    const h = +new Intl.DateTimeFormat('en-GB', {hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Vladivostok'}).format(new Date());
-    return h >= 19 || h < 7;
-  })();
+  // Порт всегда дневной: светлая сцена продаёт лучше. Ночная подложка — только по ?night=1
+  const NIGHT = new URLSearchParams(location.search).get('night') === '1';
   const PLATE = NIGHT ? '-night' : '';
   const DATA = JSON.parse(dataEl.textContent);
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
@@ -56,7 +51,7 @@
       }
     }
     return {
-      W, H, slots, quay, rampX, cols: COLS, zoom: 2.6, ship: {x: 450, y: quay + 26, w: 700, h: 115},
+      W, H, slots, quay, rampX, cols: COLS, zoom: 1.9, ship: {x: 450, y: quay + 26, w: 700, h: 115},
       cranes: [180, 1420].map(x => ({x, y0: quay - 84, y1: quay + 160})), truck: road + 9,
       zones: zones.map(z => ({zone: z.zone, title: [z.x0 + 52, 124], stats: [z.x0 + ZW - 10, 124],
         scale: {x0: z.x0 + 76, x1: z.x0 + 76 + (COLS - 1) * 50, y: 500}})),
@@ -83,7 +78,7 @@
       });
     }
     return {
-      W, H, slots, quay, rampX: lane, cols: 7, zoom: 1.7, ship: {x: 34, y: quay + 30, w: 292, h: 48},
+      W, H, slots, quay, rampX: lane, cols: 7, zoom: 1.45, ship: {x: 34, y: quay + 30, w: 292, h: 48},
       zones: zones.map(z => ({zone: z.zone, title: [26, z.y0 + 15], stats: [W - 26, z.y0 + 15], scale: null})),
       cranes: [28, W - 28].map(x => ({x, y0: quay - 84, y1: quay + 72})), truck: null,
       paint(g) {
@@ -275,10 +270,17 @@
   // --- камера: приближение к выбранной машине ---------------------------------------------
   const cam = {vb: null, anim: 0, car: null, follow: null};
   const fullView = () => [0, 0, L.W, L.H];
-  function setView(v) { cam.vb = v; svg.setAttribute('viewBox', v.map(n => n.toFixed(1)).join(' ')); }
+  function setView(v) {
+    cam.vb = v;
+    svg.setAttribute('viewBox', v.map(n => n.toFixed(1)).join(' '));
+    // при приближении ценники не раздуваются: держим их экранный размер
+    const k = Math.max(0.72, Math.min(1, v[2] / L.W)).toFixed(3);
+    if (gChips && k !== cam.chipK) { cam.chipK = k; gChips.style.setProperty('--chip-k', k); }
+  }
   function zoomBox(car) {
     const f = L.zoom, w = L.W / f, h = L.H / f;
-    return [Math.max(0, Math.min(L.W - w, car.x - w / 2)), Math.max(0, Math.min(L.H - h, car.y - h / 2)), w, h];
+    const at = popEl.classList.contains('docked') ? 0.3 : 0.5;  // справа — карточка машины
+    return [Math.max(0, Math.min(L.W - w, car.x - w * at)), Math.max(0, Math.min(L.H - h, car.y - h / 2)), w, h];
   }
   function flyTo(target, ms = 750) {
     cancelAnimationFrame(cam.anim);
@@ -301,6 +303,8 @@
     cam.car = car;
     car.g.classList.add('focus');
     gCars.appendChild(car.g);  // поверх остальных
+    gChips.querySelectorAll('.sel').forEach(c => c.classList.remove('sel'));
+    if (car.chip) { car.chip.classList.add('sel'); gChips.appendChild(car.chip); }
     svg.classList.add('focused');
     dimAt(car);
     flyTo(zoomBox(car));
@@ -308,6 +312,7 @@
   function unfocus() {
     if (!cam.car) return;
     cam.car.g.classList.remove('focus');
+    cam.car.chip?.classList.remove('sel');
     cam.car = null; cam.follow = null;
     svg.classList.remove('focused');
     svg.querySelector('.t-route-layer').replaceChildren();
@@ -484,7 +489,7 @@
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'chip' + (t ? '' : ' none'));
     g.setAttribute('transform', `translate(${x} ${y})`);
-    g.innerHTML = `<rect x="-19" y="-7.5" width="38" height="15" rx="3"/><text y="4" text-anchor="middle">${t ? short(t) : '—'}</text>`;
+    g.innerHTML = `<g class="chip-in"><rect x="-19" y="-7.5" width="38" height="15" rx="7.5"/><text y="4" text-anchor="middle">${t ? short(t) : '—'}</text></g>`;
     gChips.appendChild(g);
     car.chip = g;
   }
@@ -676,6 +681,11 @@
     if (pop.car && pop.car !== car) pop.car.g.classList.remove('hover');
     pop.car = car;
     pop.pinned = pinned || pop.pinned;
+    // по нажатию карточка не висит над машиной: на компьютере — у правого края сцены, на телефоне — снизу экрана
+    const wide = matchMedia('(min-width: 900px)').matches;
+    popEl.classList.toggle('docked', pop.pinned && wide);
+    popEl.classList.toggle('sheet', pop.pinned && !wide);
+    document.body.classList.toggle('pop-sheet', pop.pinned && !wide);
     car.g.classList.add('hover');
     const d = car.d;
     // выбранная машина «едет» дальше по странице — в блоке логистики
@@ -683,6 +693,7 @@
       sprite: `${ASSETS}/cars/${LENGTH[d.body] ? d.body : 'sedan'}-${paintOf(d.color)}.webp?v=${V}`}}));
     const pill = d.verdict === 'warn' ? '<span class="pill warn">✓ Проходит, есть нюансы</span>' : '<span class="pill ok">✓ Проходит в РФ</span>';
     popEl.innerHTML = `
+      <button class="pop-x" type="button" data-act="close" aria-label="Закрыть">×</button>
       ${d.photo ? `<div class="pop-ph"><img src="${esc(d.photo)}" alt=""></div>` : ''}
       ${d.demo ? '<div class="pop-demo">Тестовые данные</div>' : ''}
       <div class="pop-body">
@@ -697,6 +708,7 @@
         </div>
         ${d.path ? `<a class="small" href="${esc(d.path)}" data-act="more">Подробнее о машине →</a>` : ''}
       </div>`;
+    popEl.querySelector('[data-act="close"]').addEventListener('click', () => { cam.follow = null; hidePop(); });
     popEl.querySelector('[data-act="more"]')?.addEventListener('click', e => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;  // в новой вкладке — как обычная ссылка
       e.preventDefault();
@@ -724,6 +736,13 @@
   function position(car) {
     const r = car.g.getBoundingClientRect(), s = stage.getBoundingClientRect();
     const w = popEl.offsetWidth, h = popEl.offsetHeight;
+    if (popEl.classList.contains('sheet')) { popEl.style.left = popEl.style.top = ''; return; }
+    if (popEl.classList.contains('docked')) {  // у правого края сцены, сцену не перекрывает снаружи
+      const t = root.getBoundingClientRect();
+      popEl.style.left = (t.right - s.left - w - 16) + 'px';
+      popEl.style.top = (t.top - s.top + Math.max(16, (t.height - h) / 2)) + 'px';
+      return;
+    }
     let left = r.left + r.width / 2 - s.left - w / 2;
     left = Math.max(4, Math.min(s.width - w - 4, left));
     let top = r.top - s.top - h - 10;
@@ -737,6 +756,8 @@
     pop.car?.g.classList.remove('hover');
     pop.car = null; pop.pinned = false;
     popEl.hidden = true;
+    popEl.classList.remove('docked', 'sheet');
+    document.body.classList.remove('pop-sheet');
     if (!cam.follow) unfocus();
   }
 

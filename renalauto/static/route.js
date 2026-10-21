@@ -7,7 +7,6 @@
   const fill = box.querySelector('[data-route-fill]');
   const veh = box.querySelector('[data-route-veh]');
   const carEl = box.querySelector('[data-route-car]');
-  const cta = box.querySelector('[data-route-cta]');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   let raf = 0;
 
@@ -40,7 +39,6 @@
     box.querySelectorAll('[data-kr]').forEach(el => { el.hidden = cn; });
     box.querySelectorAll('[data-cn]').forEach(el => { el.hidden = !cn; });
     carEl.textContent = `${title} — ${cn ? 'из Китая по суше' : 'из Кореи морем'}${turnkey ? `, от ${Math.round(turnkey).toLocaleString('ru-RU')} ₽ под ключ` : ''}`;
-    cta.hidden = false;
     play();
   });
 })();
