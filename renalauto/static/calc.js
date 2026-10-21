@@ -52,13 +52,12 @@
 
   // «Получить точный расчёт»: подставляем параметры в комментарий формы подбора
   cta.addEventListener('click', () => {
-    const comment = document.querySelector('#podbor textarea[name="comment"]');
-    if (!comment || !last) return;
+    if (!last) return;
     const p = last.params, label = s => form.querySelector(`input[name="${s}"]:checked`)?.parentElement.textContent.trim();
-    comment.value = `Расчёт из калькулятора: ${label('country')}, ${label('engine')}, ${label('age')}, ` +
-      `${p.get('cc')} см³, ${p.get('hp')} л.с., цена ${p.get('price')} ${p.get('currency')} — ` +
-      `ориентировочно ${total.textContent} с растаможкой.`;
-    setTimeout(() => document.querySelector('#podbor input[name="name"]')?.focus({preventScroll: true}), 400);
+    const what = car.el.hidden ? '' : car.title.textContent + ', ';
+    window.RenalLead?.open({title: 'Получить точный расчёт', note: `${what}ориентировочно ${total.textContent}. Менеджер пересчитает по вашей машине и городу.`,
+      comment: `Расчёт из калькулятора: ${what}${label('country')}, ${label('engine')}, ${label('age')}, ` +
+        `${p.get('cc')} см³, ${p.get('hp')} л.с., цена ${spaced(p.get('price'))} ${p.get('currency')} — ориентировочно ${total.textContent} с растаможкой.`});
   });
   // Марка → модель → год из свежих объявлений: подставляем страну, двигатель, объём и типичную цену за год
   const pickEl = {make: form.querySelector('[data-calc-make]'), model: form.querySelector('[data-calc-model]'),

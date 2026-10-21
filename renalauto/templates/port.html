@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import card, consent, lead_form %}
+{% from "_macros.html" import consent %}
 {% block title %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Авто из Кореи и Китая{% endif %} — подберём оптимальный вариант | {{ company }}{% endblock %}
 {% block description %}Поможем найти оптимальный автомобиль в Корее и Китае: сравним объявления, проверим историю и проходимость в РФ, посчитаем стоимость с растаможкой. Агентский договор, вознаграждение до 50 000 ₽.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
@@ -168,7 +168,7 @@
         <summary>Расчёт по строкам</summary>
         <table class="calc-lines"><tbody data-calc-lines></tbody></table>
       </details>
-      <a class="btn block" href="#podbor" data-calc-cta data-goal="form_open">Получить точный расчёт</a>
+      <button class="btn block" type="button" data-calc-cta>Получить точный расчёт</button>
       <button class="btn ghost block calc-show" type="button" data-calc-show>Показать машины в этом бюджете</button>
       <p class="muted small">По курсу ЦБ и ставкам {{ rules_as_of }}. Итог зависит от курса на день оплаты и ставок на дату декларации — точную сумму подтвердит менеджер.</p>
     </div>
@@ -285,26 +285,6 @@
   </div>
 </section>
 
-<section id="podbor" class="band band-dark final" aria-labelledby="final-title">
-  <div class="final-grid">
-    <div class="final-pitch">
-      <span class="sec-eyebrow">Подбор</span>
-      <h2 id="final-title">Не нашли подходящую? Подберём под ваш бюджет</h2>
-      <ul class="final-points">
-        <li>Найдём оптимальные варианты в Корее и Китае и посчитаем, во сколько обойдётся каждый</li>
-        <li>Проверим историю, VIN и проходимость по утильсбору до брони</li>
-        <li>Вознаграждение — до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽, остальное по отчёту</li>
-      </ul>
-      <div class="final-contacts">
-        {% if company_max %}<a class="btn" href="{{ company_max }}" target="_blank" rel="noopener">Наш канал в MAX</a>{% endif %}
-        {% if company_phone %}<a class="final-phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
-      </div>
-      {% if company_address %}<p class="final-address">Офис: {{ company_address }}{% if company_2gis %} · <a href="{{ company_2gis }}" target="_blank" rel="noopener">на карте 2ГИС</a>{% endif %}</p>{% endif %}
-    </div>
-    <div class="panel final-form">{{ lead_form(None, 'Оставить заявку на подбор', 'Отправить заявку') }}</div>
-  </div>
-</section>
-
 <dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">
   <form class="lead-form" data-lead>
     <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
@@ -315,6 +295,8 @@
     <div class="field"><label for="cd-name">Имя *</label><input id="cd-name" name="name" required maxlength="100" autocomplete="name"></div>
     <div class="field"><label for="cd-phone">Телефон</label><input id="cd-phone" name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+7"></div>
     <div class="field"><label for="cd-tg">или MAX</label><input id="cd-tg" name="telegram" maxlength="64" placeholder="ник или номер в MAX"></div>
+    <div class="field"><label for="cd-city">Город получения</label><input id="cd-city" name="city" maxlength="100" placeholder="Москва"></div>
+    <input type="hidden" name="comment">
     <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
     {{ consent() }}
     <button class="btn block" type="submit">Получить расчёт</button>
@@ -322,7 +304,7 @@
   </form>
 </dialog>
 
-<div class="cta-bar"><a class="btn" href="#podbor" data-goal="form_open">Подобрать под бюджет</a></div>
+<div class="cta-bar"><button class="btn" type="button" data-lead-open>Подобрать под бюджет</button></div>
 <script type="application/json" id="port-data">{{ scene|safe }}</script>
 {% endblock %}
 {% block scripts %}<script src="/static/port.js?v={{ asset_version }}" defer></script>

@@ -584,7 +584,7 @@
     toast(`<b>${esc(label(d))}</b> — выкуплена и едет ${byShip ? 'на погрузку в порт' : 'к автовозу'}`);
     const done = () => {
       routeAt(1);
-      toast(`<b>${esc(label(d))}</b> во Владивостоке: таможня, документы — и к вам. <a href="#podbor" data-goal="form_open">Хочу так же →</a>`);
+      toast(`<b>${esc(label(d))}</b> во Владивостоке: таможня, документы — и к вам. <a href="#" data-lead-open>Хочу так же →</a>`);
       setTimeout(() => { delivering = false; arrive(d, true); hud(); }, reduce.matches ? 0 : 1200);
     };
     setTimeout(() => toRamp(car, () => {
@@ -858,12 +858,32 @@
   const form = dialog.querySelector('form');
   const blank = form.innerHTML;
   let formCar = null, sent = false;
+  // заявка без конкретной машины: «Подобрать под бюджет», «Получить точный расчёт», «Хочу так же»
+  function openLead({title = 'Подобрать под бюджет', note = 'Подберём оптимальные варианты в Корее и Китае и посчитаем, во сколько обойдётся каждый.', comment = ''} = {}) {
+    goal('form_open');
+    if (!form.querySelector('[name="name"]')) form.innerHTML = blank;
+    form.querySelector('#car-dialog-title').textContent = title;
+    form.querySelector('[data-car-name]').textContent = note;
+    form.querySelector('[name="source"]').value = '';
+    form.querySelector('[name="external_id"]').value = '';
+    form.querySelector('[name="comment"]').value = comment;
+    formCar = null;
+    sent = false;
+    dialog.showModal();
+  }
+  window.RenalLead = {open: openLead};
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-lead-open]');
+    if (b) { e.preventDefault(); openLead(); }
+  });
   function openForm(d, car) {
     goal('form_open');
     if (!form.querySelector('[name="name"]')) form.innerHTML = blank; // после прошлой отправки
     form.querySelector('[data-car-name]').textContent = `${label(d)}${d.price ? ' · ≈ ' + d.price + ' ₽ на площадке' : ''}. Посчитаем доставку, таможню, утильсбор и оформление до вашего города.`;
     form.querySelector('[name="source"]').value = d.demo ? '' : d.source;
     form.querySelector('[name="external_id"]').value = d.demo ? '' : d.id;
+    form.querySelector('#car-dialog-title').textContent = 'Узнать итоговую цену';
+    form.querySelector('[name="comment"]').value = '';
     formCar = car || null;
     sent = false;
     dialog.showModal();
@@ -902,7 +922,7 @@
   }
   function resultText(n, total) {
     if (!filterActive()) return '';
-    if (!n) return 'Под этот запрос машин сейчас нет — <a href="#podbor" data-pf-lead>оставьте заявку</a>, пришлём, как только появятся.';
+    if (!n) return 'Под этот запрос машин сейчас нет — <a href="#" data-pf-lead>оставьте заявку</a>, пришлём, как только появятся.';
     const word = total % 10 === 1 && total % 100 !== 11 ? 'машина' : [2, 3, 4].includes(total % 10) && ![12, 13, 14].includes(total % 100) ? 'машины' : 'машин';
     return `Под ваш запрос — <b>${total} ${word}</b>.`;
   }
@@ -969,11 +989,12 @@
   filterForm?.addEventListener('submit', e => e.preventDefault());
   filterOut?.addEventListener('click', e => {
     if (!e.target.closest('[data-pf-lead]')) return;
-    const comment = document.querySelector('#podbor textarea[name="comment"]');
+    e.preventDefault();
     const f = filterForm.elements;
     const parts = [f.q.value, f.body.selectedIndex ? f.body.selectedOptions[0].text : '', f.country.selectedIndex ? 'из ' + f.country.selectedOptions[0].text : '',
       f.budget.value ? 'бюджет ' + f.budget.selectedOptions[0].text : ''].filter(Boolean);
-    if (comment) comment.value = 'Ищу: ' + parts.join(', ') + '. Сообщите, когда появится.';
+    openLead({title: 'Сообщим, когда появится', note: 'Под этот запрос машин сейчас нет — менеджер напишет, когда найдёт.',
+      comment: 'Ищу: ' + parts.join(', ') + '. Сообщите, когда появится.'});
   });
 
   // машины заезжают по одной; под фильтр — быстрее

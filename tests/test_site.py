@@ -182,7 +182,7 @@ def test_privacy_consent_and_metrika(settings):
     client, app = make_client(settings, [])
     try:
         page = client.get("/port").text
-        assert page.count('name="consent" required') == 2  # форма подбора и форма машины
+        assert page.count('name="consent" required') == 1  # одна всплывающая форма заявки на всю страницу
         assert "mc.yandex.ru" not in page  # без YM_ID счётчика нет
         privacy = client.get("/privacy")
         assert privacy.status_code == 200 and "152-ФЗ" in privacy.text and "Метрика" not in privacy.text
