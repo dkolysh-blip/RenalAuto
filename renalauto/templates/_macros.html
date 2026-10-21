@@ -23,7 +23,7 @@
 <label class="consent"><input type="checkbox" name="consent" required> <span>Согласен на обработку персональных данных по <a href="/privacy" target="_blank">политике конфиденциальности</a></span></label>
 {%- endmacro %}
 
-{% macro lead_form(car=None, title='Рассчитать под ключ', button='Получить расчёт') -%}
+{% macro lead_form(car=None, title='Рассчитать стоимость', button='Получить расчёт') -%}
 <form class="lead-form" data-lead>
   <h2>{{ title }}</h2>
   {% if car %}
@@ -31,8 +31,8 @@
   <input type="hidden" name="source" value="{{ car.listing.source }}">
   <input type="hidden" name="external_id" value="{{ car.listing.external_id }}">
   {% else %}
-  <p class="muted small">Опишите, что ищете, — подберём варианты из Кореи и Китая с ценой под ключ.</p>
-  <div class="field"><label>Бюджет под ключ, ₽</label><input name="budget_rub" type="number" min="0" step="50000" placeholder="2 500 000"></div>
+  <p class="muted small">Опишите, что ищете, — подберём оптимальные варианты из Кореи и Китая и посчитаем стоимость.</p>
+  <div class="field"><label>Бюджет, ₽</label><input name="budget_rub" type="number" min="0" step="50000" placeholder="2 500 000"></div>
   {% endif %}
   <div class="field"><label>Имя *</label><input name="name" required maxlength="100" autocomplete="name"></div>
   <div class="field"><label>Телефон</label><input name="phone" type="tel" maxlength="40" autocomplete="tel" placeholder="+7"></div>

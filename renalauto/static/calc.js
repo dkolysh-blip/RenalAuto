@@ -1,4 +1,4 @@
-// Калькулятор цены под ключ на лендинге: считает сервер (/api/calc), здесь — только форма и вывод.
+// Калькулятор итоговой цены на лендинге: считает сервер (/api/calc), здесь — только форма и вывод.
 (() => {
   const form = document.querySelector('form[data-calc]');
   if (!form) return;
@@ -43,7 +43,7 @@
     const p = last.params, label = s => form.querySelector(`input[name="${s}"]:checked`)?.parentElement.textContent.trim();
     comment.value = `Расчёт из калькулятора: ${label('country')}, ${label('engine')}, ${label('age')}, ` +
       `${p.get('cc')} см³, ${p.get('hp')} л.с., цена ${p.get('price')} ${p.get('currency')} — ` +
-      `ориентировочно ${total.textContent} под ключ.`;
+      `ориентировочно ${total.textContent} с растаможкой.`;
     setTimeout(() => document.querySelector('#podbor input[name="name"]')?.focus({preventScroll: true}), 400);
   });
   // Марка → модель → год из свежих объявлений: подставляем страну, двигатель, объём и типичную цену за год

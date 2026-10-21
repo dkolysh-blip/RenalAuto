@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{% block title %}{{ company }} — авто из Кореи и Китая под заказ{% endblock %}</title>
-<meta name="description" content="{% block description %}Свежие объявления с площадок Кореи и Китая в реальном времени: цены в рублях, проверка истории и VIN, расчёт доставки под ключ.{% endblock %}">
+<meta name="description" content="{% block description %}Свежие объявления с площадок Кореи и Китая в реальном времени: цены в рублях, проверка истории и VIN, расчёт доставки и растаможки.{% endblock %}">
 {% block canonical %}{% endblock %}
 <meta property="og:site_name" content="{{ company }}">
 <meta property="og:title" content="{{ self.title() }}">
@@ -65,7 +65,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
   <div class="wrap foot-legal">
     <p>© {{ year }} {{ company_legal_name or company }}{% if company_requisites %} · {{ company_requisites }}{% endif %} · <a href="/privacy">Политика конфиденциальности</a></p>
     <p>Объявления собираются с открытых площадок (KB Chachacha, Encar, Dongchedi, Che168) и обновляются в реальном времени.
-    Цены в рублях — {{ 'по курсу ЦБ РФ' if rates_source == 'ЦБ РФ' else 'по ориентировочному курсу' }}, без доставки, растаможки и утильсбора; стоимость под ключ рассчитывает менеджер.
+    Цены в рублях — {{ 'по курсу ЦБ РФ' if rates_source == 'ЦБ РФ' else 'по ориентировочному курсу' }}, без доставки, растаможки и утильсбора; итоговую стоимость рассчитывает менеджер.
     Правила ввоза: {{ rules_as_of }}.</p>
   </div>
 </footer>

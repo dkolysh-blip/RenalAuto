@@ -79,7 +79,7 @@
         <b>📄 Официальный отчёт об истории — бесплатно</b>
         <p class="small">{% if l.country == 'KR' %}Данные страховых компаний Кореи (CarHistory): все ДТП и суммы выплат с 1996 года, смены владельцев и номеров,
           тотал, утопление, угон, работа в такси или прокате.{% else %}История обслуживания у дилеров и страховые случаи по VIN (查博士): ДТП, пожар, утопление, реальный пробег.{% endif %}
-          Менеджер закажет отчёт и пришлёт его вам вместе с расчётом цены под ключ.</p>
+          Менеджер закажет отчёт и пришлёт его вам вместе с расчётом итоговой цены.</p>
         <form class="lead-form compact" data-lead>
           <input type="hidden" name="kind" value="history">
           <input type="hidden" name="source" value="{{ l.source }}">
@@ -111,7 +111,7 @@
       <div class="big">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% else %}по запросу{% endif %}</div>
       {% if l.price %}<div class="muted small">{{ fmt(l.price) }} {{ l.currency }}{% if l.price_usd %} · ≈ ${{ fmt(l.price_usd) }}{% endif %} · {{ 'курс ЦБ РФ' if rates_source == 'ЦБ РФ' else 'курс ориентировочный' }}</div>{% endif %}
       <p class="small muted">Без доставки, растаможки и утильсбора.</p>
-      <a class="btn block" href="#lead">Рассчитать цену под ключ</a>
+      <a class="btn block" href="#lead">Рассчитать итоговую цену</a>
     </div>
 
     <div class="panel">
@@ -127,7 +127,7 @@
   </aside>
 </div>
 
-<div class="cta-bar"><div><b>{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% endif %}</b></div><a class="btn" href="#lead">Рассчитать под ключ</a></div>
+<div class="cta-bar"><div><b>{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% endif %}</b></div><a class="btn" href="#lead">Рассчитать цену</a></div>
 
 {% if similar %}
 <h2>Похожие предложения</h2>

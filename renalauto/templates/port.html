@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "_macros.html" import card, consent, lead_form %}
-{% block title %}{% if matched %}{{ matched }} из Кореи и Китая под ключ{% else %}Авто из Кореи и Китая под ключ{% endif %} — с проверкой проходимости | {{ company }}{% endblock %}
-{% block description %}Свежие объявления из Кореи и Китая с ценой под ключ до вашего города. Проверка проходимости по утильсбору и VIN, агентский договор, фиксированное вознаграждение.{% endblock %}
+{% block title %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Авто из Кореи и Китая{% endif %} — подберём оптимальный вариант | {{ company }}{% endblock %}
+{% block description %}Поможем найти оптимальный автомобиль в Корее и Китае: сравним объявления, проверим историю и проходимость в РФ, посчитаем стоимость с растаможкой. Агентский договор, вознаграждение до 50 000 ₽.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
 {% block html_attrs %} data-theme="light"{% endblock %}
 {% block body_class %}has-cta port-page{% endblock %}
@@ -12,11 +12,11 @@
   <div class="port-offer">
     <div class="offer-main">
     <div class="eyebrow"><span class="dot on"></span> Живая лента: новые машины каждую минуту</div>
-    <h1>{% if matched %}<em>{{ matched }}</em> из Кореи и Китая под ключ{% else %}Авто из <em>Кореи</em> и <em>Китая</em> под ключ{% endif %}</h1>
-    <p class="hero-sub">С проверкой проходимости по утильсбору — до того, как вы заплатите</p>
+    <h1>{% if matched %}Найдём <em>{{ matched }}</em> в Корее и Китае{% else %}Найдём оптимальный авто в <em>Корее</em> и <em>Китае</em>{% endif %}</h1>
+    <p class="hero-sub">Сравним варианты на площадках, проверим историю и проходимость в РФ — до того, как вы заплатите</p>
     </div>
     <div class="offer-side">
-    <p>Свежие объявления с площадок Кореи и Китая — сразу с ценой под ключ до вашего города: машина, таможня, утильсбор, оформление.</p>
+    <p>Свежие объявления с площадок Кореи и Китая с ориентировочной ценой в рублях: машина, таможня, утильсбор, оформление. Точную сумму посчитает менеджер под вашу машину.</p>
     <div class="hero-cta">
       <a class="btn" href="#podbor" data-goal="form_open">Подобрать под бюджет</a>
       <a class="btn ghost" href="/">Все машины</a>
@@ -24,14 +24,14 @@
     <ul class="port-facts">
       <li><b>Проходимость</b> по утильсбору и запрету на вывоз</li>
       <li><b>Проверка VIN</b> и истории до брони</li>
-      <li><b>{{ fmt(deal.fee)|replace(' ', ' ') }} ₽</b> — фиксированное вознаграждение</li>
+      <li><b>до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽</b> — наше вознаграждение, не процент от цены</li>
     </ul>
     </div>
   </div>
 
   <div class="port-stage">
     <form class="port-filter" data-port-filter aria-label="Подбор машин">
-      <div class="pf-field"><label for="pf-budget">Бюджет под ключ</label>
+      <div class="pf-field"><label for="pf-budget">Бюджет</label>
         <select id="pf-budget" name="budget">
           <option value="">Любой</option>
           {% for b in [1500000, 2000000, 2500000, 3000000, 4000000, 5000000] %}<option value="{{ b }}">до {{ (b / 1000000)|round(1)|string|replace('.0', '')|replace('.', ',') }} млн ₽</option>{% endfor %}
@@ -54,7 +54,7 @@
       <div class="terminal-toasts"></div>
       <div class="lot-sign"></div>
     </div>
-    <p class="terminal-note muted small">Каждая машина — реальное объявление с площадки Кореи или Китая, цена под ключ ориентировочная. Наведите или нажмите на машину.</p>
+    <p class="terminal-note muted small">Каждая машина — реальное объявление с площадки Кореи или Китая, цена ориентировочная. Наведите или нажмите на машину.</p>
     <div class="port-pop" id="port-pop" hidden></div>
     <ul class="sr-only">{% for v in cars[:12] %}<li><a href="{{ v.path }}">{{ v.title }}</a></li>{% endfor %}</ul>
     <div class="port-route" id="route" data-route data-weeks="{{ deal.delivery_weeks }}">
@@ -86,7 +86,7 @@
   <div class="sec-head">
     <span class="sec-eyebrow">Калькулятор</span>
     <h2 id="calc-title">Сколько машина будет стоить у вас</h2>
-    <p class="sec-lead">Пошлина, утильсбор и сборы — по действующим ставкам, наше вознаграждение фиксированное. Поменяйте параметры — итог пересчитается сразу.</p>
+    <p class="sec-lead">Пошлина, утильсбор и сборы — по действующим ставкам, наше вознаграждение — до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽. Поменяйте параметры — итог пересчитается сразу.</p>
   </div>
   <div class="calc">
     <form class="calc-form panel" data-calc>
@@ -132,7 +132,7 @@
     <div class="calc-result panel" aria-live="polite">
       <div class="calc-verdict" data-calc-verdict>Введите параметры машины</div>
       <table class="calc-lines"><tbody data-calc-lines></tbody></table>
-      <div class="calc-total"><span>Итого под ключ</span><b data-calc-total>—</b></div>
+      <div class="calc-total"><span>Итого, ориентировочно</span><b data-calc-total>—</b></div>
       <a class="btn block" href="#podbor" data-calc-cta data-goal="form_open">Получить точный расчёт</a>
       <button class="btn ghost block calc-show" type="button" data-calc-show>Показать машины в этом бюджете</button>
       <p class="muted small">Ориентировочно, по курсу ЦБ и ставкам {{ rules_as_of }}. Итог зависит от курса на день оплаты и ставок на дату декларации — точную сумму подтвердит менеджер.</p>
@@ -196,13 +196,53 @@
   <div class="sec-head">
     <span class="sec-eyebrow">Договор</span>
     <h2 id="deal-title">Как проходит сделка и оплата</h2>
-    <p class="sec-lead">Работаем по агентскому договору. Все суммы и сроки — из него.</p>
+    <p class="sec-lead">Работаем по агентскому договору. Путь машины — от площадки в Корее или Китае до порта Владивостока, все суммы и сроки — из договора.</p>
+  </div>
+  <div class="deal-map" data-deal-map aria-hidden="true">
+    <svg viewBox="0 0 1200 210" preserveAspectRatio="xMidYMid meet">
+      <rect class="dm-sea" width="1200" height="210"/>
+      <path class="dm-land" d="M0 0 H700 C690 40 712 80 694 120 C684 150 706 180 690 210 H0 Z"/>
+      <path class="dm-land" d="M1200 0 H985 C995 40 975 80 990 120 C998 150 980 180 992 210 H1200 Z"/>
+      <path class="dm-wave" d="M730 60 q12 -6 24 0 t24 0 M820 100 q12 -6 24 0 t24 0 M760 150 q12 -6 24 0 t24 0 M900 40 q12 -6 24 0 t24 0"/>
+      {# 1 — договор: офис #}
+      <g class="dm-office"><rect x="82" y="70" width="76" height="62" rx="4"/><path d="M76 72 L120 44 L164 72 Z"/>
+        <rect class="dm-win" x="94" y="84" width="14" height="12" rx="2"/><rect class="dm-win" x="114" y="84" width="14" height="12" rx="2"/><rect class="dm-win" x="134" y="84" width="14" height="12" rx="2"/>
+        <rect class="dm-door" x="112" y="106" width="16" height="26" rx="2"/></g>
+      <text class="dm-lbl" x="120" y="30" text-anchor="middle">Договор</text>
+      {# 2–3 — площадка в Корее или Китае #}
+      <rect class="dm-yard" x="270" y="48" width="390" height="112" rx="8"/>
+      <g class="dm-lines"><line x1="284" y1="60" x2="284" y2="82"/><line x1="322" y1="60" x2="322" y2="82"/><line x1="360" y1="60" x2="360" y2="82"/><line x1="398" y1="60" x2="398" y2="82"/><line x1="436" y1="60" x2="436" y2="82"/><line x1="474" y1="60" x2="474" y2="82"/><line x1="512" y1="60" x2="512" y2="82"/><line x1="550" y1="60" x2="550" y2="82"/><line x1="588" y1="60" x2="588" y2="82"/><line x1="626" y1="60" x2="626" y2="82"/><line x1="284" y1="94" x2="284" y2="116"/><line x1="322" y1="94" x2="322" y2="116"/><line x1="360" y1="94" x2="360" y2="116"/><line x1="398" y1="94" x2="398" y2="116"/><line x1="436" y1="94" x2="436" y2="116"/><line x1="474" y1="94" x2="474" y2="116"/><line x1="512" y1="94" x2="512" y2="116"/><line x1="550" y1="94" x2="550" y2="116"/><line x1="588" y1="94" x2="588" y2="116"/><line x1="626" y1="94" x2="626" y2="116"/><line x1="284" y1="128" x2="284" y2="150"/><line x1="322" y1="128" x2="322" y2="150"/><line x1="360" y1="128" x2="360" y2="150"/><line x1="398" y1="128" x2="398" y2="150"/><line x1="436" y1="128" x2="436" y2="150"/><line x1="474" y1="128" x2="474" y2="150"/><line x1="512" y1="128" x2="512" y2="150"/><line x1="550" y1="128" x2="550" y2="150"/><line x1="588" y1="128" x2="588" y2="150"/><line x1="626" y1="128" x2="626" y2="150"/></g>
+      <g><rect x="290" y="64" width="26" height="14" rx="4" fill="#1c1e22"/><rect x="328" y="64" width="26" height="14" rx="4" fill="#c62a24"/><rect x="366" y="64" width="26" height="14" rx="4" fill="#1c1e22"/><rect x="404" y="64" width="26" height="14" rx="4" fill="#2f5fa6"/><rect x="480" y="64" width="26" height="14" rx="4" fill="#8a9099"/><rect x="518" y="64" width="26" height="14" rx="4" fill="#eceef0"/><rect x="556" y="64" width="26" height="14" rx="4" fill="#c3c7cc"/><rect x="290" y="98" width="26" height="14" rx="4" fill="#eceef0"/><rect x="442" y="98" width="26" height="14" rx="4" fill="#2f5fa6"/><rect x="480" y="98" width="26" height="14" rx="4" fill="#eceef0"/><rect x="518" y="98" width="26" height="14" rx="4" fill="#eceef0"/><rect x="556" y="98" width="26" height="14" rx="4" fill="#8a9099"/><rect x="594" y="98" width="26" height="14" rx="4" fill="#c62a24"/><rect x="290" y="132" width="26" height="14" rx="4" fill="#2f5fa6"/><rect x="328" y="132" width="26" height="14" rx="4" fill="#2f5fa6"/><rect x="366" y="132" width="26" height="14" rx="4" fill="#2f5fa6"/><rect x="442" y="132" width="26" height="14" rx="4" fill="#4b5058"/><rect x="480" y="132" width="26" height="14" rx="4" fill="#2f5fa6"/><rect x="518" y="132" width="26" height="14" rx="4" fill="#c3c7cc"/><rect x="556" y="132" width="26" height="14" rx="4" fill="#2f5fa6"/></g>
+      <rect class="dm-quay" x="660" y="40" width="34" height="128"/>
+      <text class="dm-lbl" x="465" y="30" text-anchor="middle">Площадка в Корее или Китае</text>
+      {# 4 — море, судно уходит от площадки к Владивостоку #}
+      <g class="dm-ship" data-deal-ship>
+        <path class="dm-hull" d="M704 92 H800 C814 92 824 100 830 108 C824 116 814 124 800 124 H704 Z"/>
+        <rect class="dm-bridge" x="708" y="96" width="14" height="24" rx="2"/>
+        <rect x="728" y="98" width="18" height="9" rx="3" fill="#eceef0"/><rect x="750" y="98" width="18" height="9" rx="3" fill="#c62a24"/><rect x="772" y="98" width="18" height="9" rx="3" fill="#2f5fa6"/>
+        <rect x="728" y="110" width="18" height="9" rx="3" fill="#1c1e22"/><rect x="750" y="110" width="18" height="9" rx="3" fill="#c3c7cc"/><rect x="772" y="110" width="18" height="9" rx="3" fill="#eceef0"/>
+      </g>
+      <text class="dm-lbl dm-sea-lbl" x="840" y="196" text-anchor="middle">Японское море</text>
+      {# 5 — порт Владивосток: таможня и выдача #}
+      <rect class="dm-quay" x="985" y="40" width="20" height="128"/>
+      <g class="dm-crane"><rect x="1012" y="46" width="6" height="64"/><rect x="1056" y="46" width="6" height="64"/><rect x="1004" y="46" width="70" height="8"/></g>
+      <g class="dm-office"><rect x="1100" y="64" width="80" height="44" rx="4"/><rect class="dm-win" x="1110" y="74" width="60" height="10" rx="2"/></g>
+      <g><rect x="1000" y="118" width="22" height="12" rx="4" fill="#eceef0"/><rect x="1030" y="118" width="22" height="12" rx="4" fill="#2f5fa6"/><rect x="1060" y="118" width="22" height="12" rx="4" fill="#1c1e22"/><rect x="1090" y="118" width="22" height="12" rx="4" fill="#c3c7cc"/><rect x="1120" y="118" width="22" height="12" rx="4" fill="#eceef0"/></g>
+      <text class="dm-lbl" x="1090" y="30" text-anchor="middle">Порт Владивосток</text>
+      {# маршрут и станции — над карточками шагов #}
+      <path class="dm-route" d="M120 176 H1080"/>
+      <path class="dm-progress" data-deal-progress d="M120 176 H1080"/>
+      {% for x, tag in [(120, 'до ' ~ fmt(deal.fee) ~ ' ₽'), (360, None), (600, fmt(deal.deposit) ~ ' ₽ ↩'), (840, None), (1080, None)] %}
+      <g class="dm-pin" data-deal-pin><circle cx="{{ x }}" cy="176" r="15"/><text x="{{ x }}" y="181" text-anchor="middle">{{ loop.index }}</text></g>
+      {% if tag %}<g class="dm-tag"><rect x="{{ x - 52 }}" y="138" width="104" height="24" rx="12"/><text x="{{ x }}" y="155" text-anchor="middle">{{ tag }}</text></g>{% endif %}
+      {% endfor %}
+    </svg>
   </div>
   <ol class="deal-steps">
     <li>
       <b>Заявка и договор</b>
       <p>Согласуем марку, модель, год и бюджет. Заключаем агентский договор с {{ company_legal_name or company }}, вы вносите предоплату — это и есть наше вознаграждение.</p>
-      <span class="deal-sum">{{ fmt(deal.fee) }} ₽ · фиксированно</span>
+      <span class="deal-sum">до {{ fmt(deal.fee) }} ₽ · зависит от машины</span>
     </li>
     <li>
       <b>Подбор и осмотр</b>
@@ -233,11 +273,11 @@
   <div class="faq">
     <details>
       <summary>Сколько стоят ваши услуги?</summary>
-      <p>Фиксированно {{ fmt(deal.fee) }} ₽ за машину — не процент от её цены. Всё остальное (машина, доставка, таможня, утильсбор, оформление) — фактические расходы, каждую сумму подтверждаем отчётом.</p>
+      <p>Не больше {{ fmt(deal.fee) }} ₽ за машину, бывает меньше — зависит от машины и площадки. Это не процент от её цены. Всё остальное (машина, доставка, таможня, утильсбор, оформление) — фактические расходы, каждую сумму подтверждаем отчётом.</p>
     </details>
     <details>
       <summary>Может ли итоговая цена измениться?</summary>
-      <p>Расчёт под ключ ориентировочный: итог зависит от курса на день оплаты инвойса и от таможенных ставок на дату подачи декларации. Если курс или ставки изменятся, изменится и сумма — заранее предупредим и покажем расчёт.</p>
+      <p>Расчёт ориентировочный: итог зависит от курса на день оплаты инвойса и от таможенных ставок на дату подачи декларации. Если курс или ставки изменятся, изменится и сумма — заранее предупредим и покажем расчёт.</p>
     </details>
     <details>
       <summary>Что если машина не пройдёт по утильсбору или запрету на вывоз?</summary>
@@ -245,7 +285,7 @@
     </details>
     <details>
       <summary>Можно заказать машину с конкретными характеристиками?</summary>
-      <p>Да. Подберём варианты строго под ваши требования: марка, модель, год, пробег, комплектация и бюджет под ключ.</p>
+      <p>Да. Подберём варианты строго под ваши требования: марка, модель, год, пробег, комплектация и бюджет.</p>
     </details>
     <details>
       <summary>Что если вы не найдёте подходящую машину?</summary>
@@ -268,9 +308,9 @@
       <span class="sec-eyebrow">Подбор</span>
       <h2 id="final-title">Не нашли подходящую? Подберём под ваш бюджет</h2>
       <ul class="final-points">
-        <li>Пришлём варианты из Кореи и Китая с ценой под ключ до вашего города</li>
+        <li>Найдём оптимальные варианты в Корее и Китае и посчитаем, во сколько обойдётся каждый</li>
         <li>Проверим историю, VIN и проходимость по утильсбору до брони</li>
-        <li>Вознаграждение фиксированное — {{ fmt(deal.fee)|replace(' ', ' ') }} ₽, остальное по отчёту</li>
+        <li>Вознаграждение — до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽, остальное по отчёту</li>
       </ul>
       <div class="final-contacts">
         {% if company_max %}<a class="btn" href="{{ company_max }}" target="_blank" rel="noopener">Наш канал в MAX</a>{% endif %}
@@ -285,7 +325,7 @@
 <dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">
   <form class="lead-form" data-lead>
     <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
-    <h2 id="car-dialog-title">Узнать цену под ключ</h2>
+    <h2 id="car-dialog-title">Узнать итоговую цену</h2>
     <p class="muted small" data-car-name></p>
     <input type="hidden" name="source">
     <input type="hidden" name="external_id">

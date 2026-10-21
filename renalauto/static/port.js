@@ -650,7 +650,7 @@
   function kick() { if (!raf) { last = performance.now(); raf = requestAnimationFrame(frame); } }
 
   function tag(car, d) {
-    const text = `${label(d)}${d.turnkey ? ' · под ключ от ' + mln(d.turnkey) : d.price ? ' · ' + d.price + ' ₽' : ''}`;
+    const text = `${label(d)}${d.turnkey ? ' · ≈ ' + mln(d.turnkey) : d.price ? ' · ' + d.price + ' ₽' : ''}`;
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'arrival-tag');
     gTags.replaceChildren();  // одновременно — один ценник
@@ -685,7 +685,7 @@
     gBoard.innerHTML = L.zones.map(z => {
       const here = [...cars.values()].filter(c => c.state !== 'out' && (c.d.country === 'CN' ? 'CN' : 'KR') === z.zone);
       const prices = here.map(c => c.d.turnkey).filter(Boolean);
-      const stats = `${here.length} ${word(here.length)}${prices.length ? ' · под ключ от ' + mln(Math.min(...prices)) : ''}`;
+      const stats = `${here.length} ${word(here.length)}${prices.length ? ' · от ' + mln(Math.min(...prices)) : ''}`;
       let scale = '';
       const r = range[z.zone];
       if (z.scale && r) {
@@ -693,7 +693,7 @@
         scale = `<g class="t-scale"><line x1="${x0}" x2="${x1}" y1="${y}" y2="${y}"/>
           ${[[x0, r[0], 'start'], [(x0 + x1) / 2, mid, 'middle'], [x1, r[1], 'end']].map(([x, v, a]) =>
             `<line x1="${x}" x2="${x}" y1="${y - 4}" y2="${y + 4}"/><text x="${x}" y="${y + 16}" text-anchor="${a}">${short(v)} млн</text>`).join('')}
-          <text class="t-scale-cap" x="${(x0 + x1) / 2}" y="${y - 9}" text-anchor="middle">цена под ключ: ← дешевле · дороже →</text></g>`;
+          <text class="t-scale-cap" x="${(x0 + x1) / 2}" y="${y - 9}" text-anchor="middle">← дешевле · дороже →</text></g>`;
       }
       return `<text class="t-zone-sub t-stats" x="${z.stats[0]}" y="${z.stats[1]}" text-anchor="end">${stats}</text>${scale}`;
     }).join('');
@@ -748,12 +748,12 @@
       ${d.demo ? '<div class="pop-demo">Тестовые данные</div>' : ''}
       <div class="pop-body">
         <b>${esc(label(d))}</b>
-        ${d.turnkey ? `<div class="pop-price">${d.turnkey_from ? 'от ' : '≈ '}${rub(d.turnkey)} ₽ <small>под ключ*</small></div>
+        ${d.turnkey ? `<div class="pop-price">${d.turnkey_from ? 'от ' : '≈ '}${rub(d.turnkey)} ₽ <small>с растаможкой*</small></div>
           <div class="pop-orig">${d.price ? esc(d.price) + ' ₽ на площадке · ' : ''}*при мощности до 160 л.с.</div>`
         : `<div class="pop-price">${d.price ? '≈ ' + esc(d.price) + ' ₽' : 'Цена по запросу'} <small>на площадке</small></div>`}
         ${pill}
         <div class="pop-actions">
-          ${d.calc && window.RenalCalc ? '<button class="btn" type="button" data-act="breakdown">Разобрать цену под ключ</button>' : ''}
+          ${d.calc && window.RenalCalc ? '<button class="btn" type="button" data-act="breakdown">Разобрать цену</button>' : ''}
           <button class="btn${d.calc && window.RenalCalc ? ' ghost' : ''}" type="button" data-act="want">Хочу эту</button>
           <button class="btn ghost" type="button" data-act="trip">Как она поедет →</button>
         </div>
@@ -827,7 +827,7 @@
     const sprite = `${ASSETS}/cars/${LENGTH[d.body] ? d.body : 'sedan'}-${paintOf(d.color)}.webp?v=${V}`;
     fly.innerHTML = `<div class="car-fly-bg"></div><div class="car-fly-card">
       <img class="${d.photo ? '' : 'sprite'}" src="${esc(d.photo || sprite)}" alt="">
-      <div class="car-fly-info"><b>${esc(label(d))}</b>${d.turnkey ? `<span>под ключ от ${mln(d.turnkey)}</span>` : ''}</div></div>`;
+      <div class="car-fly-info"><b>${esc(label(d))}</b>${d.turnkey ? `<span>≈ ${mln(d.turnkey)} с растаможкой</span>` : ''}</div></div>`;
     document.body.appendChild(fly);
     const card = fly.querySelector('.car-fly-card');
     const w = Math.min(innerWidth - 32, 980), h = Math.min(innerHeight - 96, w * 0.66);
@@ -871,7 +871,7 @@
     const car = formCar;
     formCar = null;
     if (!car || !cars.has(car.d.key)) { cam.follow = null; unfocus(); return; }
-    if (sent) { load(car); toast('Заявка принята · менеджер посчитает цену под ключ'); }
+    if (sent) { load(car); toast('Заявка принята · менеджер посчитает итоговую цену'); }
     else if (car.state === 'at-ramp') backToSlot(car);
     else car.g.classList.remove('chosen');
     cam.follow = null;

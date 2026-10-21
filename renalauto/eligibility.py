@@ -133,5 +133,5 @@ def evaluate(listing: Listing, today: date | None = None) -> Eligibility:
         summary = "Нужно уточнить параметры — менеджер проверит"
     else:
         verdict = "ok" if all(b.status == "ok" for b in badges if b.code != "util") else "warn"
-        summary = "Можно привезти — точную цену под ключ рассчитает менеджер"
+        summary = "Можно привезти — точную итоговую цену рассчитает менеджер"
     return Eligibility(verdict=verdict, summary=summary, age_group=group, displacement_cc=cc, badges=badges)

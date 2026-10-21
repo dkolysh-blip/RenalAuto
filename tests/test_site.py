@@ -74,7 +74,7 @@ def test_pages_render_and_filter(settings):
         car = client.get("/car/kbchachacha/1")
         assert car.status_code == 200
         assert "не получится привезти" in car.text and 'content="noindex"' in car.text
-        assert "Проходимость в РФ" in car.text and "Рассчитать цену под ключ" in car.text
+        assert "Проходимость в РФ" in car.text and "Рассчитать итоговую цену" in car.text
         assert '"@type": "Car"' in car.text
         assert client.get("/car/kbchachacha/nope").status_code == 404
 
@@ -145,7 +145,7 @@ def test_port_landing_scene_and_message_match(settings):
         assert page.status_code == 200
         assert "<em>Kia K5</em>" in page.text
         assert 'id="terminal" aria-hidden="true"' in page.text
-        assert "50 000 ₽ · фиксированно" in page.text and "120 000 ₽ · возвращается" in page.text
+        assert "до 50 000 ₽ · зависит от машины" in page.text and "120 000 ₽ · возвращается" in page.text
         assert "/static/media/vydacha-1.mp4" in page.text and "vk.ru/renal_auto" in page.text
         assert client.get("/static/media/vydacha-2.jpg").status_code == 200
         scene = json.loads(page.text.split('id="port-data">')[1].split("</script>")[0])

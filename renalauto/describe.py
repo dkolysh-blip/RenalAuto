@@ -212,7 +212,7 @@ def describe(v: CarView, company: str = "Renal Auto", today: date | None = None)
     else:
         d.paragraphs.append(
             f"Цена в {where} {price} без доставки и растаможки. {v.eligibility.summary}. "
-            f"{company} привезёт машину из {country} под ключ: осмотр на месте, выкуп, доставка и оформление документов."
+            f"{company} привезёт машину из {country}: осмотр на месте, выкуп, доставка и оформление документов."
         )
 
     meta_bits = [v.title + year]
@@ -221,5 +221,5 @@ def describe(v: CarView, company: str = "Renal Auto", today: date | None = None)
     if l.mileage_km is not None:
         meta_bits.append(f"пробег {fmt_int(l.mileage_km)} км")
     meta_bits.append(f"цена {price}")
-    d.meta = ", ".join(meta_bits) + ". Проверка истории и VIN, доставка под ключ."
+    d.meta = ", ".join(meta_bits) + ". Проверка истории и VIN, доставка и растаможка."
     return d

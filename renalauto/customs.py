@@ -101,7 +101,7 @@ def turnkey(
                       note=None if logistics_rub is not None else "зависит от страны и порта — назовёт менеджер"))
     lines.append(Line(title="СБКТС, ЭПТС, брокер", rub=papers_rub,
                       note=None if papers_rub is not None else "назовёт менеджер"))
-    lines.append(Line(title="Наше вознаграждение", rub=fee_rub, note="фиксированно"))
+    lines.append(Line(title="Наше вознаграждение", rub=fee_rub, note="не больше этой суммы"))
 
     known = [l.rub for l in lines if l.rub is not None]
     total_is_from = not passable or any(l.rub is None for l in lines)

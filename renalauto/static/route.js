@@ -48,7 +48,19 @@
     box.classList.toggle('cn', cn);
     box.querySelectorAll('[data-kr]').forEach(el => { el.hidden = cn; });
     box.querySelectorAll('[data-cn]').forEach(el => { el.hidden = !cn; });
-    carEl.textContent = `${title} — ${cn ? 'из Китая по суше' : 'из Кореи морем'}${turnkey ? `, от ${Math.round(turnkey).toLocaleString('ru-RU')} ₽ под ключ` : ''}`;
+    carEl.textContent = `${title} — ${cn ? 'из Китая по суше' : 'из Кореи морем'}${turnkey ? `, ≈ ${Math.round(turnkey).toLocaleString('ru-RU')} ₽ с растаможкой` : ''}`;
     if (!manual) play();
   });
+})();
+
+// «Сделка и оплата»: когда блок показался, судно уходит от площадки к Владивостоку, станции загораются по очереди
+(() => {
+  const map = document.querySelector('[data-deal-map]');
+  if (!map) return;
+  map.querySelectorAll('[data-deal-pin]').forEach((p, i) => p.style.setProperty('--i', i));
+  if (!('IntersectionObserver' in window)) { map.classList.add('go'); return; }
+  const io = new IntersectionObserver(es => {
+    if (es.some(e => e.isIntersecting)) { map.classList.add('go'); io.disconnect(); }
+  }, {threshold: 0.6});
+  io.observe(map);
 })();
