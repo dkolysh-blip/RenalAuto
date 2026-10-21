@@ -152,6 +152,9 @@ def test_port_landing_scene_and_message_match(settings):
         assert scene["cars"][0] | {"title": "Kia K5", "body": "sedan", "color": "#eceef0"} == scene["cars"][0]
         assert scene["match"] == "Kia K5" and scene["demo"] is False
         assert client.get("/port", params={"demo": "1"}).text.count('"demo": true') == 1
+        # ключевая фраза из рекламы в utm_term — не модель: заголовок общий, а «kia k5» из utm_term находит машину
+        assert '"match": null' in client.get("/port", params={"utm_term": "авто из кореи"}).text
+        assert '"match": "Kia K5"' in client.get("/port", params={"utm_term": "k5"}).text
 
         assert client.get("/api/port/kbchachacha/2").json()["title"] == "Kia K5"
         assert client.get("/api/port/kbchachacha/1").status_code == 204

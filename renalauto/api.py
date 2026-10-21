@@ -350,6 +350,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                         and (not make or make.lower() in f"{c.make} {c.title}".lower())), None)
             matched = (f"{hit.make} {hit.model}" if hit and hit.make and hit.model
                        else " ".join(x[:1].upper() + x[1:] for x in (make, model) if x))
+            # ключевая фраза из utm_term («авто из кореи») — не модель: в заголовок только то, что нашлось на стоянке
+            if not hit and not q.get("model") and not make:
+                matched = None
         cur = {c: rates.get(c) for c in ("CNY", "KRW", "EUR")}
         scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched,
                  "rates": {k: v for k, v in cur.items() if v}, "rates_source": rates.source}
