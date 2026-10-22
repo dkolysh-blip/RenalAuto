@@ -308,3 +308,15 @@ def test_car_share_preview(settings):
         assert client.get("/og/car/kbchachacha/nope.png", follow_redirects=False).status_code in (302, 307)
     finally:
         client.__exit__(None, None, None)
+
+
+def test_port_compare_share_title(settings):
+    # прислали ссылку на сравнение — в заголовке превью названия машин
+    a = kb(source="encar", external_id="11", title="기아 K5 1.6 터보", make="기아", model="K5", year=2021, extra={"displacement": "1,598cc"})
+    b = kb(source="encar", external_id="12", title="현대 투싼 1.6", make="현대", model="투싼", year=2022, extra={"displacement": "1,598cc"})
+    client, app = make_client(settings, [a, b])
+    try:
+        page = client.get("/port", params={"cmp": "encar:11,encar:12,encar:nope"})
+        assert "<title>Сравнение: Kia K5 2021, Hyundai Tucson 2022 — цены с растаможкой | Ренал Авто</title>" in page.text
+    finally:
+        client.__exit__(None, None, None)

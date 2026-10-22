@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% from "_macros.html" import consent %}
-{% block title %}{% if share_title %}{{ share_title }} — живая подборка | {{ company }}{% else %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Авто из Кореи и Китая{% endif %} — подберём оптимальный вариант | {{ company }}{% endif %}{% endblock %}
+{% block title %}{% if share_title %}{{ share_title }} — {{ 'цены с растаможкой' if share_title.startswith('Сравнение') else 'живая подборка' }} | {{ company }}{% else %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Авто из Кореи и Китая{% endif %} — подберём оптимальный вариант | {{ company }}{% endif %}{% endblock %}
 {% block description %}Поможем найти оптимальный автомобиль в Корее и Китае: сравним объявления, проверим историю и проходимость в РФ, посчитаем стоимость с растаможкой. Агентский договор, вознаграждение до 50 000 ₽.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
 {% block html_attrs %} data-theme="light"{% endblock %}

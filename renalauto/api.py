@@ -430,6 +430,15 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if year_from:
             share_bits.append(f"от {year_from} г.")
         share_title = " ".join(share_bits) if (budget or year_from or country_q or q.get("q")) else None
+        # прислали сравнение (?cmp=encar:1,dongchedi:2) — в превью названия машин
+        compared = []
+        for k in (q.get("cmp") or "").split(",")[:3]:
+            src, _, ext = k.partition(":")
+            l = storage.get(src, ext) if src and ext else None
+            if l is not None:
+                compared.append(scene_car(car_view(l, rates))["title"] + (f" {l.year}" if l.year else ""))
+        if len(compared) >= 2:
+            share_title = "Сравнение: " + ", ".join(compared)
         return render(
             request, "port.html", cars=cars, matched=matched, reviews=load_reviews(), share_title=share_title,
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),

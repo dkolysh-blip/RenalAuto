@@ -887,6 +887,7 @@
         <div class="pb-acts">
           <button class="btn" type="button" data-act="want">Точный расчёт</button>
           ${d.path ? `<a class="pb-ic" href="${esc(d.path)}" data-act="more" aria-label="Подробнее о машине" title="Подробнее о машине"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : ''}
+          <button type="button" class="pb-ic${cmpHas(d) ? ' on' : ''}" data-act="cmp" aria-pressed="${cmpHas(d)}" aria-label="Добавить к сравнению" title="Сравнить с другими">${ICO_CMP}</button>
           <button type="button" class="pb-ic" data-act="share" aria-label="Поделиться расчётом" title="Поделиться расчётом">${ICO_SHARE}</button>
         </div>
       </div>`;
@@ -897,6 +898,11 @@
       const by = Object.fromEntries(lines.map(l => [l.k, l]));
       const parts = [by.car && `машина ${m(by.car)}`, by.duty && by.duty.rub && `пошлина ${m(by.duty)}`, by.fee && `комиссия до ${m(by.fee)}`].filter(Boolean);
       share({title: label(d), url, text: `${label(d)}${d.turnkey ? ` — ≈ ${mln(d.turnkey)} с растаможкой во Владивостоке` : ''}${parts.length ? ` (${parts.join(', ')})` : ''}. Нашёл в живой подборке Ренал Авто`});
+    });
+    popEl.querySelector('[data-act="cmp"]').addEventListener('click', e => {
+      const on = cmpToggle(d);
+      e.currentTarget.classList.toggle('on', on);
+      e.currentTarget.setAttribute('aria-pressed', String(on));
     });
     popEl.querySelector('[data-act="more"]')?.addEventListener('click', e => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;  // в новой вкладке — как обычная ссылка
@@ -1038,6 +1044,108 @@
     cam.follow = null;
     unfocus();
   });
+
+  // --- сравнение 2–3 машин: кнопка в карточке, плашка внизу экрана, таблица и ссылка на сравнение --------
+  const CMP_MAX = 3, CMP_KEY = 'renal-cmp';
+  let cmp = [];
+  try { cmp = JSON.parse(localStorage.getItem(CMP_KEY) || '[]').filter(c => c && c.key).slice(0, CMP_MAX); } catch (err) { cmp = []; }
+  const cmpSave = () => { try { localStorage.setItem(CMP_KEY, JSON.stringify(cmp)); } catch (err) { /* без хранилища — до перезагрузки */ } };
+  const cmpHas = d => cmp.some(c => c.key === d.key);
+  const cmpWord = n => n === 1 ? 'машина' : n < 5 ? 'машины' : 'машин';
+  const cmpPick = d => ({key: d.key, source: d.source, id: d.id, title: d.title, photo: d.photo, turnkey: d.turnkey, price: d.price,
+    year: d.year, mileage: d.mileage, cc: d.cc, fuel: d.fuel, country: d.country, path: d.path, demo: d.demo, body: d.body, color: d.color, model: d.model});
+  const cmpImg = c => c.photo ? `<img src="${esc(c.photo)}" alt="">`
+    : `<span class="cmp-sprite"><img src="${ASSETS}/cars/${spriteOf(c, LENGTH[c.body] ? c.body : 'sedan')}.webp?v=${V}" alt=""></span>`;
+  const tray = document.createElement('div');
+  tray.className = 'cmp-tray'; tray.hidden = true;
+  document.body.appendChild(tray);
+  const cmpDlg = document.createElement('dialog');
+  cmpDlg.className = 'cmp-dialog'; cmpDlg.setAttribute('aria-labelledby', 'cmp-title');
+  document.body.appendChild(cmpDlg);
+  cmpDlg.addEventListener('click', e => { if (e.target === cmpDlg || e.target.closest('[data-close]')) cmpDlg.close(); });
+
+  function cmpToggle(d) {
+    if (cmpHas(d)) cmp = cmp.filter(c => c.key !== d.key);
+    else {
+      if (cmp.length >= CMP_MAX) { toast(`В сравнении уже ${CMP_MAX} машины — уберите одну`); return false; }
+      cmp.push(cmpPick(d));
+      goal('cmp_add');
+      if (cmp.length === 1) toast('Добавили к сравнению · выберите ещё одну машину на стоянке');
+    }
+    cmpSave(); cmpTray();
+    return cmpHas(d);
+  }
+  function cmpTray() {
+    tray.hidden = !cmp.length;
+    document.body.classList.toggle('has-cmp', cmp.length > 0);
+    if (!cmp.length) return;
+    tray.innerHTML = `<span class="cmp-thumbs">${cmp.map(cmpImg).join('')}</span>
+      <b><span class="cmp-l">${cmp.length} ${cmpWord(cmp.length)} в сравнении</span><span class="cmp-s">Сравнение · ${cmp.length}</span></b>
+      <button type="button" class="cmp-go"${cmp.length < 2 ? ' disabled' : ''}>${cmp.length < 2 ? 'Ещё одну' : 'Сравнить'}</button>`;
+    tray.querySelector('.cmp-go').addEventListener('click', () => cmpOpen());
+  }
+  // лучшее в строке — зелёным: дешевле, новее, меньше пробег
+  const num = v => v == null ? null : +String(v).replace(/\D/g, '') || null;
+  function cmpOpen(list = cmp) {
+    goal('cmp_open');
+    const best = (vals, dir) => { const xs = vals.filter(v => v != null); if (xs.length < 2) return null; const b = dir < 0 ? Math.min(...xs) : Math.max(...xs); return xs.filter(v => v === b).length === xs.length ? null : b; };
+    const tk = list.map(c => c.turnkey || null), yr = list.map(c => c.year || null), km = list.map(c => num(c.mileage));
+    const bTk = best(tk, -1), bYr = best(yr, 1), bKm = best(km, -1);
+    const cell = (v, b, text) => `<td${v != null && v === b ? ' class="best"' : ''}>${text}</td>`;
+    const row = (name, cells) => `<tr><th>${name}</th>${cells.join('')}</tr>`;
+    cmpDlg.innerHTML = `
+      <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
+      <h2 id="cmp-title">Сравнение</h2>
+      <div class="cmp-scroll"><table class="cmp-table" style="--n:${list.length}">
+        <thead><tr><th></th>${list.map(c => `<td><a href="${esc(c.path || '#')}" target="_blank" rel="noopener">${cmpImg(c)}<b>${esc(c.title)}${c.year ? ' ' + c.year : ''}</b></a>
+          ${list === cmp ? `<button type="button" class="cmp-del" data-del="${esc(c.key)}" aria-label="Убрать из сравнения">Убрать</button>` : ''}</td>`).join('')}</tr></thead>
+        <tbody>
+          ${row('С растаможкой', list.map((c, i) => cell(tk[i], bTk, `<strong>${c.turnkey ? '≈ ' + mln(c.turnkey) : '<em>посчитает менеджер</em>'}</strong>`)))}
+          ${row('Год', list.map((c, i) => cell(yr[i], bYr, c.year || '—')))}
+          ${row('Пробег', list.map((c, i) => cell(km[i], bKm, c.mileage ? `${esc(c.mileage)} км` : '—')))}
+          ${row('Двигатель', list.map(c => `<td>${c.cc ? `${(c.cc / 1000).toFixed(1).replace('.', ',')} л` : '—'}${c.fuel ? `<small>${esc(c.fuel.toLowerCase())}</small>` : ''}</td>`))}
+          ${row('Откуда', list.map(c => `<td>${c.country === 'CN' ? 'Китай' : 'Корея'}</td>`))}
+        </tbody></table></div>
+      <p class="pb-note">Цены ориентировочные: при мощности до 160 л.с., по курсу ЦБ на сегодня. Доставку, СБКТС и ЭПТС посчитает менеджер.</p>
+      <div class="cmp-acts">
+        <button type="button" class="btn" data-cmp-want>Рассчитать ${list.length === 3 ? 'все три' : 'обе'}</button>
+        <button type="button" class="btn ghost" data-cmp-share>Поделиться сравнением</button>
+      </div>`;
+    cmpDlg.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', () => {
+      cmp = cmp.filter(c => c.key !== b.dataset.del); cmpSave(); cmpTray();
+      if (pop.car && popEl.querySelector('[data-act="cmp"]') && !cmpHas(pop.car.d)) popEl.querySelector('[data-act="cmp"]').classList.remove('on');
+      if (cmp.length) cmpOpen(); else cmpDlg.close();
+    }));
+    cmpDlg.querySelector('[data-cmp-share]').addEventListener('click', () => {
+      const url = new URL(location.pathname, location.origin);
+      url.searchParams.set('cmp', list.filter(c => !c.demo).map(c => `${c.source}:${c.id}`).join(','));
+      const text = 'Сравниваю: ' + list.map(c => `${c.title}${c.year ? ' ' + c.year : ''}${c.turnkey ? ' — ≈ ' + mln(c.turnkey) : ''}`).join('; ') + '. Цены с растаможкой, Ренал Авто';
+      share({title: 'Сравнение машин', text, url: url.href});
+    });
+    cmpDlg.querySelector('[data-cmp-want]').addEventListener('click', () => {
+      cmpDlg.close();
+      goal('cmp_want');
+      const first = list.find(c => !c.demo) || list[0];
+      openForm(first, null);
+      form.querySelector('#car-dialog-title').textContent = 'Рассчитать сравнение';
+      form.querySelector('[data-cd-title]').textContent = `${list.length} ${cmpWord(list.length)}: ${list.map(label).join(', ')}`;
+      form.querySelector('[data-cd-price]').textContent = 'Посчитаем итоговую цену каждой';
+      form.querySelector('[name="comment"]').value = 'Сравнение: ' + list.map(c => `${c.title}${c.year ? ' ' + c.year : ''}${c.path ? ' ' + new URL(c.path, location.origin).href : ''}`).join('; ');
+    });
+    if (!cmpDlg.open) cmpDlg.showModal();
+  }
+  cmpTray();
+  // ссылка «?cmp=источник:id,…» — открыть присланное сравнение
+  const cmpParam = new URLSearchParams(location.search).get('cmp');
+  if (cmpParam) {
+    Promise.all(cmpParam.split(',').slice(0, CMP_MAX).map(k => {
+      const [src, id] = k.split(':');
+      return src && id ? fetch(`/api/port/${encodeURIComponent(src)}/${encodeURIComponent(id)}`).then(r => r.status === 200 ? r.json() : null).catch(() => null) : null;
+    })).then(found => {
+      const list = found.filter(Boolean).map(cmpPick);
+      if (list.length >= 2) cmpOpen(list);
+    });
+  }
 
   // --- данные: стартовый набор, затем живая лента (или тестовый поток) -------------------
   // --- пульт подбора: под фильтр машины уезжают и заезжают ------------------------------
