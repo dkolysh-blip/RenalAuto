@@ -635,7 +635,7 @@ body.pop-sheet .cta-bar { display: none; }
 .tk-bars button { --p: 0; height: 18px; padding: 7px 0; border: 0; background: none; cursor: pointer; }
 .tk-bars i { display: block; height: 4px; border-radius: 2px; background: rgba(255,255,255,.3); overflow: hidden; position: relative; }
 .tk-bars i::after { content: ""; position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(var(--p)); }
-.tk-stage figcaption { position: absolute; z-index: 2; left: 24px; right: 24px; bottom: 70px; display: grid; gap: 6px; }
+.tk-stage figcaption { position: absolute; z-index: 2; left: 24px; right: 24px; bottom: 112px; display: grid; gap: 6px; }
 /* маршрут внизу фото: пунктир, пять точек, едущий транспорт */
 .tk-ribbon { position: absolute; z-index: 2; left: 20px; right: 20px; bottom: 18px; height: 34px; }
 .tk-r-rail, .tk-r-fill { position: absolute; left: 6%; top: 22px; height: 3px; border-radius: 2px; }
@@ -645,43 +645,44 @@ body.pop-sheet .cta-bar { display: none; }
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.6); transition: background .3s, box-shadow .3s, transform .3s; }
 .tk-r-dot.done { background: #fff; box-shadow: none; }
 .tk-r-dot.on { background: var(--accent); box-shadow: 0 0 0 4px rgba(221,31,31,.35); transform: scale(1.15); }
-/* у каждого этапа своя анимация: подбор — лупа над машиной, выкуп — печать на инвойсе, в пути — судно или автовоз,
-   Владивосток — галочки на документах, ключи — ключ покачивается в руке */
-.tk-r-veh { position: absolute; left: 6%; top: -26px; width: 62px; height: 36px; transform: translateX(-50%); }
-.tk-r-veh svg { position: absolute; inset: 0; width: 62px; height: 36px; overflow: visible; display: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+/* у каждого этапа своя объёмная иконка в стеклянном кружке над точкой и своё движение:
+   подбор — лупа осматривает, выкуп — печать ударяет, в пути — паром покачивается на волне или автовоз потряхивает,
+   Владивосток — документы перелистываются, ключи — ключ раскачивается на кольце */
+.tk-r-veh { position: absolute; left: 6%; top: -52px; width: 56px; height: 56px; transform: translateX(-50%); }
+.tk-r-glass { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.34), rgba(255,255,255,.1) 60%);
+  border: 1px solid rgba(255,255,255,.35); box-shadow: 0 8px 22px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.4);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); overflow: hidden; animation: tk-pop .45s cubic-bezier(.3,1.5,.5,1); }
+.tk-r-glass::after { content: ""; position: absolute; inset: -20%; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.35) 50%, transparent 60%);
+  transform: translateX(-120%); animation: tk-shine 3.2s ease-in-out infinite 1s; }
+.tk-r-veh::before { content: ""; position: absolute; left: 50%; bottom: -12px; width: 2px; height: 12px; margin-left: -1px; background: rgba(255,255,255,.6); }
+.tk-r-veh img { position: absolute; left: -12px; top: -18px; width: 80px; height: 80px; display: none; filter: drop-shadow(0 6px 8px rgba(0,0,0,.5)); }  /* иконка крупнее кружка — выступает объёмом */
 .tk-r-veh[data-s="0"] .a0, .tk-r-veh[data-s="1"] .a1, .tk-r-veh[data-s="3"] .a3, .tk-r-veh[data-s="4"] .a4,
-.track:not(.land) .tk-r-veh[data-s="2"] .ship, .track.land .tk-r-veh[data-s="2"] .truck { display: block; animation: tk-pop .45s cubic-bezier(.3,1.5,.5,1); }
-.a0 .lens { animation: tk-scan 2.4s ease-in-out infinite; }
-.a1 .stamp { animation: tk-stamp 1.8s cubic-bezier(.5,0,.5,1) infinite; }
-.a1 .stamp { transform-box: fill-box; transform-origin: center; }
-.a1 .mark { animation: tk-mark 1.8s steps(1) infinite; }
-.a2 .hull { animation: tk-bob 1.6s ease-in-out infinite; transform-origin: 50% 80%; }
-.a2 .wave { animation: tk-wave 1s linear infinite; }
-.a2 .body { animation: tk-bob .5s ease-in-out infinite; }
-.a2 .road { animation: tk-road .45s linear infinite; }
-.a3 .tick { stroke-dasharray: 14; stroke-dashoffset: 14; animation: tk-tick 3s ease-out infinite; }
-.a3 .t2 { animation-delay: .5s; } .a3 .t3 { animation-delay: 1s; }
-.a4 .key { transform-origin: 16px 15px; animation: tk-key 2.2s ease-in-out infinite; }
-.a4 .spark { opacity: 0; animation: tk-spark 2.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
-.a4 .s2 { animation-delay: .6s; } .a4 .s3 { animation-delay: 1.2s; }
+.track:not(.land) .tk-r-veh[data-s="2"] .ship, .track.land .tk-r-veh[data-s="2"] .truck { display: block; }
+.tk-r-veh .a0 { animation: tk-in-ic .5s cubic-bezier(.3,1.5,.5,1), tk-scan 2.6s ease-in-out .5s infinite; }
+.tk-r-veh .a1 { animation: tk-in-ic .5s cubic-bezier(.3,1.5,.5,1), tk-stamp 1.6s cubic-bezier(.5,0,.5,1) .5s infinite; transform-origin: 50% 85%; }
+.tk-r-veh .ship { animation: tk-in-ic .5s cubic-bezier(.3,1.5,.5,1), tk-sail 2.4s ease-in-out .5s infinite; }
+.tk-r-veh .truck { animation: tk-in-ic .5s cubic-bezier(.3,1.5,.5,1), tk-drive .32s linear .5s infinite; }
+.tk-r-veh .a3 { animation: tk-in-ic .5s cubic-bezier(.3,1.5,.5,1), tk-flip 2.4s ease-in-out .5s infinite; transform-origin: 50% 90%; }
+.tk-r-veh .a4 { animation: tk-in-ic .5s cubic-bezier(.3,1.5,.5,1), tk-key 2.2s ease-in-out .5s infinite; transform-origin: 62% 12%; }
+.tk-r-veh[data-s] { animation: none; }
 .track.jump .tk-r-veh, .track.jump .tk-r-fill { transition: left .7s cubic-bezier(.3,.7,.3,1), width .7s cubic-bezier(.3,.7,.3,1); }
 @keyframes tk-pop { from { transform: scale(.4); opacity: 0; } }
+@keyframes tk-in-ic { from { transform: translateY(14px) scale(.5); opacity: 0; } }
+@keyframes tk-shine { 0% { transform: translateX(-120%); } 45%, 100% { transform: translateX(120%); } }
 @keyframes tk-bob { 50% { transform: translateY(-1.5px) rotate(-1deg); } }
-@keyframes tk-scan { 0%, 100% { transform: translate(0, 0); } 40% { transform: translate(18px, 1px); } 70% { transform: translate(8px, -1px); } }
-@keyframes tk-stamp { 0%, 20% { transform: translate(6px, -14px) rotate(12deg); } 38% { transform: translateY(1px); } 46% { transform: translateY(0); } 52% { transform: translateY(0); } 72%, 100% { transform: translate(6px, -14px) rotate(12deg); } }
-@keyframes tk-mark { 0% { opacity: 0; } 38% { opacity: 1; } 92% { opacity: 0; } }
-@keyframes tk-wave { to { transform: translateX(8px); } }
-@keyframes tk-road { to { transform: translateX(-12px); } }
-@keyframes tk-tick { 0% { stroke-dashoffset: 14; } 20%, 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
-@keyframes tk-key { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(10deg); } }
-@keyframes tk-spark { 0% { opacity: 0; transform: scale(.3); } 25% { opacity: 1; transform: scale(1.1); } 60%, 100% { opacity: 0; transform: scale(.6); } }
-@media (prefers-reduced-motion: reduce) { .tk-r-veh svg *, .tk-r-veh svg { animation: none !important; } .a3 .tick { stroke-dashoffset: 0; } }
+@keyframes tk-scan { 0%, 100% { transform: translate(0, 0) rotate(0); } 30% { transform: translate(-5px, -2px) rotate(-8deg); } 65% { transform: translate(5px, 1px) rotate(7deg); } }
+@keyframes tk-stamp { 0%, 25% { transform: translateY(-3px) scale(1); } 40% { transform: translateY(2px) scale(1.06, .9); } 50% { transform: translateY(0) scale(.98, 1.03); } 60%, 100% { transform: translateY(-3px) scale(1); } }
+@keyframes tk-sail { 0%, 100% { transform: translateY(0) rotate(-3deg); } 50% { transform: translateY(-3px) rotate(3deg); } }
+@keyframes tk-drive { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.2px); } }
+@keyframes tk-flip { 0%, 100% { transform: rotate(-6deg) scale(1); } 50% { transform: rotate(6deg) scale(1.05); } }
+@keyframes tk-key { 0%, 100% { transform: rotate(-16deg); } 50% { transform: rotate(14deg); } }
+@media (prefers-reduced-motion: reduce) { .tk-r-veh img, .tk-r-glass, .tk-r-glass::after { animation: none !important; } }
 @media (prefers-reduced-motion: reduce) { .tk-stage img { animation: none !important; } }
 .tk-count { font: 600 13px/1 Onest, system-ui, sans-serif; color: rgba(255,255,255,.7); letter-spacing: .08em; }
 .tk-count b { font: 700 30px/1 Unbounded, Onest, sans-serif; color: #fff; letter-spacing: 0; margin-right: 2px; }
 .tk-title { font: 700 26px/1.15 Unbounded, Onest, sans-serif; color: #fff; }
 .tk-place { font-size: 15px; color: rgba(255,255,255,.78); }
-.tk-nav { position: absolute; z-index: 2; bottom: 76px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35);
+.tk-nav { position: absolute; z-index: 2; bottom: 118px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35);
   background: rgba(15,17,20,.35); color: #fff; font-size: 18px; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .tk-nav.prev { right: 74px; } .tk-nav.next { right: 22px; }
 .tk-nav:hover { background: rgba(255,255,255,.18); }
@@ -710,7 +711,7 @@ body.pop-sheet .cta-bar { display: none; }
   .tk-tabs { width: 100%; } .tk-tabs button { flex: 1; padding: 11px 6px; font-size: 13.5px; }
   .tk-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .tk-stage { min-height: 0; aspect-ratio: 4 / 5; border-radius: 20px; }
-  .tk-stage figcaption { left: 18px; right: 18px; bottom: 62px; }
+  .tk-stage figcaption { left: 18px; right: 18px; bottom: 100px; }
   .tk-ribbon { left: 12px; right: 12px; bottom: 12px; }
   .tk-title { font-size: 22px; } .tk-count b { font-size: 24px; }
   .tk-nav { display: none; }
@@ -1097,7 +1098,15 @@ body.port-page footer { margin-top: 0; }
 .pb-lines b { font: 600 13.5px/1 Onest, system-ui, sans-serif; color: #0f172a; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pb-lines em { font-style: normal; font-weight: 500; color: #98a2b3; font-size: 12.5px; }
 .pb-note { margin: 0; padding: 8px 10px; border-radius: 10px; background: #f3f6f9; font-size: 11.5px; line-height: 1.4; color: var(--muted); }
-.pb-acts { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; }
+.pb-acts { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 8px; }
+.pb-acts .btn { min-width: 0; padding-left: 8px; padding-right: 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pb-hint { display: none; margin: 0; font-size: 12px; color: var(--muted); }
+.port-pop.peek { width: 280px; }
+.port-pop.peek .pb { gap: 8px; padding: 12px 14px; }
+.port-pop.peek .pb-lines, .port-pop.peek .pb-note, .port-pop.peek .pb-acts, .port-pop.peek .pop-x { display: none; }
+.port-pop.peek .pb-hint { display: block; }
+.port-pop.peek .pb-top img { width: 64px; height: 48px; }
+.port-pop.peek .pb-total b { font-size: 20px; }
 .pb-acts .btn { height: 46px; font-size: 15px; border-radius: 13px; }
 .pb-ic { width: 46px; height: 46px; border-radius: 13px; border: 0; background: #f2f4f7; color: #0f172a; display: grid; place-items: center; cursor: pointer; }
 .pb-ic:hover { background: #e7ebf0; text-decoration: none; }

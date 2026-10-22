@@ -850,6 +850,7 @@
     const wide = matchMedia('(min-width: 900px)').matches;
     popEl.classList.toggle('docked', pop.pinned && wide);
     popEl.classList.toggle('sheet', pop.pinned && !wide);
+    popEl.classList.toggle('peek', !pop.pinned);  // при наведении — коротко: машина, цена и полоска; расклад и кнопки — по нажатию
     document.body.classList.toggle('pop-sheet', pop.pinned && !wide);
     car.g.classList.add('hover');
     const d = car.d;
@@ -884,6 +885,7 @@
         <div class="pb-top">${d.photo ? `<img src="${esc(d.photo)}" alt="">` : ''}
           <div><span class="pb-flag">${flag}${d.src ? ' · ' + esc(d.src) : ''}${d.demo ? ' · тест' : ''}</span><b>${esc(label(d))}</b>${facts ? `<small>${esc(facts)}</small>` : ''}</div></div>
         ${price}${breakdown}
+        <p class="pb-hint">Нажмите — расклад цены и расчёт</p>
         <div class="pb-acts">
           <button class="btn" type="button" data-act="want">Точный расчёт</button>
           ${d.path ? `<a class="pb-ic" href="${esc(d.path)}" data-act="more" aria-label="Подробнее о машине" title="Подробнее о машине"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : ''}
