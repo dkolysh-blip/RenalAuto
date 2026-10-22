@@ -23,6 +23,25 @@ WAN = 10_000
 
 _VIN_RE = re.compile(r"\b[A-HJ-NPR-Z0-9]{17}\b")
 
+# Цены, пробег и год в выдаче зашифрованы своим шрифтом: вместо цифр — символы из области Unicode
+# для частного использования (U+E000…). Таблица подобрана по выдаче с фильтром price=N,N+1 (октябрь 2026);
+# если площадка сменит шрифт, неизвестные символы останутся, deobfuscate вернёт None — цена не выдумывается.
+_FONT = str.maketrans({
+    "\ue439": "0", "\ue54c": "1", "\ue463": "2", "\ue49d": "3", "\ue41d": "4",
+    "\ue411": "5", "\ue534": "6", "\ue3eb": "7", "\ue4e3": "8", "\ue45d": "9",
+    "\ue40a": "万", "\ue525": "年", "\ue492": "公", "\ue4a8": "里", "\ue443": "家",
+})
+_PRIVATE_RE = re.compile("[\ue000-\uf8ff]")
+_SUB_MILEAGE_RE = re.compile(r"([\d.]+万?)公里")
+
+
+def deobfuscate(value: Any) -> Any:
+    """'\ue49d.\ue45d\ue45d\ue40a' -> '3.99万'. Не строка — как есть; остались незнакомые символы — None."""
+    if not isinstance(value, str):
+        return value
+    text = value.translate(_FONT)
+    return None if _PRIVATE_RE.search(text) else text
+
 
 def parse_mileage(value: Any) -> int | None:
     """'3.5万公里' -> 35000, '8000公里' -> 8000, 3.5 (число в 万公里) -> 35000."""
@@ -76,7 +95,7 @@ class DongchediSource(Source):
 
     def parse_item(self, item: dict[str, Any]) -> Listing:
         sku_id = str(item["sku_id"])
-        price = parse_price_wan(item.get("sh_price"))
+        price = parse_price_wan(deobfuscate(item.get("sh_price")))
         year = to_int(item.get("car_year"))
         title = item.get("title") or " ".join(
             filter(None, [item.get("brand_name"), item.get("series_name"), item.get("car_name")])
@@ -93,12 +112,17 @@ class DongchediSource(Source):
                 listed_at = None
         extra = {}
         if item.get("official_price"):
-            extra["new_price_cny"] = parse_price_wan(item["official_price"])
+            extra["new_price_cny"] = parse_price_wan(deobfuscate(item["official_price"]))
         if item.get("tags"):
             extra["tags"] = [t.get("text") if isinstance(t, dict) else t for t in item["tags"]]
         for key in ("spu_id", "series_id", "car_id"):
             if item.get(key):
                 extra[key] = item[key]
+        # пробег — в car_mileage, а если там пусто, то в подзаголовке «2019年 | 6.20万公里»
+        mileage = parse_mileage(deobfuscate(item.get("car_mileage")) or None)
+        if mileage is None:
+            m = _SUB_MILEAGE_RE.search(deobfuscate(item.get("sub_title")) or "")
+            mileage = parse_mileage(m.group(0)) if m else None
         return Listing(
             source=self.name,
             external_id=sku_id,
@@ -109,11 +133,11 @@ class DongchediSource(Source):
             model=item.get("series_name"),
             trim=item.get("car_name"),
             year=year,
-            mileage_km=parse_mileage(item.get("car_mileage")),
+            mileage_km=mileage,
             price=price,
             currency=self.currency,
             price_usd=self.settings.to_usd(price, self.currency),
-            location=item.get("car_source_city_name"),
+            location=deobfuscate(item.get("car_source_city_name")),
             photo=item.get("image"),
             vin=vin,
             listed_at=listed_at,

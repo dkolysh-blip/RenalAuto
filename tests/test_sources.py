@@ -1,6 +1,6 @@
 import pytest
 
-from renalauto.sources.dongchedi import DongchediSource, parse_mileage, parse_price_wan
+from renalauto.sources.dongchedi import DongchediSource, deobfuscate, parse_mileage, parse_price_wan
 from renalauto.sources.encar import EncarSource
 
 from .conftest import fixture, mock_client
@@ -148,3 +148,16 @@ async def test_kbchachacha_list_and_detail(settings):
     assert detailed.location == "인천"
     assert detailed.extra["displacement"] == "2,497cc"
     assert detailed.vin is None
+
+
+def test_dongchedi_obfuscated_digits(settings):
+    # цифры в выдаче Dongchedi зашифрованы шрифтом: символы U+E000… вместо 0–9 и «万»
+    assert deobfuscate(".") == "3.99万"
+    assert deobfuscate(" | .") == "2019年 | 6.20万公里"
+    assert deobfuscate(".") is None  # незнакомый символ — цену не угадываем
+    item = {"sku_id": 1, "title": "宋PLUS EV 2021款", "car_year": 2021, "sh_price": ".",
+            "official_price": ".", "car_mileage": "",
+            "sub_title": " | .", "car_source_city_name": "石庄"}
+    listing = DongchediSource(settings).parse_item(item)
+    assert listing.price == 80900 and listing.mileage_km == 74600 and listing.location == "石家庄"
+    assert listing.extra["new_price_cny"] == 203800
