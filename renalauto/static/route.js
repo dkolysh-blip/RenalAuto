@@ -1,76 +1,56 @@
-// «Путь машины» под сценой порта: вода из терминала продолжается в полосе — судно уходит из Пусана во Владивосток,
-// дальше автовоз везёт машину в ваш город; из Китая весь путь по суше. Прокрутка двигает транспорт,
-// под полосой — карточка этапа с настоящим фото. Сцена порта управляет полосой через RenalRoute и событие renal:car.
+// «Путь машины» под сценой порта — как отслеживание посылки: линия из пяти этапов, по ней едет судно (Корея)
+// или автовоз (Китай). Под линией у каждого этапа — что делаем, что вы получаете и что с деньгами.
+// Прокрутка проводит по этапам; сцена порта управляет блоком через RenalRoute и событие renal:car.
 (() => {
   const box = document.querySelector('[data-route]');
   const dataEl = document.getElementById('vy-data');
   if (!box || !dataEl) return;
   const DATA = JSON.parse(dataEl.textContent);
   const $ = s => box.querySelector(s), $$ = s => [...box.querySelectorAll(s)];
-  const ship = $('[data-vy-ship]'), truck = $('[data-vy-truck]'), wake = $('[data-vy-wake]');
-  const pins = $$('[data-vy-pin]'), steps = $$('[data-vy-step]');
-  const card = {el: $('[data-vy-card]'), photo: $('[data-vy-photo]'), num: $('[data-vy-num]'),
-    title: $('[data-vy-title]'), text: $('[data-vy-text]'), meta: $('[data-vy-meta]')};
-  const lead = $('[data-vy-lead]'), band = $('.vy-band'), XS = [4, 27, 50, 73, 96];
-  const carEl = $('[data-route-car]');
+  const pins = $$('[data-vy-pin]'), steps = $$('[data-tk-step]');
+  const fill = $('[data-tk-fill]'), veh = $('[data-tk-veh]'), sea = $('[data-tk-sea]'), geo = $('[data-tk-geo]');
+  const carEl = $('[data-route-car]'), titleEl = $('[data-tk-title]');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
-  const lerp = (a, b, k) => a + (b - a) * k;
   let mode = 'kr', stage = -1, t = 0, raf = 0, locked = false, lockY = 0;
 
-  function fillSteps() {
-    pins.forEach((p, i) => { p.querySelector('[data-vy-pin-label]').textContent = DATA[mode][i].short; });
-  }
-  function showCard(i) {
-    const s = DATA[mode][i];
-    card.photo.src = `/static/media/route/${s.photo}.webp`;
-    card.photo.alt = s.title;
-    card.num.textContent = i + 1;
-    card.title.textContent = s.title;
-    card.text.textContent = s.text;
-    card.meta.textContent = s.meta;
-    card.el.classList.add('swap'); void card.el.offsetWidth; card.el.classList.remove('swap');  // заново проиграть появление
-    stage = i;
-    placeCard();
-  }
-  // выноска встаёт над своей станцией (на телефоне — во всю ширину), от неё к станции — пунктир
-  function placeCard() {
-    if (stage < 0) return;
-    const W = band.clientWidth, w = card.el.offsetWidth, x = W * XS[stage] / 100;
-    const wide = matchMedia('(min-width: 901px)').matches;
-    card.el.style.left = wide ? `${Math.max(12, Math.min(W - w - 12, x - w / 2))}px` : '';
-    const top = card.el.offsetTop + card.el.offsetHeight, pin = pins[stage].getBoundingClientRect().top - band.getBoundingClientRect().top;
-    lead.style.cssText = wide ? `left: ${x}px; top: ${top}px; height: ${Math.max(0, pin - top)}px` : 'display: none';
+  function fill_() {
+    const d = DATA[mode];
+    titleEl.textContent = d.title;
+    geo.innerHTML = d.geo.map(([text, left, width, cls]) =>
+      `<span class="${cls}" style="left:${left}%;width:${width}%">${text}</span>`).join('');
+    sea.style.left = `${d.sea[0]}%`; sea.style.width = `${d.sea[1]}%`;
+    steps.forEach((li, i) => {
+      const s = d.steps[i];
+      li.querySelector('[data-tk-t]').textContent = s.title;
+      li.querySelector('[data-tk-pl]').textContent = s.place;
+      li.querySelector('[data-tk-do]').textContent = s.do;
+      li.querySelector('[data-tk-get]').textContent = s.get;
+      li.querySelector('[data-tk-money]').textContent = s.money;
+      const img = li.querySelector('[data-tk-photo]');
+      img.src = `/static/media/route/${s.photo}.webp`; img.alt = s.title;
+    });
   }
 
-  // t: 0…1 по всему пути; станции — на 4 %, 27 %, 50 %, 73 %, 96 % ширины полосы
+  // t: 0…1 по всему пути; этапы — на 10 %, 30 %, 50 %, 70 %, 90 % ширины линии
   function show(next) {
     t = clamp(next);
-    const land = mode === 'cn';
-    if (land) {
-      ship.style.opacity = 0; wake.style.opacity = 0;
-      truck.style.opacity = 1; truck.style.left = `${lerp(4, 92, t)}%`;
-    } else if (t <= 0.5) {  // судно идёт к причалу; --dock — сколько не доходит до берега (полкорпуса и причал)
-      const k = t / 0.5, x = lerp(4, 50, k);
-      ship.style.opacity = 1; ship.style.left = `calc(${x}% - ${k} * var(--dock))`;
-      wake.style.opacity = t > 0.02 ? 1 : 0; wake.style.left = `${Math.max(0, x - 24)}%`; wake.style.width = `${Math.max(0, Math.min(x, 24) - 8)}%`;
-      truck.style.opacity = 0; truck.style.left = '54%';
-    } else {  // судно у причала, машину забирает автовоз
-      ship.style.opacity = 1; ship.style.left = 'calc(50% - var(--dock))'; wake.style.opacity = 0;
-      truck.style.opacity = 1; truck.style.left = `${lerp(56, 92, (t - 0.5) / 0.5)}%`;
-    }
+    const x = 10 + t * 80;
+    fill.style.width = `${x - 10}%`;
+    veh.style.left = `${x}%`;
+    // из Кореи до Владивостока — судно, дальше и из Китая — автовоз
+    veh.classList.toggle('ship', mode === 'kr' && t < 0.5);
     const s = Math.round(t * 4);
     pins.forEach((p, i) => { p.classList.toggle('done', i < s); p.classList.toggle('on', i === s); });
-    box.classList.toggle('arrived', t > 0.97);  // машина съехала с автовоза к дому
-    if (s !== stage) showCard(s);
+    steps.forEach((li, i) => { li.classList.toggle('done', i < s); li.classList.toggle('on', i === s); });
+    stage = s;
   }
 
   function setMode(m) {
     mode = m === 'cn' ? 'cn' : 'kr';
     box.classList.toggle('land', mode === 'cn');
     $$('[data-vy-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.vyMode === mode)));
-    fillSteps();
-    stage = -1;
+    fill_();
     show(t);
   }
 
@@ -88,26 +68,26 @@
   }
   window.RenalRoute = {at: v => { cancelAnimationFrame(raf); locked = true; lockY = scrollY; show(v); }, run: (a, b, ms) => run(a, b, ms)};
 
-  // прокрутка: путь проходится, пока полоса поднимается от низа экрана к верхней трети
+  // прокрутка: путь проходится, пока блок поднимается от низа экрана к верхней трети
   function onScroll() {
     if (locked) { if (Math.abs(scrollY - lockY) < 160) return; locked = false; }
     const r = box.getBoundingClientRect(), vh = innerHeight;
-    show((vh * 0.95 - r.top) / (vh * 0.95 - vh * 0.25));
+    show((vh * 0.9 - r.top) / (vh * 0.9 - vh * 0.15));
   }
   let ticking = false;
   addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; onScroll(); }); } }, {passive: true});
-  addEventListener('resize', () => { onScroll(); placeCard(); });
+  addEventListener('resize', onScroll);
 
   $$('[data-vy-mode]').forEach(b => b.addEventListener('click', () => { setMode(b.dataset.vyMode); run(0, 1, 3600); }));
-  steps.forEach((b, i) => b.addEventListener('click', () => run(t, i / 4, 700)));
+  $$('[data-vy-step]').forEach(b => b.addEventListener('click', () => run(t, +b.dataset.vyStep / 4, 600)));
 
   addEventListener('renal:car', e => {
-    const {title, country, turnkey, manual, sprite} = e.detail || {};
+    const {title, country, turnkey, manual} = e.detail || {};
     if (!title) return;
     box.classList.add('picked');
-    if (sprite) $$('[data-vy-mine]').forEach(img => { img.src = sprite; });
-    carEl.textContent = `${title} — ${country === 'cn' ? 'из Китая по суше' : 'из Кореи морем'}` +
+    carEl.innerHTML = `<b></b> — ${country === 'cn' ? 'из Китая по суше' : 'из Кореи морем'}` +
       `${turnkey ? `, ≈ ${Math.round(turnkey).toLocaleString('ru-RU')} ₽ с растаможкой` : ''}`;
+    carEl.querySelector('b').textContent = title;
     setMode(country);
     if (!manual) run(0, 1, 4200);
   });
