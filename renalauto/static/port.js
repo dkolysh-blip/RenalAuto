@@ -992,23 +992,74 @@
   const blank = form.innerHTML;
   let formCar = null, sent = false;
   // заявка без конкретной машины: «Подобрать под бюджет», «Получить точный расчёт», «Хочу так же»
-  function openLead({title = 'Подобрать под бюджет', note = 'Подберём оптимальные варианты в Корее и Китае и посчитаем, во сколько обойдётся каждый.', comment = ''} = {}) {
+  function openLead({title = 'Подобрать под бюджет', note = 'Подберём оптимальные варианты в Корее и Китае и посчитаем, во сколько обойдётся каждый.', comment = '', quiz = false} = {}) {
     goal('form_open');
     if (!form.querySelector('[name="name"]')) form.innerHTML = blank;
-    form.querySelector('#car-dialog-title').textContent = title;
+    form.querySelector('#car-dialog-title').textContent = quiz ? 'Подберём 3 варианта' : title;
     form.querySelector('[data-cd-car]').hidden = true;
-    form.querySelector('[data-car-name]').textContent = note;
+    form.querySelector('[data-car-name]').textContent = quiz ? 'Ответьте на три вопроса — пришлём машины с ценой под ключ.' : note;
     form.querySelector('[name="source"]').value = '';
     form.querySelector('[name="external_id"]').value = '';
     form.querySelector('[name="comment"]').value = comment;
+    quizShow(quiz);
     formCar = null;
     sent = false;
     dialog.showModal();
   }
+  // квиз: бюджет → кузов → откуда; ответы уходят менеджеру, а стоянка за окном подстраивается под них
+  const Q_ORDER = ['budget', 'body', 'country'];
+  let qAns = {}, qAt = 0;
+  function quizShow(on) {
+    const qz = form.querySelector('[data-quiz]');
+    if (!qz) return;
+    qz.hidden = !on;
+    form.querySelector('.cd-body').hidden = on;
+    form.querySelector('.cd-what').hidden = on;
+    form.querySelector('.cd-submit').textContent = on ? 'Получить 3 варианта' : 'Получить расчёт';
+    if (on) { qAns = {}; quizGo(0); }
+  }
+  function quizGo(i) {
+    qAt = i;
+    form.querySelectorAll('[data-q]').forEach((st, k) => { st.hidden = k !== i; });
+    form.querySelector('[data-q-back]').hidden = i === 0;
+    form.querySelector('[data-q-bar]').style.width = `${(i / Q_ORDER.length) * 100}%`;
+  }
+  function quizDone() {
+    const BODY = {sedan: 'седан', suv: 'кроссовер', van: 'минивэн'}, CTRY = {KR: 'из Кореи', CN: 'из Китая'};
+    const b = +qAns.budget || 0;
+    const fits = [...cars.values()].filter(c => c.state === 'parked' && (!b || (c.d.turnkey && c.d.turnkey <= b))
+      && (!qAns.body || c.d.body === qAns.body) && (!qAns.country || c.d.country === qAns.country)).length;
+    const want = [b ? budgetText(b) : 'бюджет больше 4 млн ₽', BODY[qAns.body], CTRY[qAns.country] || 'где выгоднее'].filter(Boolean).join(' · ');
+    form.querySelector('[data-quiz]').hidden = true;
+    form.querySelector('.cd-body').hidden = false;
+    form.querySelector('#car-dialog-title').textContent = 'Куда прислать варианты?';
+    form.querySelector('[data-car-name]').textContent = `${want[0].toUpperCase()}${want.slice(1)}.` +
+      (fits ? ` Сейчас на стоянке подходящих: ${fits}. Менеджер выберет лучшие и посчитает цену под ключ.` : ' Менеджер подберёт варианты и посчитает цену под ключ.');
+    form.querySelector('[name="comment"]').value = `Квиз: ${want}`;
+    form.querySelector('[data-q-bar]').style.width = '100%';
+    goal('quiz_done');
+    // стоянка за окном: бюджет и страна — в фильтр, машины перестраиваются
+    if (filterForm && budgetRange) {
+      budgetRange.value = b || budgetRange.max;
+      if (filterForm.elements.country) filterForm.elements.country.value = qAns.country || '';
+      budgetRange.dispatchEvent(new Event('input', {bubbles: true}));
+    }
+    setTimeout(() => form.querySelector('#cd-name')?.focus(), 50);
+  }
+  form.addEventListener('click', e => {
+    const opt = e.target.closest('[data-q] [data-v]');
+    if (opt) {
+      qAns[Q_ORDER[qAt]] = opt.dataset.v;
+      goal(`quiz_${Q_ORDER[qAt]}`);
+      if (qAt < Q_ORDER.length - 1) quizGo(qAt + 1); else quizDone();
+      return;
+    }
+    if (e.target.closest('[data-q-back]')) quizGo(Math.max(0, qAt - 1));
+  });
   window.RenalLead = {open: openLead};
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-lead-open]');
-    if (b) { e.preventDefault(); openLead(); }
+    if (b) { e.preventDefault(); openLead({quiz: b.dataset.leadOpen !== 'form'}); }
   });
   function openForm(d, car) {
     goal('form_open');
@@ -1024,6 +1075,7 @@
     form.querySelector('[data-car-name]').textContent = '';
     form.querySelector('[name="source"]').value = d.demo ? '' : d.source;
     form.querySelector('[name="external_id"]').value = d.demo ? '' : d.id;
+    quizShow(false);
     form.querySelector('#car-dialog-title').textContent = 'Рассчитать стоимость';
     form.querySelector('[name="comment"]').value = '';
     formCar = car || null;

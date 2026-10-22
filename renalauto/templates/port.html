@@ -169,6 +169,19 @@
     </div>
   </div>
 </section>
+<section class="port-section final-cta" aria-labelledby="final-title">
+  <div class="wrap fc">
+    <div class="fc-text">
+      <h2 id="final-title">Не нашли свою машину на стоянке?</h2>
+      <p>Подберём под ваш бюджет, проверим историю и проходимость в РФ, посчитаем цену под ключ.
+        Не подобрали за {{ deal.pick_days }} дней — вернём предоплату.</p>
+    </div>
+    <div class="fc-acts">
+      <button class="btn fc-main" type="button" data-lead-open data-goal="final_cta">Подобрать за 3 вопроса <span aria-hidden="true">→</span></button>
+      {% if company_hotline %}<a class="fc-call" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call"><b>{{ company_hotline }}</b><small>бесплатно по России</small></a>{% endif %}
+    </div>
+  </div>
+</section>
 
 <dialog class="shot-dialog" id="shot-dialog" aria-label="Фото с выдачи"><img src="" alt=""><p></p><button type="button" class="dialog-close" data-close aria-label="Закрыть">×</button></dialog>
 <dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">
@@ -183,6 +196,32 @@
       </div>
       <p class="cd-note" data-car-name></p>
       <ul class="cd-what" aria-label="Что посчитаем"><li>Доставка</li><li>Таможня</li><li>Утильсбор</li><li>Оформление</li></ul>
+    </div>
+    {# квиз для тех, кто без конкретной машины: три вопроса в одно касание, потом контакты #}
+    <div class="cd-quiz" data-quiz hidden>
+      <div class="q-prog" aria-hidden="true"><i data-q-bar></i></div>
+      <div class="q-step" data-q="budget">
+        <p class="q-title"><span>Вопрос 1 из 3</span>Какой бюджет с растаможкой?</p>
+        <div class="q-opts">
+          <button type="button" data-v="1500000">до 1,5 млн ₽</button><button type="button" data-v="2500000">до 2,5 млн ₽</button>
+          <button type="button" data-v="4000000">до 4 млн ₽</button><button type="button" data-v="">больше 4 млн ₽</button>
+        </div>
+      </div>
+      <div class="q-step" data-q="body" hidden>
+        <p class="q-title"><span>Вопрос 2 из 3</span>Какой кузов?</p>
+        <div class="q-opts">
+          <button type="button" data-v="sedan">Седан</button><button type="button" data-v="suv">Кроссовер</button>
+          <button type="button" data-v="van">Минивэн</button><button type="button" data-v="">Не важно</button>
+        </div>
+      </div>
+      <div class="q-step" data-q="country" hidden>
+        <p class="q-title"><span>Вопрос 3 из 3</span>Откуда везём?</p>
+        <div class="q-opts">
+          <button type="button" data-v="KR">Корея</button><button type="button" data-v="CN">Китай</button>
+          <button type="button" data-v="" class="wide">Где выгоднее</button>
+        </div>
+      </div>
+      <button type="button" class="q-back" data-q-back hidden>← Назад</button>
     </div>
     <div class="cd-body">
       <input type="hidden" name="source">
