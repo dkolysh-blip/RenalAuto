@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Onest:wght@500;700&family=Unbounded:wght@700&display=block" rel="stylesheet">
+<style>
+*{box-sizing:border-box} html,body{margin:0;background:#f6f7f9;font-family:Onest,sans-serif;color:#16191d}
+.b{position:relative;overflow:hidden;background:#f6f7f9}
+.ph{position:absolute;background-size:cover;background-position:center}
+.panel{position:absolute;display:flex;flex-direction:column;justify-content:space-between}
+.logo{width:150px}
+h1{font:700 44px/1.1 Unbounded,sans-serif;margin:0;color:#16191d}
+h1 em{font-style:normal;color:#dd1f1f}
+p{margin:14px 0 0;font-size:21px;line-height:1.38;color:#475467}
+.facts{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
+.facts span{font-size:17px;font-weight:700;color:#0b5c8f;background:#e6f0f8;padding:8px 14px;border-radius:999px}
+.dom{font-size:22px;font-weight:700;color:#16191d}
+/* 16:9 */
+.w{width:1080px;height:607px}
+.w .ph{right:24px;top:24px;bottom:24px;width:50%;border-radius:24px}
+.w .panel{left:0;top:0;bottom:0;width:48%;padding:44px 40px 40px 52px}
+
+/* 1:1 */
+.s{width:1080px;height:1080px}
+.s .ph{left:28px;right:28px;top:28px;height:54%;border-radius:28px}
+
+.s .panel{left:0;right:0;bottom:0;height:43%;padding:16px 60px 48px}
+.s h1{font-size:74px} .s p{font-size:30px;margin-top:18px} .s .facts span{font-size:24px;padding:10px 18px} .s .dom{font-size:28px}
+.s .logo{position:absolute;left:56px;top:56px;width:210px;background:rgba(246,247,249,.92);padding:14px 18px;border-radius:16px}
+</style></head><body><div id="root"></div>
+<script>
+const q=new URLSearchParams(location.search), fmt=q.get('f'), img=q.get('img'), v=q.get('v');
+const H={kr:'Авто из <em>Кореи</em><br>под заказ',cn:'Авто из <em>Китая</em><br>под заказ',both:'Авто из <em>Кореи</em><br>и <em>Китая</em>'}[v];
+const sub='Подберём оптимальный вариант и привезём до вашего города';
+const facts='<div class="facts"><span>Комиссия до 50 000 ₽</span><span>Агентский договор</span></div>';
+document.getElementById('root').innerHTML = fmt==='w'
+ ? `<div class="b w"><div class="ph" style="background-image:url(${img})"></div><div class="panel"><img class="logo" src="renal-auto-logo.svg"><div><h1>${H}</h1><p>${sub}</p>${facts}</div><div class="dom">renal-auto.ru</div></div></div>`
+ : `<div class="b s"><div class="ph" style="background-image:url(${img})"></div><img class="logo" src="renal-auto-logo.svg"><div class="panel"><div><h1>${H}</h1><p>${sub}</p>${facts}</div><div class="dom">renal-auto.ru</div></div></div>`;
+</script></body></html>
