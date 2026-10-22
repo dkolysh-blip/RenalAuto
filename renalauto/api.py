@@ -248,7 +248,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     def header_rates() -> list[tuple[str, str]]:
         """Курсы для шапки: по ним посчитаны цены в рублях на сайте."""
         out = []
-        for code, label, k, digits in (("CNY", "¥1", 1, 2), ("KRW", "₩1000", 1000, 1), ("EUR", "€1", 1, 1)):
+        for code, label, k, digits in (("USD", "$1", 1, 1), ("EUR", "€1", 1, 1), ("CNY", "¥1", 1, 2), ("KRW", "₩1000", 1000, 1)):
             v = rates.get(code)
             if v:
                 out.append((label, f"{v * k:.{digits}f}".replace(".", ",") + " ₽"))
