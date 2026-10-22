@@ -59,6 +59,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <a class="logo" href="/"><img class="logo-mark on-dark" src="/static/brand/renal-auto-mark-white.svg" alt="" width="68" height="30"><img class="logo-mark on-light" src="/static/brand/renal-auto-mark.svg" alt="" width="68" height="30"><span class="logo-word">{{ company|upper|replace(' ', '-') }}</span></a>
       <p>Авто из Кореи и Китая под заказ: подбор, проверка, выкуп и доставка до вашего города.</p>
     </div>
+    {% block footer_mid %}{% endblock %}
     <div class="foot-contacts">
       {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}">{{ company_hotline }}</a><span class="muted small">бесплатно по России</span>{% endif %}
       {% if company_phone %}<a href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}

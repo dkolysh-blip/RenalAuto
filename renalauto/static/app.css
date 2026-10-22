@@ -162,6 +162,18 @@ footer { background: var(--card); border-top: 3px solid var(--accent); margin-to
 .foot-contacts a { color: var(--text); }
 .foot-contacts .phone { font-size: 18px; font-weight: 800; }
 .foot-legal p { margin: 14px 0 0; }
+/* частые вопросы в подвале лендинга: компактный список, ответ раскрывается по нажатию */
+.foot:has(.foot-faq) { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.6fr) minmax(0, .9fr); gap: 24px 48px; align-items: start; }
+.foot-faq { display: flex; flex-direction: column; min-width: 0; }
+@media (max-width: 900px) { .foot:has(.foot-faq) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .foot-faq { grid-column: 1 / -1; grid-row: 2; } }
+@media (max-width: 600px) { .foot:has(.foot-faq) { grid-template-columns: minmax(0, 1fr); } .foot-faq { grid-row: auto; } }
+.foot-h { font-size: 14px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+.foot-faq details { border-bottom: 1px solid var(--line); }
+.foot-faq summary { list-style: none; cursor: pointer; padding: 9px 22px 9px 0; position: relative; font-size: 14px; font-weight: 600; color: var(--text); }
+.foot-faq summary::-webkit-details-marker { display: none; }
+.foot-faq summary::after { content: "+"; position: absolute; right: 2px; top: 7px; font-size: 16px; font-weight: 700; color: var(--accent); }
+.foot-faq details[open] summary::after { content: "−"; }
+.foot-faq details p { margin: 0 0 10px; font-size: 13.5px; line-height: 1.5; color: var(--muted); }
 .foot-legal a { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
 .foot-legal a:hover { color: var(--text); text-decoration-color: currentColor; }
 

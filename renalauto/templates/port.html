@@ -155,47 +155,6 @@
   </div>
 </section>
 
-<section class="port-section band band-white" id="faq" aria-labelledby="faq-title">
-  <div class="sec-head">
-    <span class="sec-eyebrow">Вопросы</span>
-    <h2 id="faq-title">Частые вопросы</h2>
-  </div>
-  <div class="faq">
-    <details>
-      <summary>Сколько стоят ваши услуги?</summary>
-      <p>Не больше {{ fmt(deal.fee) }} ₽ за машину, бывает меньше — зависит от машины и площадки. Это не процент от её цены. Всё остальное (машина, доставка, таможня, утильсбор, оформление) — фактические расходы, каждую сумму подтверждаем отчётом.</p>
-    </details>
-    <details>
-      <summary>Может ли итоговая цена измениться?</summary>
-      <p>Расчёт ориентировочный: итог зависит от курса на день оплаты инвойса и от таможенных ставок на дату подачи декларации. Если курс или ставки изменятся, изменится и сумма — заранее предупредим и покажем расчёт.</p>
-    </details>
-    <details>
-      <summary>Что если машина не пройдёт по утильсбору или запрету на вывоз?</summary>
-      <p>На сайте показываем только машины, которые проходят по правилам ввоза в РФ. Перед бронью менеджер ещё раз проверяет мощность, объём и возраст — платёж продавцу не вносится, пока машина не проверена.</p>
-    </details>
-    <details>
-      <summary>Можно заказать машину с конкретными характеристиками?</summary>
-      <p>Да. Подберём варианты строго под ваши требования: марка, модель, год, пробег, комплектация и бюджет.</p>
-    </details>
-    <details>
-      <summary>Зачем платёж за бронь и вернётся ли он?</summary>
-      <p>Чтобы продавец снял машину с продажи, вносится обеспечительный платёж {{ fmt(deal.deposit) }} ₽. Машину вы оплачиваете по инвойсу в течение {{ deal.invoice_days }} дней, после этого платёж за бронь возвращаем за 1 рабочий день.</p>
-    </details>
-    <details>
-      <summary>Что если вы не найдёте подходящую машину?</summary>
-      <p>Если за {{ deal.pick_days }} дней не подберём машину по вашей заявке, вернём предоплату. Срок можно продлить, если вы согласны подождать.</p>
-    </details>
-    <details>
-      <summary>Можно ли отказаться?</summary>
-      <p>Да, до брони машины у продавца. После брони предоплата не возвращается, а если машину не оплатить по инвойсу за {{ deal.invoice_days }} дней, бронь снимается и платёж за неё не возвращается.</p>
-    </details>
-    <details>
-      <summary>Какие гарантии?</summary>
-      <p>Работаем по агентскому договору с юрлицом: {{ company_legal_name or company }}{% if company_requisites %}, {{ company_requisites }}{% endif %}. Машину покупаем от вашего имени и за ваш счёт, отчитываемся по каждой трате, по запросу присылаем фото и видео на этапах. За утрату вашего имущества или денег отвечаем в размере реального ущерба.</p>
-    </details>
-  </div>
-</section>
-
 <dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">
   <form class="lead-form cd" data-lead>
     <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
@@ -234,6 +193,43 @@
 {% if company_max %}<a class="max-float" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="28" height="28"><span>Подборка в MAX</span></a>{% endif %}
 <div class="cta-bar">{% if company_max %}<a class="btn ghost max-btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="22" height="22">MAX</a>{% endif %}{% if company_sms %}<a class="btn ghost sms-btn" href="{{ company_sms }}" data-goal="sms" aria-label="Написать SMS">SMS</a>{% endif %}<button class="btn" type="button" data-lead-open>Подобрать авто</button></div>
 <script type="application/json" id="port-data">{{ scene|safe }}</script>
+{% endblock %}
+{% block footer_mid %}
+    <div class="foot-faq" id="faq">
+      <b class="foot-h">Частые вопросы</b>
+    <details>
+      <summary>Сколько стоят ваши услуги?</summary>
+      <p>Не больше {{ fmt(deal.fee) }} ₽ за машину, бывает меньше — зависит от машины и площадки. Это не процент от её цены. Всё остальное (машина, доставка, таможня, утильсбор, оформление) — фактические расходы, каждую сумму подтверждаем отчётом.</p>
+    </details>
+    <details>
+      <summary>Может ли итоговая цена измениться?</summary>
+      <p>Расчёт ориентировочный: итог зависит от курса на день оплаты инвойса и от таможенных ставок на дату подачи декларации. Если курс или ставки изменятся, изменится и сумма — заранее предупредим и покажем расчёт.</p>
+    </details>
+    <details>
+      <summary>Что если машина не пройдёт по утильсбору или запрету на вывоз?</summary>
+      <p>На сайте показываем только машины, которые проходят по правилам ввоза в РФ. Перед бронью менеджер ещё раз проверяет мощность, объём и возраст — платёж продавцу не вносится, пока машина не проверена.</p>
+    </details>
+    <details>
+      <summary>Можно заказать машину с конкретными характеристиками?</summary>
+      <p>Да. Подберём варианты строго под ваши требования: марка, модель, год, пробег, комплектация и бюджет.</p>
+    </details>
+    <details>
+      <summary>Зачем платёж за бронь и вернётся ли он?</summary>
+      <p>Чтобы продавец снял машину с продажи, вносится обеспечительный платёж {{ fmt(deal.deposit) }} ₽. Машину вы оплачиваете по инвойсу в течение {{ deal.invoice_days }} дней, после этого платёж за бронь возвращаем за 1 рабочий день.</p>
+    </details>
+    <details>
+      <summary>Что если вы не найдёте подходящую машину?</summary>
+      <p>Если за {{ deal.pick_days }} дней не подберём машину по вашей заявке, вернём предоплату. Срок можно продлить, если вы согласны подождать.</p>
+    </details>
+    <details>
+      <summary>Можно ли отказаться?</summary>
+      <p>Да, до брони машины у продавца. После брони предоплата не возвращается, а если машину не оплатить по инвойсу за {{ deal.invoice_days }} дней, бронь снимается и платёж за неё не возвращается.</p>
+    </details>
+    <details>
+      <summary>Какие гарантии?</summary>
+      <p>Работаем по агентскому договору с юрлицом: {{ company_legal_name or company }}{% if company_requisites %}, {{ company_requisites }}{% endif %}. Машину покупаем от вашего имени и за ваш счёт, отчитываемся по каждой трате, по запросу присылаем фото и видео на этапах. За утрату вашего имущества или денег отвечаем в размере реального ущерба.</p>
+    </details>
+    </div>
 {% endblock %}
 {% block scripts %}<script src="/static/port.js?v={{ asset_version }}" defer></script>
 <script src="/static/route.js?v={{ asset_version }}" defer></script>{% endblock %}
