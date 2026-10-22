@@ -72,6 +72,8 @@
         <figure class="tk-stage" data-tk-stage>
           <div class="tk-bars" role="tablist" aria-label="Этапы">{% for i in range(5) %}<button type="button" role="tab" data-vy-step="{{ i }}" data-vy-pin aria-label="Этап {{ i + 1 }}"><i></i></button>{% endfor %}</div>
           <img data-tk-photo alt="" width="1280" height="800">
+          <div class="tk-ribbon" aria-hidden="true"><i class="tk-r-rail"></i><i class="tk-r-fill" data-tk-rfill></i>{% for i in range(5) %}<i class="tk-r-dot" data-tk-dot style="--x: {{ 6 + i * 22 }}%"></i>{% endfor %}
+            <span class="tk-r-veh" data-tk-rveh><span class="tk-ship"><svg viewBox="0 0 66 26"><path d="M2 8h50l12 9-6 7H8L2 8z" fill="#fff"/><rect x="10" y="3" width="36" height="7" rx="1.5" fill="#cfd6dd"/><rect x="40" y="0" width="7" height="6" rx="1" fill="#dd1f1f"/><path d="M-18 21h16" stroke="rgba(255,255,255,.55)" stroke-width="2" stroke-linecap="round"/></svg></span><span class="tk-truck"><svg viewBox="0 0 66 26"><rect x="2" y="6" width="44" height="14" rx="2" fill="#e9edf1"/><rect x="8" y="9" width="10" height="8" rx="2" fill="#16191d"/><rect x="24" y="9" width="10" height="8" rx="2" fill="#dd1f1f"/><rect x="48" y="5" width="15" height="16" rx="3" fill="#dd1f1f"/><circle cx="12" cy="22" r="3" fill="#0f1114" stroke="#fff" stroke-width="1.5"/><circle cx="38" cy="22" r="3" fill="#0f1114" stroke="#fff" stroke-width="1.5"/><circle cx="56" cy="22" r="3" fill="#0f1114" stroke="#fff" stroke-width="1.5"/></svg></span></span></div>
           <figcaption>
             <span class="tk-count"><b data-tk-n>01</b> / 05</span>
             <b class="tk-title" data-tk-t></b>

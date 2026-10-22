@@ -626,19 +626,38 @@ body.pop-sheet .cta-bar { display: none; }
 .tk-stage { position: relative; margin: 0; min-height: 420px; border-radius: 22px; overflow: hidden; background: #1b1f25; }
 .tk-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .tk-stage::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.45) 0%, transparent 28%, transparent 45%, rgba(0,0,0,.82) 100%); }
-.tk-stage.swap img { animation: tk-in .6s ease; } .tk-stage.swap figcaption { animation: tk-up .45s ease; }
+.tk-stage img { animation: tk-zoom 6s ease-out both; }  /* медленное приближение, как в кино */
+.tk-stage.swap img { animation: tk-in .6s ease, tk-zoom 6s ease-out .1s both; }
+@keyframes tk-zoom { from { transform: scale(1); } to { transform: scale(1.08); } } .tk-stage.swap figcaption { animation: tk-up .45s ease; }
 @keyframes tk-in { from { opacity: .3; transform: scale(1.04); } }
 @keyframes tk-up { from { opacity: 0; transform: translateY(10px); } }
 .tk-bars { position: absolute; z-index: 2; left: 16px; right: 16px; top: 14px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 .tk-bars button { --p: 0; height: 18px; padding: 7px 0; border: 0; background: none; cursor: pointer; }
 .tk-bars i { display: block; height: 4px; border-radius: 2px; background: rgba(255,255,255,.3); overflow: hidden; position: relative; }
 .tk-bars i::after { content: ""; position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(var(--p)); }
-.tk-stage figcaption { position: absolute; z-index: 2; left: 24px; right: 24px; bottom: 22px; display: grid; gap: 6px; }
+.tk-stage figcaption { position: absolute; z-index: 2; left: 24px; right: 24px; bottom: 70px; display: grid; gap: 6px; }
+/* маршрут внизу фото: пунктир, пять точек, едущий транспорт */
+.tk-ribbon { position: absolute; z-index: 2; left: 20px; right: 20px; bottom: 18px; height: 34px; }
+.tk-r-rail, .tk-r-fill { position: absolute; left: 6%; top: 22px; height: 3px; border-radius: 2px; }
+.tk-r-rail { right: 6%; background: repeating-linear-gradient(90deg, rgba(255,255,255,.45) 0 6px, transparent 6px 12px); }
+.tk-r-fill { width: 0; background: #fff; box-shadow: 0 0 10px rgba(255,255,255,.6); }
+.tk-r-dot { position: absolute; left: var(--x); top: 17px; width: 13px; height: 13px; margin-left: -6.5px; border-radius: 50%; background: rgba(15,17,20,.6);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.6); transition: background .3s, box-shadow .3s, transform .3s; }
+.tk-r-dot.done { background: #fff; box-shadow: none; }
+.tk-r-dot.on { background: var(--accent); box-shadow: 0 0 0 4px rgba(221,31,31,.35); transform: scale(1.15); }
+.tk-r-veh { position: absolute; left: 6%; top: -6px; width: 46px; height: 18px; transform: translateX(-50%); }
+.tk-r-veh svg { width: 46px; height: 18px; overflow: visible; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+.tk-r-veh .tk-ship { display: none; } .tk-r-veh.ship .tk-ship { display: block; } .tk-r-veh.ship .tk-truck { display: none; }
+.tk-r-veh.moving svg { animation: tk-bob .9s ease-in-out infinite; }
+.track.jump .tk-r-veh, .track.jump .tk-r-fill { transition: left .7s cubic-bezier(.3,.7,.3,1), width .7s cubic-bezier(.3,.7,.3,1); }
+.tk-r-veh.ship.moving svg { animation-duration: 1.6s; }
+@keyframes tk-bob { 50% { transform: translateY(-1.5px) rotate(-1deg); } }
+@media (prefers-reduced-motion: reduce) { .tk-stage img, .tk-r-veh svg { animation: none !important; } }
 .tk-count { font: 600 13px/1 Onest, system-ui, sans-serif; color: rgba(255,255,255,.7); letter-spacing: .08em; }
 .tk-count b { font: 700 30px/1 Unbounded, Onest, sans-serif; color: #fff; letter-spacing: 0; margin-right: 2px; }
 .tk-title { font: 700 26px/1.15 Unbounded, Onest, sans-serif; color: #fff; }
 .tk-place { font-size: 15px; color: rgba(255,255,255,.78); }
-.tk-nav { position: absolute; z-index: 2; bottom: 24px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35);
+.tk-nav { position: absolute; z-index: 2; bottom: 76px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35);
   background: rgba(15,17,20,.35); color: #fff; font-size: 18px; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .tk-nav.prev { right: 74px; } .tk-nav.next { right: 22px; }
 .tk-nav:hover { background: rgba(255,255,255,.18); }
@@ -667,7 +686,8 @@ body.pop-sheet .cta-bar { display: none; }
   .tk-tabs { width: 100%; } .tk-tabs button { flex: 1; padding: 11px 6px; font-size: 13.5px; }
   .tk-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
   .tk-stage { min-height: 0; aspect-ratio: 4 / 5; border-radius: 20px; }
-  .tk-stage figcaption { left: 18px; right: 18px; bottom: 18px; }
+  .tk-stage figcaption { left: 18px; right: 18px; bottom: 62px; }
+  .tk-ribbon { left: 12px; right: 12px; bottom: 12px; }
   .tk-title { font-size: 22px; } .tk-count b { font-size: 24px; }
   .tk-nav { display: none; }
   .tk-list { display: none; }

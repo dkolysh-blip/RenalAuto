@@ -9,6 +9,7 @@
   const $ = s => box.querySelector(s), $$ = s => [...box.querySelectorAll(s)];
   const bars = $$('.tk-bars [data-vy-step]'), rows = $$('[data-tk-step]'), stageEl = $('[data-tk-stage]');
   const photo = $('[data-tk-photo]'), carEl = $('[data-route-car]');
+  const rfill = $('[data-tk-rfill]'), rveh = $('[data-tk-rveh]'), dots = $$('[data-tk-dot]');
   const f = {n: $('[data-tk-n]'), t: $('[data-tk-t]'), pl: $('[data-tk-pl]'), do: $('[data-tk-do]'), get: $('[data-tk-get]'), money: $('[data-tk-money]')};
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const STEP_MS = 5200;
@@ -26,19 +27,36 @@
     rows.forEach((r, i) => { r.classList.toggle('done', i < stage); r.classList.toggle('on', i === stage); });
     stageEl.classList.remove('swap'); void stageEl.offsetWidth; stageEl.classList.add('swap');  // заново проиграть появление
   }
-  function go(i) { stage = (i + 5) % 5; t0 = performance.now(); render(); }
+  function go(i) { stage = (i + 5) % 5; t0 = performance.now(); render(); move(0); }
+
+  // маршрут внизу фото: транспорт едет от точки этапа к следующей, пока заполняется полоска;
+  // из Кореи до Владивостока — судно, дальше и из Китая — автовоз
+  function move(k) {
+    const pos = Math.min(4, stage + (stage < 4 ? k : 0)), x = 6 + pos * 22;
+    rfill.style.width = `${x - 6}%`;
+    rveh.style.left = `${x}%`;
+    rveh.classList.toggle('ship', mode === 'kr' && pos < 2);
+    rveh.classList.toggle('moving', stage < 4 && k > 0 && k < 1);
+    dots.forEach((d, i) => { d.classList.toggle('done', i < pos + .01); d.classList.toggle('on', i === stage); });
+  }
 
   // автопрокрутка: полоска текущего этапа заполняется, потом — следующий этап; после последнего — заново
   function tick(now) {
     if (!playing) return;
     const k = Math.min(1, (now - t0) / STEP_MS);
     bars[stage].style.setProperty('--p', k);
+    move(Math.min(1, k * 1.25));  // доехали чуть раньше конца полоски — пауза на точке
     if (k >= 1) go(stage + 1);
     raf = requestAnimationFrame(tick);
   }
   function play() { if (playing || reduce.matches || touched) return; playing = true; t0 = performance.now(); raf = requestAnimationFrame(tick); }
   function pause() { playing = false; cancelAnimationFrame(raf); }
-  const manual = i => { touched = true; pause(); go(i); bars[stage].style.setProperty('--p', 1); };
+  // вручную: транспорт плавно переезжает к выбранному этапу (переход задан в CSS классом jump)
+  const manual = i => {
+    touched = true; pause();
+    box.classList.add('jump'); go(i); bars[stage].style.setProperty('--p', 1);
+    clearTimeout(manual.t); manual.t = setTimeout(() => box.classList.remove('jump'), 750);
+  };
 
   function setMode(m) {
     mode = m === 'cn' ? 'cn' : 'kr';
