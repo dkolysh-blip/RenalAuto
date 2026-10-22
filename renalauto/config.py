@@ -71,6 +71,8 @@ class Settings:
     site_url: str = field(default_factory=lambda: os.getenv("SITE_URL", "https://renal-auto.asia:8443").rstrip("/"))
     company_name: str = field(default_factory=lambda: os.getenv("COMPANY_NAME", "Renal Auto"))
     company_phone: str | None = field(default_factory=lambda: os.getenv("COMPANY_PHONE", "+7 (914) 066-88-08") or None)
+    # бесплатный номер 8 800 — в шапке и подвале; мобильный COMPANY_PHONE остаётся для SMS и в подвале
+    company_hotline: str | None = field(default_factory=lambda: os.getenv("COMPANY_HOTLINE", "8 800 250-57-78") or None)
     company_email: str | None = field(
         default_factory=lambda: os.getenv("COMPANY_EMAIL", "ren125primorye@gmail.com") or None
     )

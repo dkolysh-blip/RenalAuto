@@ -219,6 +219,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         lead_kinds=LEAD_KIND_LABELS,
         company=settings.company_name,
         company_phone=settings.company_phone,
+        company_hotline=settings.company_hotline,
         # SMS для тех, кто не хочет ставить MAX: номер без пробелов и скобок, текст уже набран
         company_sms=("sms:" + re.sub(r"[^\d+]", "", settings.company_phone) + "?&body=" + quote("Здравствуйте! Хочу подобрать автомобиль"))
         if settings.company_phone else None,

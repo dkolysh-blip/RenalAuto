@@ -44,7 +44,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <a href="/#podbor">Подбор под бюджет</a>
     </nav>
     <div class="contacts">
-      {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
+      {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call">{{ company_hotline }}</a>{% elif company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_max %}<a class="btn ghost max-btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="20" height="20">MAX</a>{% endif %}
       {% if company_vk %}<a class="btn ghost max-btn" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img src="/static/brand/vk.webp" alt="" width="20" height="20">ВК</a>{% endif %}
     </div>
@@ -60,7 +60,8 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <p>Авто из Кореи и Китая под заказ: подбор, проверка, выкуп и доставка до вашего города.</p>
     </div>
     <div class="foot-contacts">
-      {% if company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
+      {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}">{{ company_hotline }}</a><span class="muted small">бесплатно по России</span>{% endif %}
+      {% if company_phone %}<a href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_email %}<a href="mailto:{{ company_email }}">{{ company_email }}</a>{% endif %}
       {% if company_max %}<a class="max-link" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="18" height="18">Канал в MAX</a>{% endif %}
       {% if company_vk %}<a class="max-link" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img src="/static/brand/vk.webp" alt="" width="18" height="18">ВКонтакте</a>{% endif %}
