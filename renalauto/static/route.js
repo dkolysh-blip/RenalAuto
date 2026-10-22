@@ -12,7 +12,7 @@
   const rfill = $('[data-tk-rfill]'), rveh = $('[data-tk-rveh]'), dots = $$('[data-tk-dot]');
   const f = {n: $('[data-tk-n]'), t: $('[data-tk-t]'), pl: $('[data-tk-pl]'), do: $('[data-tk-do]'), get: $('[data-tk-get]'), money: $('[data-tk-money]')};
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  const STEP_MS = 5200, PHOTO_V = 2;  // PHOTO_V — поднять при замене фото этапов, чтобы браузер не показывал старые
+  const STEP_MS = 5200, PHOTO_V = 4;  // PHOTO_V — поднять при замене фото этапов, чтобы браузер не показывал старые
   let mode = 'kr', stage = 0, raf = 0, t0 = 0, playing = false, visible = false, touched = false;
 
   function render() {

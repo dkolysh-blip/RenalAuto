@@ -1,14 +1,5 @@
 [
  {
-  "slug": "truck-cn",
-  "name": "Автовоз в Китае",
-  "title": "Chinese car transporter.jpg",
-  "author": "Unau",
-  "license": "CC BY-SA 3.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.ru",
-  "url": "https://commons.wikimedia.org/wiki/File:Chinese_car_transporter.jpg"
- },
- {
   "slug": "busan",
   "name": "Порт Пусана",
   "title": "Busan Port in 2018.jpg",
@@ -16,15 +7,6 @@
   "license": "CC BY-SA 4.0",
   "license_url": "https://creativecommons.org/licenses/by-sa/4.0/deed.ru",
   "url": "https://commons.wikimedia.org/wiki/File:Busan_Port_in_2018.jpg"
- },
- {
-  "slug": "ship",
-  "name": "Судно-автовоз",
-  "title": "Car carrier vessel LIBERTY PEACE, sailing in the Puget Sound (20240219).jpg",
-  "author": "FPTI",
-  "license": "CC0",
-  "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.ru",
-  "url": "https://commons.wikimedia.org/wiki/File:Car_carrier_vessel_LIBERTY_PEACE,_sailing_in_the_Puget_Sound_(20240219).jpg"
  },
  {
   "slug": "vlad",
@@ -43,5 +25,14 @@
   "license": "Public domain",
   "license_url": "https://commons.wikimedia.org/wiki/Public_domain",
   "url": "https://commons.wikimedia.org/wiki/File:Suifenhe_(view_from_the_temple_Guanlin).jpg"
+ },
+ {
+  "slug": "truck-cn-near",
+  "name": "Автовоз в Китае",
+  "title": "Chinese car transporter.jpg",
+  "author": "Unau",
+  "license": "CC BY-SA 3.0",
+  "license_url": "https://creativecommons.org/licenses/by-sa/3.0/deed.ru",
+  "url": "https://commons.wikimedia.org/wiki/File:Chinese_car_transporter.jpg"
  }
 ]
