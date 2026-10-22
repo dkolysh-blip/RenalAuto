@@ -93,7 +93,7 @@
   // Две раскладки: широкая (десктоп) и узкая вертикальная полоса в 2 ряда (телефон), судно внизу.
   // Каждое место: где стоит машина и три маршрута — заезд через ворота, выезд обратно и путь к рампе.
   function wideLayout() {
-    const W = 1600, H = 760, road = 56, apron = 540, quay = 600, rampX = 800, ZW = 760, COLS = 14;
+    const W = 1600, H = 760, road = 56, apron = 540, quay = 600, rampX = 410, ZW = 760, COLS = 14;  // паром — у корейской стоянки
     const rows = [[164, 214], [266, 214], [344, 394], [446, 394]];  // центр мест и их проезд
     const zones = [{zone: 'KR', x0: 30}, {zone: 'CN', x0: 810}];
     const slots = [];
@@ -112,8 +112,8 @@
       }
     }
     return {
-      W, H, slots, quay, rampX, cols: COLS, zoom: 1.9, ship: {x: 450, y: quay + 26, w: 700, h: 115},
-      cranes: [180, 1420].map(x => ({x, y0: quay - 84, y1: quay + 160})), truck: road + 9,
+      W, H, slots, quay, rampX, cols: COLS, zoom: 1.9, ship: {x: 60, y: quay + 26, w: 700, h: 115},
+      cranes: [130, 690].map(x => ({x, y0: quay - 84, y1: quay + 160})), truck: road + 9,
       zones: zones.map(z => ({zone: z.zone, title: [z.x0 + 52, 124], stats: [z.x0 + ZW - 10, 124],
         scale: {x0: z.x0 + 76, x1: z.x0 + 76 + (COLS - 1) * 50, y: 500}})),
       paint(g) {
