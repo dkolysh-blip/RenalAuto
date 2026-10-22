@@ -18,6 +18,8 @@ class Rates:
         self._rates = dict(fallback)
         self.source = "настройки"
         self.updated_at: float | None = None
+        self.prev: dict[str, float] = {}  # курс на предыдущую дату ЦБ — для изменения за день
+        self.date: str | None = None  # дата, на которую ЦБ установил курс (YYYY-MM-DD)
         self._client = client
 
     def rub(self, amount: float | None, currency: str) -> float | None:
@@ -49,6 +51,9 @@ class Rates:
             item = valutes.get(code)
             if item and item.get("Value") and item.get("Nominal"):
                 self._rates[code] = float(item["Value"]) / float(item["Nominal"])
+                if item.get("Previous"):
+                    self.prev[code] = float(item["Previous"]) / float(item["Nominal"])
+        self.date = (data.get("Date") or "")[:10] or None
         self.source = "ЦБ РФ"
         self.updated_at = time.time()
 

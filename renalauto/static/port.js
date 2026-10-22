@@ -783,7 +783,7 @@
     const rates = [r.CNY && `¥1 = ${f(r.CNY, 2)} ₽`, r.KRW && `₩1000 = ${f(r.KRW * 1000, 1)} ₽`, r.EUR && `€1 = ${f(r.EUR, 1)} ₽`].filter(Boolean);
     root.querySelector('[data-hud="count"]').textContent = L.W < 600
       ? `${list.length} машин · KR ${kr} · CN ${list.length - kr}`
-      : rates.length && !matchMedia('(min-width: 1101px)').matches ? `${DATA.rates_source === 'ЦБ РФ' ? 'Курс ЦБ' : 'Курс'}: ${rates.join(' · ')}`  // на планшете в шапке курса нет
+      : rates.length && !matchMedia('(min-width: 1241px)').matches ? `${DATA.rates_source === 'ЦБ РФ' ? 'Курс ЦБ' : 'Курс'}: ${rates.join(' · ')}`  // на планшете в шапке курса нет
       : `${list.length} ${list.length % 10 === 1 && list.length % 100 !== 11 ? 'машина' : [2, 3, 4].includes(list.length % 10) && ![12, 13, 14].includes(list.length % 100) ? 'машины' : 'машин'} на стоянке`;  // курс — в шапке сайта
   }
   function setStatus(on, text) {

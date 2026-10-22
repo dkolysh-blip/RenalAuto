@@ -43,27 +43,16 @@ footer .logo-mark.on-dark { display: none; } footer .logo-mark.on-light { displa
 .top nav a { color: rgba(255,255,255,.72); font-weight: 500; }
 .top nav a:hover { color: #fff; text-decoration: none; }
 .top .contacts { display: flex; gap: 12px; align-items: center; }
-/* курс в шапке лендинга: медленная бегущая строка между логотипом и контактами */
+/* курс в шапке лендинга: одна спокойная строка — код валюты серым, курс тёмным, между парами тонкая черта */
 .top-rates { display: none; }
-.port-page .top-rates { display: block; order: 1; flex: 1 1 0; min-width: 0; overflow: hidden; font-size: 13px; color: var(--muted); white-space: nowrap;
-  font-variant-numeric: tabular-nums; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-.tr-track { display: inline-flex; animation: tr-run 60s linear infinite; }
-.tr-run, .tr-run > span { display: inline-flex; align-items: center; gap: 18px; padding-right: 48px; }
-.tr-run i { font: 800 10px/1 Onest, system-ui, sans-serif; font-style: normal; letter-spacing: .3em; text-transform: uppercase; color: #fff;
-  background: var(--sea); padding: 4px 6px 4px 9px; border-radius: 4px; }
-/* пара «валюта — курс»: знак валюты морским синим, сумма тёмная, между парами — тонкая точка */
-.tr-run b { display: inline-flex; align-items: baseline; gap: 6px; font: 500 12px/1 Unbounded, Onest, sans-serif; letter-spacing: .03em; color: #16191d; }
-.tr-run b + b::before { content: ""; width: 3px; height: 3px; border-radius: 50%; background: #c3ccd5; align-self: center; margin-right: 12px; }
-.tr-run b em { font: 700 12px/1 Onest, system-ui, sans-serif; font-style: normal; color: var(--sea); }
-/* телефон в шапке — тем же шрифтом, что название */
-.port-page .top .contacts .phone { font: 600 15px/1 Unbounded, Onest, sans-serif; letter-spacing: .04em; }
-.port-page .top .max-btn { font-weight: 700; letter-spacing: .02em; }
-.port-page .top-rates:hover .tr-track { animation-play-state: paused; }
-@keyframes tr-run { to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) { .tr-track { animation: none; } }
+.port-page .top-rates { display: flex; order: 1; flex: 1 1 0; min-width: 0; justify-content: center; overflow: hidden; white-space: nowrap;
+  font-variant-numeric: tabular-nums; }
+.tr-set { display: inline-flex; align-items: center; }
+.tr-set i { font: 700 10.5px/1 Onest, system-ui, sans-serif; font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--sea); margin-right: 14px; }
+.tr-set b { display: inline-flex; align-items: baseline; gap: 6px; padding: 0 14px; border-left: 1px solid #e3e8ee; font: 600 14px/1 Onest, system-ui, sans-serif; color: #16191d; }
+.tr-set em { font: 700 10.5px/1 Onest, system-ui, sans-serif; font-style: normal; letter-spacing: .1em; color: #8a94a3; }
 .port-page .top .contacts { order: 2; margin-left: auto; }
-@media (max-width: 1100px) { .port-page .top-rates { display: none; } }
+@media (max-width: 1240px) { .port-page .top-rates { display: none; } }
 .top .contacts .phone { color: #fff; font-weight: 700; white-space: nowrap; }
 .top .btn.ghost { color: #fff; border-color: rgba(255,255,255,.28); }
 .top .btn.ghost:hover { background: rgba(255,255,255,.08); }

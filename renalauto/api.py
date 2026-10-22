@@ -245,17 +245,25 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         asset_version=_asset_version(),
     )
 
-    def header_rates() -> list[tuple[str, str]]:
-        """Курсы для шапки: по ним посчитаны цены в рублях на сайте."""
+    def header_rates() -> list[dict[str, Any]]:
+        """Курсы для шапки: по ним посчитаны цены в рублях на сайте; изменение — к предыдущему курсу ЦБ."""
         out = []
-        for code, label, k, digits in (("USD", "$1", 1, 1), ("EUR", "€1", 1, 1), ("CNY", "¥1", 1, 2), ("KRW", "₩1000", 1000, 1)):
+        for code, k, digits in (("USD", 1, 2), ("EUR", 1, 2), ("CNY", 1, 2), ("KRW", 1000, 2)):
             v = rates.get(code)
-            if v:
-                out.append((label, f"{v * k:.{digits}f}".replace(".", ",") + " ₽"))
+            if not v:
+                continue
+            prev = rates.prev.get(code)
+            delta = round((v - prev) * k, digits) if prev else 0
+            out.append({"code": code, "per": k, "value": f"{v * k:.{digits}f}".replace(".", ","),
+                        "delta": f"{abs(delta):.{digits}f}".replace(".", ",") if delta else None, "up": delta > 0})
         return out
 
+    def rates_date() -> str | None:
+        d = rates.date
+        return f"{d[8:10]}.{d[5:7]}" if d else None
+
     def render(request: Request, name: str, status_code: int = 200, **context: Any) -> HTMLResponse:
-        context.update(year=date.today().year, rates_source=rates.source, header_rates=header_rates())
+        context.update(year=date.today().year, rates_source=rates.source, header_rates=header_rates(), rates_date=rates_date())
         return templates.TemplateResponse(request, name, context, status_code=status_code)
 
     def storage_of(request: Request) -> Storage:

@@ -43,9 +43,9 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <a href="/vin">Проверка VIN</a>
       <a href="/#podbor">Подбор под бюджет</a>
     </nav>
-    {% if header_rates %}{% set rates_label = 'Курс ЦБ' if rates_source == 'ЦБ РФ' else 'Курс' %}
-    <div class="top-rates" title="Цены в рублях на сайте посчитаны по этому курсу"><span class="sr-only">{{ rates_label }}: {% for l, v in header_rates %}{{ l }} = {{ v }}{{ ', ' if not loop.last }}{% endfor %}</span>
-      <div class="tr-track" aria-hidden="true">{% for _ in range(2) %}<span class="tr-run">{% for _ in range(3) %}<span><i>{{ rates_label }}</i>{% for l, v in header_rates %}<b><em>{{ l }}</em>{{ v }}</b>{% endfor %}</span>{% endfor %}</span>{% endfor %}</div>
+    {% if header_rates %}{% set rates_label = ('Курс ЦБ' ~ (' на ' ~ rates_date if rates_date else '')) if rates_source == 'ЦБ РФ' else 'Курс' %}
+    <div class="top-rates" title="Цены в рублях на сайте посчитаны по этому курсу"><span class="sr-only">{{ rates_label }}: {% for r in header_rates %}{{ r.code }}{% if r.per > 1 %} за {{ r.per }}{% endif %} — {{ r.value }} ₽{{ ', ' if not loop.last }}{% endfor %}</span>
+      <div class="tr-set" aria-hidden="true"><i>{{ rates_label }}</i>{% for r in header_rates %}<b><em>{{ r.code }}{% if r.per > 1 %} ×{{ r.per }}{% endif %}</em>{{ r.value }} ₽</b>{% endfor %}</div>
     </div>{% endif %}
     <div class="contacts">
       {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call">{{ company_hotline }}</a>{% elif company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
