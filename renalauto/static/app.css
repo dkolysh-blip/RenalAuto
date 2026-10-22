@@ -417,10 +417,15 @@ body.pop-sheet .cta-bar { display: none; }
 .cd-via legend { padding: 0; }
 .cd-via label { margin: 0; cursor: pointer; }
 .cd-via input { position: absolute; opacity: 0; pointer-events: none; }
-.cd-via span { display: flex; align-items: center; justify-content: center; gap: 6px; height: 42px; border-radius: 12px; border: 1px solid #d5dde5; background: #fff;
-  font-size: 14px; font-weight: 700; color: #344054; transition: border-color .15s, background .15s, color .15s; }
-.cd-via span img { border-radius: 4px; }
-.cd-via input:checked + span { border-color: #0f1012; background: #0f1012; color: #fff; }
+.cd-via span { display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 14px; border: 1.5px solid #e3e8ee; background: #fff;
+  font-size: 14px; font-weight: 700; color: #344054; transition: border-color .15s, background .15s, box-shadow .15s; }
+/* значки — те же плитки, что в нижней панели: зелёная трубка, MAX, оранжевый конверт */
+.cd-via i { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; flex: 0 0 auto; }
+.cd-via i svg { width: 17px; height: 17px; } .cd-via .v-sms i svg { width: 16px; height: 13px; }
+.cd-via i img { width: 26px; height: 26px; border-radius: 8px; max-width: none; display: block; }
+.cd-via .v-call i { background: linear-gradient(160deg, #3ddc6f, #0f9d4a); }
+.cd-via .v-sms i { background: linear-gradient(160deg, #ffb020, #f07c00); }
+.cd-via input:checked + span { border-color: #0f1012; background: #f6f8fb; color: #0f1012; box-shadow: inset 0 0 0 1px #0f1012; }
 .cd-via input:focus-visible + span { outline: 2px solid var(--sea); outline-offset: 2px; }
 .cd-submit { height: 52px; font-size: 16px; border-radius: 14px; margin-top: 4px; box-shadow: 0 10px 24px rgba(221,31,31,.28); }
 .cd .consent { margin: 12px 0 0; color: #667085; }
@@ -1073,3 +1078,4 @@ body.port-page footer { margin-top: 0; }
 .dock-main:active { background: #b9181a; }
 .dock-main span { font-size: 18px; line-height: 1; }
 @media (max-width: 360px) { .dock-ico { grid-template-columns: repeat(3, 48px); } .dock-main { font-size: 15px; } }
+@media (max-width: 420px) { .cd-via span { gap: 6px; font-size: 13px; } .cd-via i, .cd-via i img { width: 22px; height: 22px; } }
