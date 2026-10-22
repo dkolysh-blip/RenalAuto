@@ -52,12 +52,13 @@ footer .logo-mark.on-dark { display: none; } footer .logo-mark.on-light { displa
 @keyframes tr-run { to { transform: translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .tr-track { animation: none; } }
 .tr-run, .tr-set { display: inline-flex; align-items: center; }
-.tr-set { gap: 22px; padding-right: 44px; }
+.tr-set { gap: 28px; padding-right: 48px; }
 .tr-set i { font: 700 10.5px/1 Onest, system-ui, sans-serif; font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--sea); }
-.tr-set b { display: inline-flex; align-items: center; gap: 7px; font: 700 15px/1 Onest, system-ui, sans-serif; color: #16191d; letter-spacing: .01em; }
-.tr-cur { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--sea); color: #fff;
-  font: 700 13.5px/1 Onest, system-ui, sans-serif; flex: 0 0 auto; }
-.tr-nm { font: 500 13px/1 Onest, system-ui, sans-serif; color: #667085; }
+/* пара: код валюты крупно своим цветом, курс крупно тёмным */
+.tr-set b { display: inline-flex; align-items: baseline; gap: 8px; font: 400 17px/1 Onest, system-ui, sans-serif; color: #111418; letter-spacing: .01em; }
+.tr-code { font: 600 17px/1 Onest, system-ui, sans-serif; letter-spacing: .02em; }
+.tr-code sup { font-size: 9px; font-weight: 700; margin-left: 2px; vertical-align: 6px; }
+.tr-usd .tr-code { color: #6aa84f; } .tr-eur .tr-code { color: #4a78d0; } .tr-cny .tr-code { color: #e8a91c; } .tr-krw .tr-code { color: #5b6472; }
 .port-page .top .contacts { order: 2; margin-left: auto; }
 @media (max-width: 1240px) { .port-page .top-rates { display: none; } }
 .top .contacts .phone { color: #fff; font-weight: 700; white-space: nowrap; }

@@ -45,7 +45,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     </nav>
     {% if header_rates %}{% set rates_label = ('Курс ЦБ' ~ (' на ' ~ rates_date if rates_date else '')) if rates_source == 'ЦБ РФ' else 'Курс' %}
     <div class="top-rates" title="Цены в рублях на сайте посчитаны по этому курсу"><span class="sr-only">{{ rates_label }}: {% for r in header_rates %}{{ r.name }} — {{ r.value }} ₽{{ ', ' if not loop.last }}{% endfor %}</span>
-      <div class="tr-track" aria-hidden="true">{% for _ in range(2) %}<span class="tr-run">{% for _ in range(3) %}<span class="tr-set"><i>{{ rates_label }}</i>{% for r in header_rates %}<b><span class="tr-cur">{{ r.sym }}</span><span class="tr-nm">{{ r.name }}</span>{{ r.value }} ₽</b>{% endfor %}</span>{% endfor %}</span>{% endfor %}</div>
+      <div class="tr-track" aria-hidden="true">{% for _ in range(2) %}<span class="tr-run">{% for _ in range(3) %}<span class="tr-set"><i>{{ rates_label }}, ₽</i>{% for r in header_rates %}<b class="tr-{{ r.code|lower }}"><span class="tr-code">{{ r.code }}{% if r.per > 1 %}<sup>×{{ r.per }}</sup>{% endif %}</span>{{ r.value }}</b>{% endfor %}</span>{% endfor %}</span>{% endfor %}</div>
     </div>{% endif %}
     <div class="contacts">
       {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call">{{ company_hotline }}</a>{% elif company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
