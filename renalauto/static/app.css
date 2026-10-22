@@ -360,7 +360,19 @@ body.pop-sheet .cta-bar { display: none; }
   box-shadow: 0 12px 30px rgba(15,16,18,.18); transition: transform .15s ease, box-shadow .15s ease; }
 .max-float:hover { text-decoration: none; transform: translateY(-2px); box-shadow: 0 16px 36px rgba(15,16,18,.24); }
 .max-float img { border-radius: 8px; }
-.cta-bar .max-btn, .cta-bar .sms-btn { flex: 0 0 auto; padding-left: 12px; padding-right: 12px; }
+.cta-bar .max-btn, .cta-bar .sms-btn, .cta-bar .call-btn { flex: 0 0 auto; padding-left: 12px; padding-right: 12px; }
+/* звонок в нижней панели: значок трубки и подпись; на узком экране подписи у звонка и MAX прячем */
+.call-btn { display: inline-flex; align-items: center; gap: 6px; color: #15803d; border-color: #b7e0c4; }
+.call-btn svg { flex: 0 0 auto; }
+.cta-acts { display: flex; gap: 8px; align-items: center; }
+@media (max-width: 480px) {
+  .cta-bar { gap: 6px; padding-left: 10px; padding-right: 10px; }
+  .cta-bar .call-btn span, .cta-bar .max-btn span { display: none; }
+  .cta-bar .call-btn, .cta-bar .max-btn, .cta-bar .sms-btn { width: 46px; padding: 0; justify-content: center; }
+  .cta-bar .sms-btn { width: 54px; font-size: 13px; }
+  .cta-bar .max-btn img { width: 24px; height: 24px; max-width: none; }
+  .cta-bar .btn:not(.ghost) { flex: 1; min-width: 0; padding-left: 8px; padding-right: 8px; font-size: 15px; overflow: hidden; text-overflow: ellipsis; }
+}
 .top .contacts .max-btn { padding: 6px 12px 6px 8px; min-height: 0; }
 .sms-alt { margin: 10px 0 0; text-align: center; }
 .sms-alt a { color: var(--sea); font-weight: 600; }
