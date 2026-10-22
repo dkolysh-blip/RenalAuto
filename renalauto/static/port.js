@@ -1149,6 +1149,54 @@
     });
   }
 
+  // --- лента-чат «Новые объявления»: каждое новое объявление приходит сообщением, как в мессенджере ---------
+  const feedBox = document.querySelector('[data-feed]'), feedList = feedBox?.querySelector('[data-feed-list]');
+  const CHAT_MAX = 30;
+  function ago(t) {
+    const s = (Date.now() - t) / 1000, d = new Date(t), hm = d.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+    if (s < 60) return 'только что';
+    if (s < 3600) return `${Math.floor(s / 60)} мин назад`;
+    if (new Date().toDateString() === d.toDateString()) return `сегодня в ${hm}`;
+    return `${d.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit'})} в ${hm}`;
+  }
+  function chatAdd(d, {at = Date.now(), fresh = false} = {}) {
+    if (!feedList || feedList.querySelector(`[data-key="${CSS.escape(d.key)}"]`)) return;
+    const near = feedList.scrollHeight - feedList.scrollTop - feedList.clientHeight < 80;
+    const put = el => { feedList.appendChild(el); while (feedList.children.length > CHAT_MAX) feedList.firstElementChild.remove(); if (near || !fresh) feedList.scrollTop = feedList.scrollHeight; };
+    const msg = document.createElement('article');
+    msg.className = 'fm' + (fresh ? ' new' : ''); msg.dataset.key = d.key; msg.dataset.at = at;
+    const facts = [d.mileage && `${d.mileage} км`, d.cc && `${(d.cc / 1000).toFixed(1).replace('.', ',')} л`, d.fuel && d.fuel.toLowerCase()].filter(Boolean).join(' · ');
+    const img = d.photo ? `<img src="${esc(d.photo)}" alt="" loading="lazy">`
+      : `<span class="fm-sprite"><img src="${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}" alt=""></span>`;
+    msg.innerHTML = `<div class="fm-bubble">
+        <div class="fm-ph">${img}<span class="fm-flag">${d.country === 'CN' ? 'Китай' : 'Корея'}${d.src ? ' · ' + esc(d.src) : ''}</span></div>
+        <div class="fm-body">
+          ${fresh ? '<span class="fm-tag">Новое объявление</span>' : ''}
+          <b>${esc(label(d))}</b>${facts ? `<small>${esc(facts)}</small>` : ''}
+          <p class="fm-price">${d.turnkey ? `≈ ${mln(d.turnkey)} <span>с растаможкой</span>` : d.price ? `≈ ${esc(d.price)} ₽ <span>на площадке</span>` : '<span>цену посчитает менеджер</span>'}</p>
+          <div class="fm-acts"><button type="button" data-fm="see">На стоянке</button><button type="button" data-fm="calc">Расчёт</button></div>
+        </div>
+      </div><time class="fm-time">${ago(at)}</time>`;
+    msg.querySelector('[data-fm="see"]').addEventListener('click', () => {
+      const car = cars.get(d.key);
+      if (!car || car.state !== 'parked') { if (d.path) location.href = d.path; return; }
+      root.scrollIntoView({behavior: reduce.matches ? 'auto' : 'smooth', block: 'center'});
+      setTimeout(() => { showPop(car, true); focusOn(car); }, reduce.matches ? 0 : 450);
+    });
+    msg.querySelector('[data-fm="calc"]').addEventListener('click', () => { goal('feed_calc'); openForm(d, cars.get(d.key) || null); });
+    if (!fresh || reduce.matches) { put(msg); return; }
+    // «печатает…» — и сообщение появляется
+    const typing = document.createElement('div');
+    typing.className = 'fm-typing'; typing.innerHTML = '<i></i><i></i><i></i>';
+    put(typing);
+    setTimeout(() => { typing.remove(); put(msg); }, 900);
+  }
+  if (feedList) {
+    const seed = (DATA.recent || []).slice().reverse();  // сверху старые, снизу самые свежие — как в чате
+    seed.forEach(d => chatAdd(d, {at: d.seen ? Date.parse(d.seen) : Date.now()}));
+    setInterval(() => feedList.querySelectorAll('.fm').forEach(m => { m.querySelector('.fm-time').textContent = ago(+m.dataset.at); }), 30000);
+  }
+
   // --- данные: стартовый набор, затем живая лента (или тестовый поток) -------------------
   // --- пульт подбора: под фильтр машины уезжают и заезжают ------------------------------
   const filterForm = document.querySelector('form[data-port-filter]');
@@ -1303,11 +1351,16 @@
 
   // машины заезжают по одной; под фильтр — быстрее
   function feed() {
+    feed.n = feed.n || 0;
     clearTimeout(feed.t);
     let delay = 4200;
     if (!document.hidden) {
       if (queue.length) { arrive(queue.shift()); delay = filterActive() ? 650 : 4200; }
-      else if (DATA.demo && !filterActive()) arrive(demoCar(Math.random() < 0.5 ? 'KR' : 'CN'));
+      else if (DATA.demo && !filterActive()) {
+        const d = demoCar(Math.random() < 0.5 ? 'KR' : 'CN');
+        arrive(d);
+        if (++feed.n % 3 === 0) chatAdd(d, {fresh: true});  // в тестовом режиме — каждая третья «новая»
+      }
     }
     if (!reduce.matches) feed.t = setTimeout(feed, delay);
   }
@@ -1322,6 +1375,7 @@
       const res = await fetch(`/api/port/${encodeURIComponent(l.source)}/${encodeURIComponent(l.external_id)}`);
       if (res.status !== 200) return;
       const d = await res.json();
+      chatAdd(d, {fresh: true});
       if (matches(d)) queue.unshift(d);
     });
   }
@@ -1331,6 +1385,7 @@
     let start = DATA.cars.slice();
     if (DATA.demo) {
       for (let i = 0; i < 200; i++) demoPool.push(demoCar(i % 2 ? 'CN' : 'KR'));
+      if (!(DATA.recent || []).length) [3, 2, 1].forEach((k, i) => chatAdd(demoPool[i], {at: Date.now() - k * 7 * 60000}));
       if (start.length < 80) start.push(...demoPool.slice(0, 90 - start.length));
     }
     // машины из рекламной ссылки (?model=…) заезжают первыми, на глазах у посетителя

@@ -113,6 +113,16 @@ class Storage:
         ).fetchone()
         return Listing.model_validate_json(row["data"]) if row else None
 
+    def first_seen(self, keys: list[tuple[str, str]]) -> dict[tuple[str, str], str]:
+        """Когда объявления впервые попали к нам (ISO-время) — для ленты «новые объявления»."""
+        out = {}
+        for source, external_id in keys:
+            row = self._conn.execute("SELECT first_seen FROM listings WHERE source = ? AND external_id = ?",
+                                     (source, external_id)).fetchone()
+            if row:
+                out[(source, external_id)] = row["first_seen"]
+        return out
+
     def upsert(self, listing: Listing) -> tuple[UpsertStatus, Listing, float | None]:
         """Сохраняет объявление. Возвращает (статус, итоговое объявление, старая цена)."""
         with self._lock:

@@ -320,3 +320,17 @@ def test_port_compare_share_title(settings):
         assert "<title>Сравнение: Kia K5 2021, Hyundai Tucson 2022 — цены с растаможкой | Ренал Авто</title>" in page.text
     finally:
         client.__exit__(None, None, None)
+
+
+def test_port_feed_recent(settings):
+    # лента-чат под сценой: последние объявления со временем появления
+    settings.sources = ["encar"]
+    car = kb(source="encar", external_id="21", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"})
+    client, app = make_client(settings, [car])
+    try:
+        page = client.get("/port").text
+        assert "data-feed" in page and "Новые объявления" in page
+        scene = json.loads(page.split('id="port-data">')[1].split("</script>")[0])
+        assert scene["recent"][0]["title"] == "Kia K5" and scene["recent"][0]["seen"]
+    finally:
+        client.__exit__(None, None, None)

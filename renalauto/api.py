@@ -417,7 +417,14 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         cur = {c: rates.get(c) for c in ("CNY", "KRW", "EUR")}
         for c in cars:  # сначала собираем объёмы по моделям — для объявлений, где объём не указан
             guess_cc(c)
-        scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched,
+        # лента-чат под сценой: последние объявления с временем появления у нас
+        recent = []
+        fresh = [car_view(l, rates) for l in storage.search(passable_only=True, sort="new", limit=6)]
+        seen = storage.first_seen([(c.listing.source, c.listing.external_id) for c in fresh])
+        for c in fresh:
+            guess_cc(c)
+            recent.append({**quote_car(c), "seen": seen.get((c.listing.source, c.listing.external_id))})
+        scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched, "recent": recent,
                  "rates": {k: v for k, v in cur.items() if v}, "rates_source": rates.source}
         # заголовок для превью ссылки в мессенджере, если ей поделились подборкой: «Авто из Кореи до 2,5 млн ₽ от 2020 г.»
         share_bits = []
