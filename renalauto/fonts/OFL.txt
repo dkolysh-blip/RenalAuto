@@ -1,0 +1,3 @@
+Onest (Copyright 2021 The Onest Project Authors) и Unbounded (Copyright 2022 The Unbounded Project Authors)
+распространяются по лицензии SIL Open Font License 1.1: https://openfontlicense.org
+Используются для картинок-превью ссылок (renalauto/og.py).

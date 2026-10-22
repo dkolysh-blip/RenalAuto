@@ -3,8 +3,9 @@
 {% set l = v.listing %}
 {% block title %}{{ v.seo_title }}{% if v.price_rub %} — ≈ {{ fmt(v.price_rub) }} ₽{% endif %} | {{ company }}{% endblock %}
 {% block description %}{{ desc.meta }}{% endblock %}
+{% block og_text %}<meta property="og:title" content="{{ share.title }}"><meta property="og:description" content="{{ share.desc or desc.meta }}">{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}{{ v.path }}">{% endblock %}
-{% block og %}{% if v.photos %}<meta property="og:image" content="{{ v.photos[0] }}">{% endif %}{% endblock %}
+{% block og %}<meta property="og:image" content="{{ site_url }}/og/car/{{ l.source }}/{{ l.external_id|urlencode }}.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630"><meta name="twitter:card" content="summary_large_image">{% endblock %}
 {% block body_class %}has-cta{% endblock %}
 {% block head %}
 {% if v.eligibility.verdict == 'bad' %}<meta name="robots" content="noindex">{% endif %}

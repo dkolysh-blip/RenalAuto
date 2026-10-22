@@ -293,3 +293,18 @@ def test_port_share_title(settings):
         assert "<title>Авто из Кореи до 2,5 млн ₽ от 2020 г. — живая подборка | Ренал Авто</title>" in page.text
     finally:
         client.__exit__(None, None, None)
+
+
+def test_car_share_preview(settings):
+    # ссылка на машину в мессенджере: картинка с ценой и расклад в описании
+    k5 = kb(external_id="9", title="기아 K5 1.6 터보", make="기아", model="K5", photo=None, extra={"displacement": "1,598cc"})
+    client, app = make_client(settings, [k5])
+    try:
+        page = client.get("/car/kbchachacha/9").text
+        assert "/og/car/kbchachacha/9.png" in page
+        assert "с растаможкой" in page and 'og:description" content="Машина' in page
+        img = client.get("/og/car/kbchachacha/9.png")
+        assert img.status_code == 200 and img.headers["content-type"] == "image/png" and img.content[:4] == b"\x89PNG"
+        assert client.get("/og/car/kbchachacha/nope.png", follow_redirects=False).status_code in (302, 307)
+    finally:
+        client.__exit__(None, None, None)

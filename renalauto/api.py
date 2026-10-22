@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import quote, urlencode
 
+import httpx
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -31,6 +32,7 @@ from .eligibility import RULES_AS_OF, engine_kind
 from .events import EventHub
 from .models import LEAD_KIND_LABELS, Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter
 from .notify import TelegramNotifier
+from .og import money, render_car
 from .poller import Poller
 from .rates import Rates
 from .sources import REGISTRY, Source, build_sources
@@ -531,6 +533,55 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             return Response(status_code=204)
         return Response(json.dumps(quote_car(v), ensure_ascii=False), media_type="application/json")
 
+    og_cache: dict[str, bytes] = {}
+
+    @app.get("/og/car/{source}/{external_id}.png", include_in_schema=False)
+    async def og_car(request: Request, source: str, external_id: str) -> Response:
+        """Превью ссылки на машину: фото, ≈ цена с растаможкой и полоска расклада."""
+        listing = storage_of(request).get(source, external_id)
+        if listing is None:
+            return RedirectResponse("/static/brand/og.jpg")
+        v = car_view(listing, rates)
+        q = quote_car(v)
+        key = f"{listing.key}:{q.get('turnkey')}:{q.get('photo')}"
+        png = og_cache.get(key)
+        if png is None:
+            photo = None
+            if q.get("photo"):
+                with suppress(Exception):
+                    async with httpx.AsyncClient(timeout=4, follow_redirects=True,
+                                                 headers={"User-Agent": "Mozilla/5.0"}) as client:
+                        r = await client.get(q["photo"])
+                        if r.status_code == 200 and len(r.content) < 8_000_000:
+                            photo = r.content
+            png = await asyncio.to_thread(
+                render_car, title=q["title"], sub=car_sub(v), total=q.get("turnkey"), lines=q.get("lines"),
+                country=listing.country, photo=photo)
+            if len(og_cache) > 300:
+                og_cache.clear()
+            og_cache[key] = png
+        return Response(png, media_type="image/png", headers={"Cache-Control": "public, max-age=21600"})
+
+    def car_sub(v) -> str:
+        l = v.listing
+        parts = [str(l.year) if l.year else None,
+                 f"{fmt_int(l.mileage_km)} км" if l.mileage_km is not None else None,
+                 f"{v.eligibility.displacement_cc / 1000:.1f} л" if v.eligibility.displacement_cc else v.fuel]
+        return " · ".join(p for p in parts if p)
+
+    def share_meta(v) -> dict[str, Any]:
+        """Заголовок и описание ссылки на машину: «≈ X с растаможкой», расклад — в описании."""
+        q = quote_car(v)
+        title = f"{v.title}{f', {v.listing.year}' if v.listing.year else ''}"
+        if not q.get("turnkey"):
+            return {"title": title, "desc": None}
+        by = {ln["k"]: ln.get("rub") for ln in q["lines"]}
+        bits = [f"машина {money(by['car'])}" if by.get("car") else None,
+                f"пошлина {money(by['duty'])}" if by.get("duty") else None,
+                f"комиссия до {money(by['fee'])}" if by.get("fee") else None]
+        return {"title": f"{title} — ≈ {money(q['turnkey'])} с растаможкой",
+                "desc": " · ".join(b for b in bits if b)[:1].upper() + " · ".join(b for b in bits if b)[1:] + ". Расчёт ориентировочный, точный — у менеджера."}
+
     @app.get("/car/{source}/{external_id}", response_class=HTMLResponse, include_in_schema=False)
     async def car_page(request: Request, source: str, external_id: str) -> HTMLResponse:
         storage = storage_of(request)
@@ -562,6 +613,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                                 "availability": "https://schema.org/InStock", "url": settings.site_url + v.path}
         return render(
             request, "car.html", v=v, similar=similar, desc=describe(v, settings.company_name), history=storage.history(source, external_id),
+            share=share_meta(v),
             jsonld=json.dumps(jsonld, ensure_ascii=False).replace("</", "<\\/"),
         )
 
