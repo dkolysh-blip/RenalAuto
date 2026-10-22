@@ -985,38 +985,56 @@
   const filterOut = filterForm?.querySelector('[data-pf-result]');
   let filter = {}, filterSeq = 0, demoPool = [];
   const filterActive = () => Object.values(filter).some(Boolean);
-  function matches(d) {
-    if (filter.country && d.country !== filter.country) return false;
-    if (filter.body && d.body !== filter.body) return false;
-    if (filter.year_from && !(d.year && d.year >= +filter.year_from)) return false;
-    if (filter.budget && !(d.turnkey && d.turnkey <= +filter.budget)) return false;
-    if (filter.q && !d.title.toLowerCase().includes(filter.q.toLowerCase())) return false;
+  function matches(d, f = filter) {
+    if (f.country && d.country !== filter.country) return false;
+    if (f.body && d.body !== f.body) return false;
+    if (f.year_from && !(d.year && d.year >= +f.year_from)) return false;
+    if (f.budget && !(d.turnkey && d.turnkey <= +f.budget)) return false;
+    if (f.q && !d.title.toLowerCase().includes(f.q.toLowerCase())) return false;
     return true;
   }
   function resultText(n, total) {
     if (!filterActive()) return '';
-    if (!n) return 'Под этот запрос машин сейчас нет — <a href="#" data-pf-lead>оставьте заявку</a>, пришлём, как только появятся.';
+    if (!n) return 'Под этот запрос машин сейчас нет — <a href="#" data-pf-lead>оставьте заявку</a>, пришлём, как только появятся.<span data-pf-near></span>';
     const word = total % 10 === 1 && total % 100 !== 11 ? 'машина' : [2, 3, 4].includes(total % 10) && ![12, 13, 14].includes(total % 100) ? 'машины' : 'машин';
     return `Под ваш запрос — <b>${total} ${word}</b>.`;
+  }
+  async function search(f) {
+    if (DATA.demo) { const found = demoPool.filter(d => matches(d, f)); return {found, total: found.length}; }
+    const res = await fetch('/api/port/cars?' + new URLSearchParams(f));
+    const body = await res.json();
+    return {found: body.cars, total: body.total};
+  }
+  // ничего не нашлось — предлагаем, что ослабить: бюджет, год или марку, и сколько тогда будет машин
+  const RELAX = [['budget', 'поднять бюджет'], ['year_from', 'взять постарше']];  // марку не трогаем: её человек выбрал сам
+  async function suggestNear(my) {
+    const f = {...filter}, dropped = [], texts = [];
+    for (const [key, text] of RELAX) {  // ослабляем по очереди, пока не найдутся машины
+      if (!f[key]) continue;
+      delete f[key]; dropped.push(key); texts.push(text);
+      let r;
+      try { r = await search(f); } catch (err) { return; }
+      if (my !== filterSeq) return;
+      if (r.total) {
+        const box = filterOut.querySelector('[data-pf-near]');
+        if (box) box.innerHTML = ` <button type="button" class="pf-near" data-pf-relax="${dropped.join(',')}">Показать ${r.total} ${carWord(r.total)}, если ${texts.join(' и ')} →</button>`;
+        return;
+      }
+    }
+  }
+  function carWord(n) {
+    return n % 10 === 1 && n % 100 !== 11 ? 'машину' : [2, 3, 4].includes(n % 10) && ![12, 13, 14].includes(n % 100) ? 'машины' : 'машин';
   }
   async function applyFilter() {
     filter = Object.fromEntries([...new FormData(filterForm)].filter(([, v]) => v !== ''));
     const my = ++filterSeq;
-    let found, total;
-    if (DATA.demo) {
-      found = demoPool.filter(matches);
-      total = found.length;
-    } else {
-      try {
-        const res = await fetch('/api/port/cars?' + new URLSearchParams(filter));
-        const body = await res.json();
-        found = body.cars; total = body.total;
-      } catch (err) { return; }
-    }
+    let r;
+    try { r = await search(filter); } catch (err) { return; }
     if (my !== filterSeq) return;
     goal('filter');
-    filterOut.innerHTML = resultText(found.length, total);
-    switchLot(found, lotName());
+    filterOut.innerHTML = resultText(r.found.length, r.total);
+    switchLot(r.found, lotName());
+    if (!r.found.length && filterActive()) suggestNear(my);
   }
 
   // Смена фильтра — «перелёт» на другую стоянку: сцена уезжает в сторону, приезжает новая,
@@ -1031,6 +1049,15 @@
     budgetRange.setAttribute('aria-valuetext', text);
     budgetRange.style.setProperty('--fill', `${(budgetRange.value - budgetRange.min) / (budgetRange.max - budgetRange.min) * 100}%`);
   });
+  filterForm?.querySelectorAll('[data-pf-quick]').forEach(b => b.addEventListener('click', () => {
+    budgetRange.value = b.dataset.pfQuick;
+    budgetRange.dispatchEvent(new Event('input', {bubbles: true}));
+  }));
+  function syncQuick() {
+    filterForm?.querySelectorAll('[data-pf-quick]').forEach(b => b.classList.toggle('on', +b.dataset.pfQuick === +budgetRange.value));
+  }
+  budgetRange?.addEventListener('input', syncQuick);
+  if (budgetRange) syncQuick();
   function lotName() {
     const f = filterForm.elements, parts = [];
     if (f.q.value.trim()) parts.push(f.q.value.trim());
@@ -1071,6 +1098,16 @@
   filterForm?.addEventListener('input', () => { clearTimeout(applyFilter.t); applyFilter.t = setTimeout(applyFilter, 350); });
   filterForm?.addEventListener('submit', e => e.preventDefault());
   filterOut?.addEventListener('click', e => {
+    const relax = e.target.closest('[data-pf-relax]');
+    if (relax) {  // сбросить мешающий фильтр и показать машины
+      const f = filterForm.elements;
+      for (const k of relax.dataset.pfRelax.split(',')) {
+        if (k === 'budget') budgetRange.value = budgetRange.max;
+        else f[k].value = '';
+      }
+      budgetRange.dispatchEvent(new Event('input', {bubbles: true}));
+      return;
+    }
     if (!e.target.closest('[data-pf-lead]')) return;
     e.preventDefault();
     const f = filterForm.elements;

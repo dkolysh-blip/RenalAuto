@@ -34,7 +34,8 @@
     <form class="port-filter" data-port-filter aria-label="Подбор машин">
       <div class="pf-field pf-budget"><label for="pf-budget">Бюджет <b data-pf-budget-out>любой</b></label>
         <input id="pf-budget" type="range" min="1000000" max="6000000" step="250000" value="6000000" data-pf-budget aria-valuetext="любой">
-        <input type="hidden" name="budget" value=""></div>
+        <input type="hidden" name="budget" value="">
+        <div class="pf-quick" role="group" aria-label="Быстрый выбор бюджета">{% for v, t in [(1500000, '1,5'), (2000000, '2'), (3000000, '3'), (6000000, 'любой')] %}<button type="button" data-pf-quick="{{ v }}">{{ t }}{% if v < 6000000 %}<span class="u"> млн</span>{% endif %}</button>{% endfor %}</div></div>
       <div class="pf-field"><label for="pf-country">Откуда</label>
         <select id="pf-country" name="country"><option value="">Корея и Китай</option><option value="KR">Корея</option><option value="CN">Китай</option></select></div>
       <div class="pf-field"><label for="pf-year">Год</label>
