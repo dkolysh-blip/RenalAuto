@@ -248,13 +248,14 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     def header_rates() -> list[dict[str, Any]]:
         """Курсы для шапки: по ним посчитаны цены в рублях на сайте; изменение — к предыдущему курсу ЦБ."""
         out = []
-        for code, k, digits in (("USD", 1, 2), ("EUR", 1, 2), ("CNY", 1, 2), ("KRW", 1000, 2)):
+        for code, k, digits, sym, name in (("USD", 1, 2, "$", "доллар"), ("EUR", 1, 2, "€", "евро"),
+                                           ("CNY", 1, 2, "¥", "юань"), ("KRW", 1000, 2, "₩", "1000 вон")):
             v = rates.get(code)
             if not v:
                 continue
             prev = rates.prev.get(code)
             delta = round((v - prev) * k, digits) if prev else 0
-            out.append({"code": code, "per": k, "value": f"{v * k:.{digits}f}".replace(".", ","),
+            out.append({"code": code, "sym": sym, "name": name, "per": k, "value": f"{v * k:.{digits}f}".replace(".", ","),
                         "delta": f"{abs(delta):.{digits}f}".replace(".", ",") if delta else None, "up": delta > 0})
         return out
 

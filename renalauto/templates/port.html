@@ -118,12 +118,16 @@
     <p class="sec-lead">Видео с выдач и отзывы из 2ГИС — без правок, как написали люди.</p>
   </div>
   <div class="rv">
+    <div class="rv-media">
     <figure class="reel" data-reel>
       <video muted playsinline loop preload="none" poster="/static/media/reel.jpg" width="720" height="900" aria-label="Видео с выдач машин клиентам">
         <source src="/static/media/reel.mp4" type="video/mp4">
       </video>
       <button type="button" class="reel-sound" data-reel-sound aria-pressed="false">Включить звук</button>
     </figure>
+    {% set shots = [('vydacha-1', 'Выдача клиентке', 'кадр из видео'), ('vydacha-2', 'Передача ключей', 'кадр из видео'), ('2gis-1', 'Фото клиента', 'из отзыва в 2ГИС'), ('2gis-2', 'Фото клиента', 'из отзыва в 2ГИС')] %}
+    <ul class="rv-shots" aria-label="Фото с выдач">{% for f, t, src in shots %}<li><button type="button" data-shot="/static/media/vydachi/{{ f }}.webp" data-shot-cap="{{ t }} · {{ src }}"><img src="/static/media/vydachi/{{ f }}.webp" alt="{{ t }}, {{ src }}" loading="lazy" width="300" height="300"></button></li>{% endfor %}</ul>
+    </div>
     <div class="rv-side">
       {% if company_2gis_rating %}
       <a class="rv-score" href="{{ reviews_url or company_2gis }}" target="_blank" rel="noopener" data-goal="reviews_2gis">
@@ -137,11 +141,18 @@
       <div class="rv-carousel" data-rv>
         <div class="rv-track" data-rv-track tabindex="0" aria-label="Отзывы из 2ГИС">
           {% for r in reviews %}
-          <a class="review" href="{{ reviews_url or '#' }}" {% if reviews_url %}target="_blank" rel="noopener"{% endif %} data-goal="reviews_2gis">
-            <span class="review-top"><b>{{ r.name }}</b>{% if r.rating %}<span class="stars small" aria-label="{{ r.rating }} из 5">{{ '★' * (r.rating|int) }}</span>{% endif %}</span>
-            <span class="review-text">{{ r.text }}</span>
-            <span class="review-src">{% if r.date %}{{ r.date[8:10]|int }} {{ months[r.date[5:7]|int - 1] }} {{ r.date[:4] }} · {% endif %}2ГИС</span>
-          </a>
+          {% set ini = (r.name|trim)[:1]|upper %}
+          <article class="review rv-card">
+            <header class="rv-head">
+              <span class="rv-ava" style="--h: {{ (r.name|length * 47) % 360 }}" aria-hidden="true">{{ ini }}</span>
+              <span class="rv-who"><b>{{ r.name }}</b><small>{% if r.rating %}<span class="stars small" aria-label="{{ r.rating }} из 5">{{ '★' * (r.rating|int) }}</span>{% endif %}{% if r.date %}{{ r.date[8:10]|int }} {{ months[r.date[5:7]|int - 1] }} {{ r.date[:4] }}{% endif %}</small></span>
+            </header>
+            <p class="review-text" data-rv-text>{{ r.text }}</p>
+            <footer class="rv-foot">
+              <button type="button" class="rv-more" data-rv-more hidden>Читать полностью</button>
+              {% if reviews_url %}<a href="{{ reviews_url }}" target="_blank" rel="noopener" data-goal="reviews_2gis">Отзыв в 2ГИС ↗</a>{% endif %}
+            </footer>
+          </article>
           {% endfor %}
         </div>
         <div class="rv-nav">
@@ -151,11 +162,12 @@
         </div>
       </div>
       {% endif %}
-      <p class="rv-legal">{{ company_legal_name or company }}{% if company_inn %}, ИНН {{ company_inn }}{% endif %}{% if company_address %} · офис: {{ company_address }}{% endif %}{% if company_max %} · <a href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">все выдачи в канале MAX</a>{% endif %}</p>
+      {% if company_max %}<a class="rv-max" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="28" height="28"><span><b>Все выдачи — в канале MAX</b><small>Фото и видео машин, которые мы привезли, без постановки</small></span><i aria-hidden="true">→</i></a>{% endif %}
     </div>
   </div>
 </section>
 
+<dialog class="shot-dialog" id="shot-dialog" aria-label="Фото с выдачи"><img src="" alt=""><p></p><button type="button" class="dialog-close" data-close aria-label="Закрыть">×</button></dialog>
 <dialog class="car-dialog" id="car-dialog" aria-labelledby="car-dialog-title">
   <form class="lead-form cd" data-lead>
     <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>

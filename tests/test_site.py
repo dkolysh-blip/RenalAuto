@@ -147,7 +147,7 @@ def test_port_landing_scene_and_message_match(settings):
         assert 'id="terminal" aria-hidden="true"' in page.text
         assert "/static/media/reel.mp4" in page.text and "vk.ru/renal_auto" in page.text
         assert "Что говорят клиенты" in page.text and "ИНН 2543160025" in page.text
-        assert page.text.count('class="review"') >= 10 and "/static/brand/max.webp" in page.text
+        assert page.text.count('class="review rv-card"') >= 10 and "/static/brand/max.webp" in page.text
         assert client.get("/static/media/reel.jpg").status_code == 200
         scene = json.loads(page.text.split('id="port-data">')[1].split("</script>")[0])
         assert [c["key"] for c in scene["cars"]] == ["kbchachacha:2"]  # непроходной Palisade 3.8 не попадает

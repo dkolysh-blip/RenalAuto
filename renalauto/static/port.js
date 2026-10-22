@@ -35,10 +35,35 @@
     });
   }
 
+  // фото с выдач: по нажатию — во весь экран с подписью, откуда фото
+  const shotDlg = document.getElementById('shot-dialog');
+  if (shotDlg) {
+    document.querySelectorAll('[data-shot]').forEach(b => b.addEventListener('click', () => {
+      shotDlg.querySelector('img').src = b.dataset.shot;
+      shotDlg.querySelector('img').alt = b.dataset.shotCap;
+      shotDlg.querySelector('p').textContent = b.dataset.shotCap;
+      shotDlg.showModal(); goal('photo');
+    }));
+    shotDlg.addEventListener('click', e => { if (e.target === shotDlg || e.target.closest('[data-close]')) shotDlg.close(); });
+  }
+
   // карусель отзывов: свайп или стрелки, сама листается раз в 7 секунд, пока её не трогают
   const rv = document.querySelector('[data-rv]');
   if (rv) {
     const track = rv.querySelector('[data-rv-track]'), cards = [...track.children], count = rv.querySelector('[data-rv-count]');
+    // «Читать полностью» — только у отзывов, которые не влезли в карточку
+    const fit = () => cards.forEach(c => {
+      const t = c.querySelector('[data-rv-text]'), b = c.querySelector('[data-rv-more]');
+      if (!c.classList.contains('open')) b.hidden = t.scrollHeight <= t.clientHeight + 2;
+    });
+    track.addEventListener('click', e => {
+      const b = e.target.closest('[data-rv-more]');
+      if (!b) return;
+      const c = b.closest('.rv-card'), open = c.classList.toggle('open');
+      b.textContent = open ? 'Свернуть' : 'Читать полностью';
+      stop();
+    });
+    fit(); addEventListener('resize', fit);
     const step = () => cards[0].offsetWidth + parseFloat(getComputedStyle(track).columnGap || 0);
     const at = () => Math.round(track.scrollLeft / step());
     const perView = () => Math.max(1, Math.round(track.clientWidth / step()));
