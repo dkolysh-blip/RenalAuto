@@ -43,6 +43,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <a href="/vin">Проверка VIN</a>
       <a href="/#podbor">Подбор под бюджет</a>
     </nav>
+    {% if header_rates %}<p class="top-rates" title="Цены в рублях на сайте посчитаны по этому курсу"><span>{{ 'Курс ЦБ' if rates_source == 'ЦБ РФ' else 'Курс' }}</span>{% for l, v in header_rates %}<b>{{ l }} = {{ v }}</b>{% endfor %}</p>{% endif %}
     <div class="contacts">
       {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call">{{ company_hotline }}</a>{% elif company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_max %}<a class="btn ghost max-btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="20" height="20">MAX</a>{% endif %}

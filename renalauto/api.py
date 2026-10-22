@@ -245,8 +245,17 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         asset_version=_asset_version(),
     )
 
+    def header_rates() -> list[tuple[str, str]]:
+        """Курсы для шапки: по ним посчитаны цены в рублях на сайте."""
+        out = []
+        for code, label, k, digits in (("CNY", "¥1", 1, 2), ("KRW", "₩1000", 1000, 1), ("EUR", "€1", 1, 1)):
+            v = rates.get(code)
+            if v:
+                out.append((label, f"{v * k:.{digits}f}".replace(".", ",") + " ₽"))
+        return out
+
     def render(request: Request, name: str, status_code: int = 200, **context: Any) -> HTMLResponse:
-        context.update(year=date.today().year, rates_source=rates.source)
+        context.update(year=date.today().year, rates_source=rates.source, header_rates=header_rates())
         return templates.TemplateResponse(request, name, context, status_code=status_code)
 
     def storage_of(request: Request) -> Storage:
