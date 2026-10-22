@@ -9,6 +9,16 @@
 
   // --- заявки --------------------------------------------------------------
   document.querySelectorAll('form[data-lead]').forEach(form => {
+    // «Куда прислать расчёт: Почта» — показать поле для адреса
+    form.addEventListener('change', e => {
+      if (e.target.name !== 'contact_via') return;
+      const box = form.querySelector('[data-via-email]');
+      if (!box) return;
+      const on = e.target.value === 'почта';
+      box.hidden = !on;
+      box.querySelector('input').required = on;
+      if (on) box.querySelector('input').focus();
+    });
     form.addEventListener('submit', async e => {
       e.preventDefault();
       const msg = form.querySelector('.form-msg');
@@ -16,9 +26,11 @@
       for (const k of Object.keys(data)) if (data[k] === '') delete data[k];
       delete data.consent;  // галочка обязательна в форме, на сервер не уходит
       if (data.contact_via) {  // как удобнее ответить — менеджер видит в комментарии
-        data.comment = `Ответить: ${data.contact_via}` + (data.comment ? `. ${data.comment}` : '');
+        const via = data.contact_via === 'почта' && data.email ? `почта ${data.email}` : data.contact_via;
+        data.comment = `Ответить: ${via}` + (data.comment ? `. ${data.comment}` : '');
         delete data.contact_via;
       }
+      delete data.email;
       if (!data.phone && !data.telegram) {
         msg.innerHTML = '<p class="error">Укажите телефон или MAX, чтобы менеджер мог ответить.</p>';
         return;
