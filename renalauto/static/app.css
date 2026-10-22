@@ -27,7 +27,7 @@ img { max-width: 100%; display: block; }
 .top .wrap { display: flex; align-items: center; gap: 22px; min-height: 64px; flex-wrap: wrap; }
 .logo { display: inline-flex; align-items: center; gap: 10px; color: var(--text); }
 .logo:hover { text-decoration: none; }
-.logo-mark { width: 92px; height: 41px; flex: 0 0 auto; object-fit: contain; }
+.logo-mark { width: 104px; height: 41px; flex: 0 0 auto; object-fit: contain; }
 .logo-mark.on-light, .port-page .top .logo-mark.on-dark { display: none; }
 .port-page .top .logo-mark.on-light { display: block; }
 /* подвал светлый (card): знак с чёрной машиной; в тёмной теме — с белой */
@@ -218,7 +218,7 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 @media (max-width: 700px) {
   .top { position: static; }
   .logo-word > span { font-size: 15px; } .logo-word small { font-size: 8px; }
-  .logo-mark { width: 72px; height: 32px; }
+  .logo-mark { width: 81px; height: 32px; }
   .top .wrap { gap: 8px 14px; padding-top: 8px; padding-bottom: 8px; min-height: 0; }
   .top nav { order: 3; flex-basis: 100%; overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; gap: 14px; }
   .top .contacts { margin-left: auto; }
@@ -361,7 +361,7 @@ body.pop-sheet .cta-bar { display: none; }
 .sms-alt { margin: 10px 0 0; text-align: center; }
 .sms-alt a { color: var(--sea); font-weight: 600; }
 .logo-word { white-space: nowrap; }
-@media (max-width: 420px) { .top .logo-word > span { font-size: 13px; } .top .logo-word small { font-size: 7px; } .top .logo-word { gap: 5px; } .top .logo { gap: 8px; } .top .logo-mark { width: 60px; height: 27px; } }
+@media (max-width: 420px) { .top .logo-word > span { font-size: 13px; } .top .logo-word small { font-size: 7px; } .top .logo-word { gap: 5px; } .top .logo { gap: 8px; } .top .logo-mark { width: 68px; height: 27px; } }
 @media (max-width: 700px) { .max-float { display: none; } }
 .port-section { margin: 32px 0 8px; }
 .port-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }
