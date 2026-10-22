@@ -27,7 +27,7 @@ img { max-width: 100%; display: block; }
 .top .wrap { display: flex; align-items: center; gap: 22px; min-height: 64px; flex-wrap: wrap; }
 .logo { display: inline-flex; align-items: center; gap: 10px; color: var(--text); }
 .logo:hover { text-decoration: none; }
-.logo-mark { width: 104px; height: 41px; flex: 0 0 auto; object-fit: contain; }
+.logo-mark { width: 124px; height: 49px; flex: 0 0 auto; object-fit: contain; }
 .logo-mark.on-light, .port-page .top .logo-mark.on-dark { display: none; }
 .port-page .top .logo-mark.on-light { display: block; }
 /* подвал светлый (card): знак с чёрной машиной; в тёмной теме — с белой */
@@ -35,9 +35,9 @@ footer .logo-mark.on-dark { display: none; } footer .logo-mark.on-light { displa
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer .logo-mark.on-dark { display: block; } :root:not([data-theme="light"]) footer .logo-mark.on-light { display: none; } }
 .logo { gap: 12px; }
 /* подпись «Корея · Китай» ровно по ширине названия: разрядка подобрана под Unbounded 600 */
-.logo-word { display: grid; gap: 6px; line-height: 1; padding-top: 2px; }
-.logo-word > span { font: 600 17px/1 Unbounded, Onest, sans-serif; letter-spacing: .14em; margin-right: -.14em; }
-.logo-word small { font: 700 9px/1 Onest, system-ui, sans-serif; letter-spacing: .8em; margin-right: -.8em; text-transform: uppercase; color: var(--accent); }
+.logo-word { display: grid; gap: 7px; line-height: 1; padding-top: 2px; }
+.logo-word > span { font: 600 20px/1 Unbounded, Onest, sans-serif; letter-spacing: .14em; margin-right: -.14em; }
+.logo-word small { font: 700 10.6px/1 Onest, system-ui, sans-serif; letter-spacing: .8em; margin-right: -.8em; text-transform: uppercase; color: var(--accent); }
 .top .logo { color: #fff; }
 .top nav { display: flex; gap: 20px; flex: 1; flex-wrap: wrap; }
 .top nav a { color: rgba(255,255,255,.72); font-weight: 500; }
@@ -55,11 +55,18 @@ footer .logo-mark.on-dark { display: none; } footer .logo-mark.on-light { displa
 .tr-set { gap: 28px; padding-right: 48px; }
 .tr-set i { font: 700 10.5px/1 Onest, system-ui, sans-serif; font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--sea); }
 /* пара: код валюты крупно своим цветом, курс крупно тёмным */
-.tr-set b { display: inline-flex; align-items: baseline; gap: 8px; font: 400 17px/1 Onest, system-ui, sans-serif; color: #111418; letter-spacing: .01em; }
-.tr-code { font: 600 17px/1 Onest, system-ui, sans-serif; letter-spacing: .02em; }
-.tr-code sup { font-size: 9px; font-weight: 700; margin-left: 2px; vertical-align: 6px; }
+.tr-set b { display: inline-flex; align-items: baseline; gap: 7px; font: 400 14px/1 Onest, system-ui, sans-serif; color: #475467; letter-spacing: .01em; }
+.tr-code { font: 600 14px/1 Onest, system-ui, sans-serif; letter-spacing: .03em; }
+.tr-code sup { font-size: 8px; font-weight: 700; margin-left: 2px; vertical-align: 5px; }
 .tr-usd .tr-code { color: #6aa84f; } .tr-eur .tr-code { color: #4a78d0; } .tr-cny .tr-code { color: #e8a91c; } .tr-krw .tr-code { color: #5b6472; }
-.port-page .top .contacts { order: 2; margin-left: auto; }
+.port-page .top .contacts { order: 2; margin-left: auto; gap: 14px; }
+/* шапка лендинга: логотип, телефон и кнопки крупнее, курс — тише */
+@media (min-width: 701px) { .port-page .top .wrap { min-height: 80px; } }
+.port-page .top .contacts .phone { font: 600 18px/1 Unbounded, Onest, sans-serif; letter-spacing: .04em; }
+@media (min-width: 701px) {
+  .port-page .top .contacts .max-btn { padding: 10px 18px 10px 12px; font-size: 16px; font-weight: 700; border-radius: 12px; }
+  .port-page .top .contacts .max-btn img { width: 24px; height: 24px; }
+}
 @media (max-width: 1240px) { .port-page .top-rates { display: none; } }
 .top .contacts .phone { color: #fff; font-weight: 700; white-space: nowrap; }
 .top .btn.ghost { color: #fff; border-color: rgba(255,255,255,.28); }
@@ -214,8 +221,8 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .cta-bar { display: none; }
 @media (max-width: 700px) {
   .top { position: static; }
-  .logo-word > span { font-size: 15px; } .logo-word small { font-size: 8px; }
-  .logo-mark { width: 81px; height: 32px; }
+  .logo-word > span { font-size: 16px; } .logo-word small { font-size: 8.5px; }
+  .logo-mark { width: 92px; height: 36px; }
   .top .wrap { gap: 8px 14px; padding-top: 8px; padding-bottom: 8px; min-height: 0; }
   .top nav { order: 3; flex-basis: 100%; overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; gap: 14px; }
   .top .contacts { margin-left: auto; }
@@ -1027,3 +1034,5 @@ body.port-page footer { margin-top: 0; }
   .rv-track { grid-auto-columns: 82%; }
   .rv-score { padding: 14px 16px; } .rv-score-num { font-size: 32px; }
 }
+/* узкий телефон: MAX и ВК — только значками, чтобы шапка помещалась в одну строку */
+@media (max-width: 420px) { .top .contacts .max-btn { font-size: 0; gap: 0; padding: 7px; } .top .contacts .max-btn img { width: 24px; height: 24px; } .top .contacts { gap: 6px; } }
