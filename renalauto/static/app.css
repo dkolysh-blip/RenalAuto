@@ -1034,7 +1034,7 @@ body.port-page footer { margin-top: 0; }
     border: 1px solid #e6eaef; border-radius: 22px; background: #fff; box-shadow: 0 14px 34px rgba(15,23,42,.22); }
   body.has-cta { padding-bottom: 96px; }
 }
-.dock-ico { display: grid; grid-template-columns: repeat(3, 52px); flex: 0 0 auto; }
+.dock-ico { display: grid; grid-auto-flow: column; grid-auto-columns: 50px; flex: 0 0 auto; }
 .di { display: grid; justify-items: center; align-content: center; gap: 4px; min-width: 0; padding: 2px 0; border-radius: 12px; text-decoration: none; }
 .di:hover, .di:active { text-decoration: none; background: #f5f7fa; }
 .di-i { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #fff; }
@@ -1044,12 +1044,14 @@ body.port-page footer { margin-top: 0; }
 .di-max .di-i img { width: 34px; height: 34px; border-radius: 10px; max-width: none; display: block; }
 .di-sms .di-i { background: linear-gradient(160deg, #ffb020, #f07c00); }
 .di-sms .di-i svg { width: 22px; height: 17px; }
+.di-mail .di-i { background: linear-gradient(160deg, #3b9cff, #1f5fd6); }
 .di small { font: 600 10.5px/1 Onest, system-ui, sans-serif; color: #475467; white-space: nowrap; }
 .dock-main { flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 15px;
   background: var(--accent); color: #fff; font: 700 16px/1 Onest, system-ui, sans-serif; cursor: pointer; white-space: nowrap; padding: 0 10px; }
 .dock-main:active { background: #b9181a; }
 .dock-main span { font-size: 18px; line-height: 1; }
-@media (max-width: 360px) { .dock-ico { grid-template-columns: repeat(3, 48px); } .dock-main { font-size: 15px; } }
+@media (max-width: 400px) { .dock-ico { grid-auto-columns: 46px; } .dock-main { font-size: 14.5px; gap: 6px; } }
+@media (max-width: 360px) { .dock-ico { grid-auto-columns: 42px; } .di small { font-size: 10px; } }
 @media (max-width: 420px) { .cd-via span { gap: 6px; font-size: 13px; } .cd-via i, .cd-via i img { width: 22px; height: 22px; } }
 
 /* телефон: первый экран короче — плашки фактов в одну строку, фильтр свёрнут до кнопки */
