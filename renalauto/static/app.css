@@ -1061,12 +1061,12 @@ body.port-page footer { margin-top: 0; }
 .di { display: grid; justify-items: center; align-content: center; gap: 4px; min-width: 0; padding: 2px 0; border-radius: 12px; text-decoration: none; }
 .di:hover, .di:active { text-decoration: none; background: #f5f7fa; }
 .di-i { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #fff; }
-.di-i svg { width: 19px; height: 19px; }
-.di-call .di-i { background: #16a34a; }
+.di-i svg { width: 23px; height: 23px; }
+.di-call .di-i { background: linear-gradient(160deg, #3ddc6f, #0f9d4a); }
 .di-max .di-i { background: transparent; }
 .di-max .di-i img { width: 34px; height: 34px; border-radius: 10px; max-width: none; display: block; }
-.di-sms .di-i { background: linear-gradient(160deg, #3aa0e8, #0b5c8f); }
-.di-sms .di-i svg { width: 23px; height: 22px; }
+.di-sms .di-i { background: linear-gradient(160deg, #ffb020, #f07c00); }
+.di-sms .di-i svg { width: 22px; height: 17px; }
 .di small { font: 600 10.5px/1 Onest, system-ui, sans-serif; color: #475467; white-space: nowrap; }
 .dock-main { flex: 1; min-width: 0; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 15px;
   background: var(--accent); color: #fff; font: 700 16px/1 Onest, system-ui, sans-serif; cursor: pointer; white-space: nowrap; padding: 0 10px; }
