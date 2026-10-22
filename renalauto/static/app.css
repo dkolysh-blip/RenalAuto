@@ -33,7 +33,9 @@ img { max-width: 100%; display: block; }
 /* подвал светлый (card): знак с чёрной машиной; в тёмной теме — с белой */
 footer .logo-mark.on-dark { display: none; } footer .logo-mark.on-light { display: block; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer .logo-mark.on-dark { display: block; } :root:not([data-theme="light"]) footer .logo-mark.on-light { display: none; } }
-.logo-word { font-weight: 900; font-size: 20px; letter-spacing: .04em; line-height: 1; }
+.logo-word { display: grid; gap: 4px; line-height: 1; }
+.logo-word > span { font: 600 17px/1 Unbounded, Onest, sans-serif; letter-spacing: .14em; }
+.logo-word small { font: 700 9px/1 Onest, system-ui, sans-serif; letter-spacing: .42em; text-transform: uppercase; color: var(--accent); }
 .top .logo { color: #fff; }
 .top nav { display: flex; gap: 20px; flex: 1; flex-wrap: wrap; }
 .top nav a { color: rgba(255,255,255,.72); font-weight: 500; }
@@ -192,7 +194,7 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .cta-bar { display: none; }
 @media (max-width: 700px) {
   .top { position: static; }
-  .logo-word { font-size: 17px; }
+  .logo-word > span { font-size: 15px; }
   .logo-mark { width: 56px; height: 25px; }
   .top .wrap { gap: 8px 14px; padding-top: 8px; padding-bottom: 8px; min-height: 0; }
   .top nav { order: 3; flex-basis: 100%; overflow-x: auto; white-space: nowrap; flex-wrap: nowrap; gap: 14px; }
@@ -336,7 +338,7 @@ body.pop-sheet .cta-bar { display: none; }
 .sms-alt { margin: 10px 0 0; text-align: center; }
 .sms-alt a { color: var(--sea); font-weight: 600; }
 .logo-word { white-space: nowrap; }
-@media (max-width: 420px) { .top .logo-word { font-size: 14px; } .top .logo { gap: 6px; } .top .logo-mark { width: 46px; height: 20px; } }
+@media (max-width: 420px) { .top .logo-word > span { font-size: 13px; letter-spacing: .1em; } .top .logo-word small { font-size: 8px; letter-spacing: .3em; } .top .logo { gap: 6px; } .top .logo-mark { width: 46px; height: 20px; } }
 @media (max-width: 700px) { .max-float { display: none; } }
 .port-section { margin: 32px 0 8px; }
 .port-section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 12px; }
