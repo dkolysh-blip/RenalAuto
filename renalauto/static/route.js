@@ -29,15 +29,14 @@
   }
   function go(i) { stage = (i + 5) % 5; t0 = performance.now(); render(); move(0); }
 
-  // маршрут внизу фото: транспорт едет от точки этапа к следующей, пока заполняется полоска;
-  // из Кореи до Владивостока — судно, дальше и из Китая — автовоз
+  // маршрут внизу фото: линия заполняется вместе с полоской этапа; у каждого этапа на его точке своя анимация,
+  // а на этапе «В море» / «Граница» судно или автовоз едет к следующей точке
   function move(k) {
-    const pos = Math.min(4, stage + (stage < 4 ? k : 0)), x = 6 + pos * 22;
-    rfill.style.width = `${x - 6}%`;
-    rveh.style.left = `${x}%`;
-    rveh.classList.toggle('ship', mode === 'kr' && pos < 2);
-    rveh.classList.toggle('moving', stage < 4 && k > 0 && k < 1);
-    dots.forEach((d, i) => { d.classList.toggle('done', i < pos + .01); d.classList.toggle('on', i === stage); });
+    const fill = Math.min(4, stage + (stage < 4 ? k : 0)), at = stage === 2 ? 2 + Math.min(1, k) : stage;
+    rfill.style.width = `${fill * 22}%`;
+    rveh.style.left = `${6 + at * 22}%`;
+    if (rveh.dataset.s !== String(stage)) rveh.dataset.s = stage;
+    dots.forEach((d, i) => { d.classList.toggle('done', i < fill + .01); d.classList.toggle('on', i === stage); });
   }
 
   // автопрокрутка: полоска текущего этапа заполняется, потом — следующий этап; после последнего — заново

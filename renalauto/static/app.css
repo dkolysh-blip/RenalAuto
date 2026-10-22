@@ -645,14 +645,38 @@ body.pop-sheet .cta-bar { display: none; }
   box-shadow: inset 0 0 0 2px rgba(255,255,255,.6); transition: background .3s, box-shadow .3s, transform .3s; }
 .tk-r-dot.done { background: #fff; box-shadow: none; }
 .tk-r-dot.on { background: var(--accent); box-shadow: 0 0 0 4px rgba(221,31,31,.35); transform: scale(1.15); }
-.tk-r-veh { position: absolute; left: 6%; top: -6px; width: 46px; height: 18px; transform: translateX(-50%); }
-.tk-r-veh svg { width: 46px; height: 18px; overflow: visible; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
-.tk-r-veh .tk-ship { display: none; } .tk-r-veh.ship .tk-ship { display: block; } .tk-r-veh.ship .tk-truck { display: none; }
-.tk-r-veh.moving svg { animation: tk-bob .9s ease-in-out infinite; }
+/* у каждого этапа своя анимация: подбор — лупа над машиной, выкуп — печать на инвойсе, в пути — судно или автовоз,
+   Владивосток — галочки на документах, ключи — ключ покачивается в руке */
+.tk-r-veh { position: absolute; left: 6%; top: -26px; width: 62px; height: 36px; transform: translateX(-50%); }
+.tk-r-veh svg { position: absolute; inset: 0; width: 62px; height: 36px; overflow: visible; display: none; filter: drop-shadow(0 2px 4px rgba(0,0,0,.5)); }
+.tk-r-veh[data-s="0"] .a0, .tk-r-veh[data-s="1"] .a1, .tk-r-veh[data-s="3"] .a3, .tk-r-veh[data-s="4"] .a4,
+.track:not(.land) .tk-r-veh[data-s="2"] .ship, .track.land .tk-r-veh[data-s="2"] .truck { display: block; animation: tk-pop .45s cubic-bezier(.3,1.5,.5,1); }
+.a0 .lens { animation: tk-scan 2.4s ease-in-out infinite; }
+.a1 .stamp { animation: tk-stamp 1.8s cubic-bezier(.5,0,.5,1) infinite; }
+.a1 .stamp { transform-box: fill-box; transform-origin: center; }
+.a1 .mark { animation: tk-mark 1.8s steps(1) infinite; }
+.a2 .hull { animation: tk-bob 1.6s ease-in-out infinite; transform-origin: 50% 80%; }
+.a2 .wave { animation: tk-wave 1s linear infinite; }
+.a2 .body { animation: tk-bob .5s ease-in-out infinite; }
+.a2 .road { animation: tk-road .45s linear infinite; }
+.a3 .tick { stroke-dasharray: 14; stroke-dashoffset: 14; animation: tk-tick 3s ease-out infinite; }
+.a3 .t2 { animation-delay: .5s; } .a3 .t3 { animation-delay: 1s; }
+.a4 .key { transform-origin: 16px 15px; animation: tk-key 2.2s ease-in-out infinite; }
+.a4 .spark { opacity: 0; animation: tk-spark 2.2s ease-out infinite; transform-box: fill-box; transform-origin: center; }
+.a4 .s2 { animation-delay: .6s; } .a4 .s3 { animation-delay: 1.2s; }
 .track.jump .tk-r-veh, .track.jump .tk-r-fill { transition: left .7s cubic-bezier(.3,.7,.3,1), width .7s cubic-bezier(.3,.7,.3,1); }
-.tk-r-veh.ship.moving svg { animation-duration: 1.6s; }
+@keyframes tk-pop { from { transform: scale(.4); opacity: 0; } }
 @keyframes tk-bob { 50% { transform: translateY(-1.5px) rotate(-1deg); } }
-@media (prefers-reduced-motion: reduce) { .tk-stage img, .tk-r-veh svg { animation: none !important; } }
+@keyframes tk-scan { 0%, 100% { transform: translate(0, 0); } 40% { transform: translate(18px, 1px); } 70% { transform: translate(8px, -1px); } }
+@keyframes tk-stamp { 0%, 20% { transform: translate(6px, -14px) rotate(12deg); } 38% { transform: translateY(1px); } 46% { transform: translateY(0); } 52% { transform: translateY(0); } 72%, 100% { transform: translate(6px, -14px) rotate(12deg); } }
+@keyframes tk-mark { 0% { opacity: 0; } 38% { opacity: 1; } 92% { opacity: 0; } }
+@keyframes tk-wave { to { transform: translateX(8px); } }
+@keyframes tk-road { to { transform: translateX(-12px); } }
+@keyframes tk-tick { 0% { stroke-dashoffset: 14; } 20%, 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes tk-key { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(10deg); } }
+@keyframes tk-spark { 0% { opacity: 0; transform: scale(.3); } 25% { opacity: 1; transform: scale(1.1); } 60%, 100% { opacity: 0; transform: scale(.6); } }
+@media (prefers-reduced-motion: reduce) { .tk-r-veh svg *, .tk-r-veh svg { animation: none !important; } .a3 .tick { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) { .tk-stage img { animation: none !important; } }
 .tk-count { font: 600 13px/1 Onest, system-ui, sans-serif; color: rgba(255,255,255,.7); letter-spacing: .08em; }
 .tk-count b { font: 700 30px/1 Unbounded, Onest, sans-serif; color: #fff; letter-spacing: 0; margin-right: 2px; }
 .tk-title { font: 700 26px/1.15 Unbounded, Onest, sans-serif; color: #fff; }
