@@ -231,7 +231,13 @@
     return {key: 'demo:' + demoSeq, source: 'demo', id: String(demoSeq), country, title, body, model, year,
       price: rub(price), photo: null, path: null, verdict: 'ok', color: pick(DEMO_COLORS), demo: true,
       turnkey: Math.round(price * rnd(1.22, 1.32) / 1000) * 1000 + 50000, turnkey_from: true,
-      calc: {country, engine: 'ice', age, cc, price}};
+      calc: {country, engine: 'ice', age, cc, price}, mileage: rub(Math.round(rnd(1, 9)) * 10000), cc, fuel: 'бензин',
+      src: country === 'CN' ? 'Dongchedi' : 'Encar', age_note: age === 'new' ? 'машина до 3 лет' : 'машина 3–5 лет'};
+  }
+  // тестовые машины: расклад из ориентировочной цены
+  function demoLines(d) {
+    const fees = 16946, car = d.calc.price;
+    return [{k: 'car', rub: car}, {k: 'duty', rub: d.turnkey - car - fees - 50000}, {k: 'fees', rub: fees}, {k: 'fee', rub: 50000}];
   }
 
   // --- состояние сцены -----------------------------------------------------------
@@ -851,30 +857,46 @@
     if (pinned) dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey,
       sprite: `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`}}));
     // карточка: фото, название, главное о машине и два действия — расчёт у менеджера и страница машины
-    const facts = [d.year, d.mileage && `${d.mileage} км`, d.cc && `${(d.cc / 1000).toFixed(1).replace('.', ',')} л`,
+    const facts = [d.cc && `${(d.cc / 1000).toFixed(1).replace('.', ',')} л`, d.mileage && `${d.mileage} км`,
       d.fuel && d.fuel.toLowerCase()].filter(Boolean).join(' · ');
+    // расклад цены: из чего складываются «≈ X млн с растаможкой»
+    const LINE = {car: ['Машина на площадке', 'по курсу ЦБ', '#0b5c8f'], duty: ['Таможенная пошлина', '', '#dd1f1f'],
+      fees: ['Утильсбор и таможенный сбор', '', '#f2a531'], fee: ['Наше вознаграждение', 'не больше этой суммы', '#16191d']};
+    const lines = (d.lines || (d.demo && d.turnkey ? demoLines(d) : null) || []).filter(l => LINE[l.k]);
+    const known = lines.filter(l => l.rub);
+    const sum = known.reduce((a, l) => a + l.rub, 0) || 1;
+    const sub = l => l.k === 'duty' ? [d.age_note, d.cc && `${rub(d.cc)} см³`].filter(Boolean).join(', ') : LINE[l.k][1];
+    const breakdown = known.length ? `
+        <div class="pb-bar">${known.map(l => `<i style="flex:${l.rub};background:${LINE[l.k][2]}"></i>`).join('')}</div>
+        <ul class="pb-lines">${lines.map(l => `<li><i style="background:${LINE[l.k][2]}"></i><span>${LINE[l.k][0]}${sub(l) ? `<small>${esc(sub(l))}</small>` : ''}</span>
+          <b>${l.rub ? rub(l.rub) + ' ₽' : '<em>посчитает менеджер</em>'}</b></li>`).join('')}
+          <li class="q"><i></i><span>Доставка, СБКТС, ЭПТС</span><b><em>посчитает менеджер</em></b></li></ul>
+        <p class="pb-note">Расчёт ориентировочный: при мощности до 160 л.с., итог зависит от курса на день оплаты инвойса.</p>` : '';
     const price = d.turnkey
-      ? `<div class="pop-price">≈ ${mln(d.turnkey)}</div><div class="pop-orig">во Владивостоке с растаможкой, ориентировочно</div>`
-      : d.price ? `<div class="pop-price">≈ ${esc(d.price)} ₽</div><div class="pop-orig">цена на площадке, без доставки и растаможки</div>` : '';
+      ? `<div class="pb-total"><b>≈ ${mln(d.turnkey)}</b><span>во Владивостоке<br>с растаможкой</span></div>`
+      : d.price ? `<div class="pb-total"><b>≈ ${esc(d.price)} ₽</b><span>на площадке, без<br>доставки и растаможки</span></div>` : '';
+    const flag = d.country === 'CN' ? 'Китай' : 'Корея';
+    const ICO_CMP = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h6v12H4zM14 6h6v12h-6z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+    const ICO_SHARE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     popEl.innerHTML = `
       <button class="pop-x" type="button" data-act="close" aria-label="Закрыть">×</button>
-      ${d.photo ? `<div class="pop-ph"><img src="${esc(d.photo)}" alt=""></div>` : ''}
-      ${d.demo ? '<div class="pop-demo">Тестовые данные</div>' : ''}
-      <div class="pop-body">
-        <b class="pop-title">${esc(d.title)}</b>
-        ${facts ? `<div class="pop-facts">${esc(String(facts))}</div>` : ''}
-        ${price}
-        <div class="pop-actions">
-          <button class="btn" type="button" data-act="want">Рассчитать стоимость</button>
-          ${d.path ? `<a class="btn ghost" href="${esc(d.path)}" data-act="more">Подробнее о машине →</a>` : ''}
+      <div class="pb">
+        <div class="pb-top">${d.photo ? `<img src="${esc(d.photo)}" alt="">` : ''}
+          <div><span class="pb-flag">${flag}${d.src ? ' · ' + esc(d.src) : ''}${d.demo ? ' · тест' : ''}</span><b>${esc(label(d))}</b>${facts ? `<small>${esc(facts)}</small>` : ''}</div></div>
+        ${price}${breakdown}
+        <div class="pb-acts">
+          <button class="btn" type="button" data-act="want">Точный расчёт</button>
+          ${d.path ? `<a class="pb-ic" href="${esc(d.path)}" data-act="more" aria-label="Подробнее о машине" title="Подробнее о машине"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : ''}
+          <button type="button" class="pb-ic" data-act="share" aria-label="Поделиться расчётом" title="Поделиться расчётом">${ICO_SHARE}</button>
         </div>
-        <div class="pop-row"><p class="pop-note">Менеджер посчитает доставку, таможню и оформление до вашего города</p>
-          <button type="button" class="pop-share" data-act="share" aria-label="Поделиться машиной"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
       </div>`;
     popEl.querySelector('[data-act="close"]').addEventListener('click', () => { cam.follow = null; hidePop(); });
     popEl.querySelector('[data-act="share"]').addEventListener('click', () => {
       const url = new URL(d.path || location.pathname, location.origin).href;
-      share({title: label(d), url, text: `${label(d)}${d.turnkey ? ` — ≈ ${mln(d.turnkey)} с растаможкой во Владивостоке` : ''}. Нашёл в живой подборке Ренал Авто`});
+      const m = l => l && l.rub ? (l.rub >= 1e6 ? mln(l.rub).replace(' ₽', '') : Math.round(l.rub / 1000) + ' тыс') : null;
+      const by = Object.fromEntries(lines.map(l => [l.k, l]));
+      const parts = [by.car && `машина ${m(by.car)}`, by.duty && by.duty.rub && `пошлина ${m(by.duty)}`, by.fee && `комиссия до ${m(by.fee)}`].filter(Boolean);
+      share({title: label(d), url, text: `${label(d)}${d.turnkey ? ` — ≈ ${mln(d.turnkey)} с растаможкой во Владивостоке` : ''}${parts.length ? ` (${parts.join(', ')})` : ''}. Нашёл в живой подборке Ренал Авто`});
     });
     popEl.querySelector('[data-act="more"]')?.addEventListener('click', e => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;  // в новой вкладке — как обычная ссылка

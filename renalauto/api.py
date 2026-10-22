@@ -327,6 +327,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     def quote_car(v) -> dict[str, Any]:
         """Машина для сцены + ориентировочная цена с растаможкой (мощность не известна — считаем по льготе до 160 л.с.)."""
         car = scene_car(v)
+        car["src"] = v.source_name
         l, eur = v.listing, rates.get("EUR")
         engine = engine_kind(l)
         cc, guessed = guess_cc(v) if engine != "ev" else (v.eligibility.displacement_cc, False)
@@ -339,6 +340,17 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             car["turnkey"] = q.total_rub
             car["turnkey_from"] = q.total_is_from or guessed
             car["calc"] = {"country": l.country, "engine": engine, "age": age, "cc": cc or 0, "price": round(v.price_rub)}
+            # расклад для карточки: машина, пошлина, сборы (утильсбор + таможенный), комиссия; без суммы — «посчитает менеджер»
+            by = {ln.title: ln for ln in q.lines}
+            duty = next((ln for t, ln in by.items() if t.startswith("Таможенная пошлина")), None)
+            fees = [ln.rub for t, ln in by.items() if t in ("Утилизационный сбор", "Таможенный сбор") and ln.rub]
+            car["lines"] = [
+                {"k": "car", "rub": by["Автомобиль"].rub},
+                {"k": "duty", "rub": duty.rub if duty else None, "note": duty.note if duty else None},
+                {"k": "fees", "rub": sum(fees) if fees else None},
+                {"k": "fee", "rub": settings.deal_fee_rub},
+            ]
+            car["age_note"] = {"new": "машина до 3 лет", "mid": "машина 3–5 лет", "old": "машина старше 5 лет"}[age]
         return car
 
     def stream_query(f: PageFilters) -> str:
