@@ -1123,6 +1123,11 @@
   }
   filterForm?.addEventListener('input', () => { clearTimeout(applyFilter.t); applyFilter.t = setTimeout(applyFilter, 350); });
   filterForm?.addEventListener('submit', e => e.preventDefault());
+  // на телефоне фильтр свёрнут в одну строку, чтобы стоянка была видна сразу
+  filterForm?.querySelector('[data-pf-toggle]')?.addEventListener('click', e => {
+    const open = filterForm.classList.toggle('open');
+    e.currentTarget.setAttribute('aria-expanded', String(open));
+  });
   filterOut?.addEventListener('click', e => {
     const relax = e.target.closest('[data-pf-relax]');
     if (relax) {  // сбросить мешающий фильтр и показать машины

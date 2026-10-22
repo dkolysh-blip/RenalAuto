@@ -1026,3 +1026,20 @@ body.port-page footer { margin-top: 0; }
 .dock-main span { font-size: 18px; line-height: 1; }
 @media (max-width: 360px) { .dock-ico { grid-template-columns: repeat(3, 48px); } .dock-main { font-size: 15px; } }
 @media (max-width: 420px) { .cd-via span { gap: 6px; font-size: 13px; } .cd-via i, .cd-via i img { width: 22px; height: 22px; } }
+
+/* телефон: первый экран короче — плашки фактов в одну строку, фильтр свёрнут до кнопки */
+.pf-toggle { display: none; }
+@media (max-width: 700px) {
+  .port-facts, .port-offer .port-facts { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .port-facts li { padding: 0 0 0 18px; background: none; border: 0; font-size: 12.5px; }
+  .port-facts li::before { display: block; }
+  .port-facts li { font-size: 0; } .port-facts li b { font-size: 13px; }
+  .pf-toggle { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 12px 14px; border: 1px solid var(--line);
+    border-radius: 12px; background: #fff; font: 700 14.5px/1.2 Onest, system-ui, sans-serif; color: #16191d; cursor: pointer; }
+  .pf-toggle i { font-style: normal; color: var(--sea); transition: transform .2s; }
+  .port-filter.open .pf-toggle i { transform: rotate(180deg); }
+  .port-hero .port-filter:not(.open) { padding: 0; border: 0; box-shadow: none; background: none; }
+  .port-filter:not(.open) .pf-field { display: none; }
+}
+/* отзывы: карточки одной высоты */
+.rv-track { align-items: stretch; }
