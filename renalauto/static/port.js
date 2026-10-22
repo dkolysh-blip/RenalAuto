@@ -304,7 +304,7 @@
   // --- живой фон: блики на воде, облака, тележки кранов, автовоз ------------------------
   function ambient() {
     const cranes = svg.querySelector('.t-cranes'), clouds = svg.querySelector('.t-clouds');
-    cranes.innerHTML = L.cranes.map(c => `<g class="trolley"><rect x="${c.x - 12}" y="-6.5" width="24" height="13" rx="2"/><rect class="hoist" x="${c.x - 7}" y="-2.5" width="14" height="5"/></g>`).join('');
+    cranes.innerHTML = '';  // тележки кранов убраны: сверху они читались как случайные жёлтые квадраты
     if (!NIGHT) {
       clouds.innerHTML = [0.3, 0.75].map((y, i) => `<ellipse class="cloud" cx="0" cy="${L.H * y}" rx="${L.W * (0.2 + i * 0.06)}" ry="${L.H * (0.32 - i * 0.08)}" fill="url(#t-cloud)"/>`).join('');
     }
