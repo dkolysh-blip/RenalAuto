@@ -68,7 +68,7 @@
       <div class="tk-grid">
         <figure class="tk-stage" data-tk-stage>
           <div class="tk-bars" role="tablist" aria-label="Этапы">{% for i in range(5) %}<button type="button" role="tab" data-vy-step="{{ i }}" data-vy-pin aria-label="Этап {{ i + 1 }}"><i></i></button>{% endfor %}</div>
-          <img data-tk-photo alt="" width="1280" height="800">
+          <img data-tk-photo alt="" width="1280" height="800" loading="lazy" decoding="async">
           <div class="tk-ribbon" aria-hidden="true"><i class="tk-r-rail"></i><i class="tk-r-fill" data-tk-rfill></i>{% for i in range(5) %}<i class="tk-r-dot" data-tk-dot style="--x: {{ 6 + i * 22 }}%"></i>{% endfor %}
             <span class="tk-r-veh" data-tk-rveh data-s="0"><span class="tk-r-glass"></span><img class="a0" src="/static/media/route/ic/search.webp?v=1" alt="" width="96" height="96" decoding="async"><img class="a1" src="/static/media/route/ic/buy.webp?v=1" alt="" width="96" height="96" decoding="async"><img class="a2 ship" src="/static/media/route/ic/ship.webp?v=1" alt="" width="96" height="96" decoding="async"><img class="a2 truck" src="/static/media/route/ic/truck.webp?v=1" alt="" width="96" height="96" decoding="async"><img class="a3" src="/static/media/route/ic/docs.webp?v=1" alt="" width="96" height="96" decoding="async"><img class="a4" src="/static/media/route/ic/keys.webp?v=1" alt="" width="96" height="96" decoding="async"></span></div>
           <figcaption>
