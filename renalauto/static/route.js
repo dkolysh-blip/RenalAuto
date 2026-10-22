@@ -12,7 +12,7 @@
   const rfill = $('[data-tk-rfill]'), rveh = $('[data-tk-rveh]'), dots = $$('[data-tk-dot]');
   const f = {n: $('[data-tk-n]'), t: $('[data-tk-t]'), pl: $('[data-tk-pl]'), do: $('[data-tk-do]'), get: $('[data-tk-get]'), money: $('[data-tk-money]')};
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  const STEP_MS = 5200;
+  const STEP_MS = 5200, PHOTO_V = 2;  // PHOTO_V — поднять при замене фото этапов, чтобы браузер не показывал старые
   let mode = 'kr', stage = 0, raf = 0, t0 = 0, playing = false, visible = false, touched = false;
 
   function render() {
@@ -22,7 +22,7 @@
     f.n.textContent = String(stage + 1).padStart(2, '0');
     f.t.textContent = s.title; f.pl.textContent = s.place;
     f.do.textContent = s.do; f.get.textContent = s.get; f.money.textContent = s.money;
-    photo.src = `/static/media/route/${s.photo}.webp`; photo.alt = s.title;
+    photo.src = `/static/media/route/${s.photo}.webp?v=${PHOTO_V}`; photo.alt = s.title;
     bars.forEach((b, i) => { b.classList.toggle('done', i < stage); b.classList.toggle('on', i === stage); b.setAttribute('aria-selected', String(i === stage)); b.style.setProperty('--p', i < stage ? 1 : 0); });
     rows.forEach((r, i) => { r.classList.toggle('done', i < stage); r.classList.toggle('on', i === stage); });
     stageEl.classList.remove('swap'); void stageEl.offsetWidth; stageEl.classList.add('swap');  // заново проиграть появление
@@ -60,6 +60,7 @@
   function setMode(m) {
     mode = m === 'cn' ? 'cn' : 'kr';
     box.classList.toggle('land', mode === 'cn');
+    DATA[mode].steps.forEach(st => { new Image().src = `/static/media/route/${st.photo}.webp?v=${PHOTO_V}`; });  // заранее, чтобы смена этапа была без мигания
     $$('[data-vy-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.vyMode === mode)));
     render();
   }

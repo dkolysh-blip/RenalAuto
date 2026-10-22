@@ -28,20 +28,20 @@
  },
  {
   "slug": "vlad",
-  "name": "Владивосток, бухта Золотой Рог",
-  "title": "Vladivostok Golden Horn bay 2022-08.jpg",
+  "name": "Владивосток, Золотой мост",
+  "title": "Vladivostok Golden bridge 2022-08.jpg",
   "author": "Svetlov Artem",
   "license": "CC0",
   "license_url": "https://creativecommons.org/publicdomain/zero/1.0/deed.ru",
-  "url": "https://commons.wikimedia.org/wiki/File:Vladivostok_Golden_Horn_bay_2022-08.jpg"
+  "url": "https://commons.wikimedia.org/wiki/File:Vladivostok_Golden_bridge_2022-08.jpg"
  },
  {
-  "slug": "truck-ru",
-  "name": "Автовоз с машинами в России",
-  "title": "Du novaj aŭtoj Moskviĉ-3 sur kamiono (Tjumeno).jpg",
-  "author": "RG72",
-  "license": "CC BY-SA 4.0",
-  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/deed.ru",
-  "url": "https://commons.wikimedia.org/wiki/File:Du_novaj_a%C5%ADtoj_Moskvi%C4%89-3_sur_kamiono_(Tjumeno).jpg"
+  "slug": "suifenhe",
+  "name": "Суйфэньхэ, вид от храма Гуаньинь",
+  "title": "Suifenhe (view from the temple Guanlin).jpg",
+  "author": "Digr",
+  "license": "Public domain",
+  "license_url": "https://commons.wikimedia.org/wiki/Public_domain",
+  "url": "https://commons.wikimedia.org/wiki/File:Suifenhe_(view_from_the_temple_Guanlin).jpg"
  }
 ]
