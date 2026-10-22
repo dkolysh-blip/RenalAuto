@@ -1050,3 +1050,24 @@ body.port-page footer { margin-top: 0; }
 }
 /* узкий телефон: MAX и ВК — только значками, чтобы шапка помещалась в одну строку */
 @media (max-width: 560px) { .top .contacts .max-btn { font-size: 0; gap: 0; padding: 7px; } .top .contacts .max-btn img { width: 24px; height: 24px; } .top .contacts { gap: 6px; } }
+
+/* нижняя панель на телефоне: плавающая карточка — слева три значка с подписями, справа главная красная кнопка */
+@media (max-width: 700px) {
+  .cta-bar.dock { left: 8px; right: 8px; bottom: calc(8px + env(safe-area-inset-bottom)); padding: 6px; gap: 6px; border: 1px solid rgba(15,23,42,.06);
+    border-radius: 22px; background: rgba(255,255,255,.92); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    box-shadow: 0 12px 32px rgba(15,23,42,.18); }
+  body.has-cta { padding-bottom: 92px; }
+}
+.dock-ico { display: flex; align-items: stretch; flex: 0 0 auto; background: #f2f4f7; border-radius: 16px; padding: 3px; }
+.di { display: grid; justify-items: center; align-content: center; gap: 3px; width: 54px; padding: 6px 0 5px; border-radius: 13px; color: #16191d; text-decoration: none; }
+.di:hover, .di:active { background: #fff; text-decoration: none; }
+.di-i { width: 24px; height: 24px; display: grid; place-items: center; }
+.di-i img { width: 24px; height: 24px; border-radius: 7px; max-width: none; }
+.di small { font: 700 10.5px/1 Onest, system-ui, sans-serif; color: #475467; }
+.di-call .di-i { color: #16a34a; } .di-sms .di-i { color: #0b5c8f; }
+.dock-main { flex: 1; min-width: 0; align-self: stretch; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 16px;
+  background: var(--accent); color: #fff; font: 700 16px/1 Onest, system-ui, sans-serif; cursor: pointer; white-space: nowrap;
+  box-shadow: 0 8px 18px rgba(221,31,31,.28); }
+.dock-main:active { background: var(--accent-press, #b9181a); }
+.dock-main span { font-size: 18px; }
+@media (max-width: 360px) { .di { width: 48px; } .dock-main { font-size: 15px; } }
