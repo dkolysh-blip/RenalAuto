@@ -849,6 +849,7 @@
     // по нажатию карточка не висит над машиной: на компьютере — у правого края сцены, на телефоне — снизу экрана
     const wide = matchMedia('(min-width: 900px)').matches;
     popEl.classList.toggle('docked', pop.pinned && wide);
+    root.classList.toggle('pop-docked', pop.pinned && wide);  // карточка у правого края — сообщения о новых объявлениях уходят
     popEl.classList.toggle('sheet', pop.pinned && !wide);
     popEl.classList.toggle('peek', !pop.pinned);  // при наведении — коротко: машина, цена и полоска; расклад и кнопки — по нажатию
     document.body.classList.toggle('pop-sheet', pop.pinned && !wide);
@@ -948,6 +949,7 @@
     pop.car?.g.classList.remove('hover');
     pop.car = null; pop.pinned = false;
     popEl.hidden = true;
+    root.classList.remove('pop-docked');
     popEl.classList.remove('docked', 'sheet');
     document.body.classList.remove('pop-sheet');
     if (!cam.follow) unfocus();
@@ -1149,52 +1151,50 @@
     });
   }
 
-  // --- лента-чат «Новые объявления»: каждое новое объявление приходит сообщением, как в мессенджере ---------
-  const feedBox = document.querySelector('[data-feed]'), feedList = feedBox?.querySelector('[data-feed-list]');
-  const CHAT_MAX = 30;
+  // --- новые объявления прямо на сцене: короткие сообщения в углу стоянки, как в чате ------------------
+  // на компьютере видно два последних, на телефоне — одно, и оно само прячется, чтобы не закрывать стоянку
+  const feedList = root.querySelector('[data-feed]');
+  const CHAT_MAX = 2;
   function ago(t) {
-    const s = (Date.now() - t) / 1000, d = new Date(t), hm = d.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'});
+    const s = (Date.now() - t) / 1000, d = new Date(t);
     if (s < 60) return 'только что';
     if (s < 3600) return `${Math.floor(s / 60)} мин назад`;
-    if (new Date().toDateString() === d.toDateString()) return `сегодня в ${hm}`;
-    return `${d.toLocaleDateString('ru-RU', {day: '2-digit', month: '2-digit'})} в ${hm}`;
+    if (s < 86400 && new Date().toDateString() === d.toDateString()) return `в ${d.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
+    return d.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'});
   }
   function chatAdd(d, {at = Date.now(), fresh = false} = {}) {
     if (!feedList || feedList.querySelector(`[data-key="${CSS.escape(d.key)}"]`)) return;
-    const near = feedList.scrollHeight - feedList.scrollTop - feedList.clientHeight < 80;
-    const put = el => { feedList.appendChild(el); while (feedList.children.length > CHAT_MAX) feedList.firstElementChild.remove(); if (near || !fresh) feedList.scrollTop = feedList.scrollHeight; };
-    const msg = document.createElement('article');
+    const put = el => {
+      feedList.appendChild(el);
+      const msgs = feedList.querySelectorAll('.fm');
+      if (msgs.length > CHAT_MAX) { const old = msgs[0]; old.classList.add('out'); setTimeout(() => old.remove(), 400); }
+      clearTimeout(feedList.t);
+      feedList.classList.remove('idle');
+      feedList.t = setTimeout(() => feedList.classList.add('idle'), 7000);  // на телефоне — спрятать через 7 с
+    };
+    const msg = document.createElement('button');
+    msg.type = 'button';
     msg.className = 'fm' + (fresh ? ' new' : ''); msg.dataset.key = d.key; msg.dataset.at = at;
-    const facts = [d.mileage && `${d.mileage} км`, d.cc && `${(d.cc / 1000).toFixed(1).replace('.', ',')} л`, d.fuel && d.fuel.toLowerCase()].filter(Boolean).join(' · ');
     const img = d.photo ? `<img src="${esc(d.photo)}" alt="" loading="lazy">`
       : `<span class="fm-sprite"><img src="${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}" alt=""></span>`;
-    msg.innerHTML = `<div class="fm-bubble">
-        <div class="fm-ph">${img}<span class="fm-flag">${d.country === 'CN' ? 'Китай' : 'Корея'}${d.src ? ' · ' + esc(d.src) : ''}</span></div>
-        <div class="fm-body">
-          ${fresh ? '<span class="fm-tag">Новое объявление</span>' : ''}
-          <b>${esc(label(d))}</b>${facts ? `<small>${esc(facts)}</small>` : ''}
-          <p class="fm-price">${d.turnkey ? `≈ ${mln(d.turnkey)} <span>с растаможкой</span>` : d.price ? `≈ ${esc(d.price)} ₽ <span>на площадке</span>` : '<span>цену посчитает менеджер</span>'}</p>
-          <div class="fm-acts"><button type="button" data-fm="see">На стоянке</button><button type="button" data-fm="calc">Расчёт</button></div>
-        </div>
-      </div><time class="fm-time">${ago(at)}</time>`;
-    msg.querySelector('[data-fm="see"]').addEventListener('click', () => {
+    msg.innerHTML = `<span class="fm-ph">${img}</span><span class="fm-body">
+        <small><i></i>${fresh ? 'Новое' : 'Недавно'} · ${d.country === 'CN' ? 'Китай' : 'Корея'} · <time>${ago(at)}</time></small>
+        <b>${esc(label(d))}</b>
+        <em>${d.turnkey ? `≈ ${mln(d.turnkey)} с растаможкой` : d.price ? `≈ ${esc(d.price)} ₽ на площадке` : 'цену посчитает менеджер'}</em></span>`;
+    msg.addEventListener('click', () => {
+      goal('feed_click');
       const car = cars.get(d.key);
-      if (!car || car.state !== 'parked') { if (d.path) location.href = d.path; return; }
-      root.scrollIntoView({behavior: reduce.matches ? 'auto' : 'smooth', block: 'center'});
-      setTimeout(() => { showPop(car, true); focusOn(car); }, reduce.matches ? 0 : 450);
+      if (car && car.state === 'parked') { showPop(car, true); focusOn(car); } else if (d.path) location.href = d.path;
     });
-    msg.querySelector('[data-fm="calc"]').addEventListener('click', () => { goal('feed_calc'); openForm(d, cars.get(d.key) || null); });
     if (!fresh || reduce.matches) { put(msg); return; }
-    // «печатает…» — и сообщение появляется
-    const typing = document.createElement('div');
+    const typing = document.createElement('div');  // «печатает…» — и сообщение появляется
     typing.className = 'fm-typing'; typing.innerHTML = '<i></i><i></i><i></i>';
-    put(typing);
+    feedList.appendChild(typing);
     setTimeout(() => { typing.remove(); put(msg); }, 900);
   }
   if (feedList) {
-    const seed = (DATA.recent || []).slice().reverse();  // сверху старые, снизу самые свежие — как в чате
-    seed.forEach(d => chatAdd(d, {at: d.seen ? Date.parse(d.seen) : Date.now()}));
-    setInterval(() => feedList.querySelectorAll('.fm').forEach(m => { m.querySelector('.fm-time').textContent = ago(+m.dataset.at); }), 30000);
+    (DATA.recent || []).slice(0, CHAT_MAX).reverse().forEach(d => chatAdd(d, {at: d.seen ? Date.parse(d.seen) : Date.now()}));
+    setInterval(() => feedList.querySelectorAll('.fm').forEach(m => { const t = m.querySelector('time'); if (t) t.textContent = ago(+m.dataset.at); }), 30000);
   }
 
   // --- данные: стартовый набор, затем живая лента (или тестовый поток) -------------------

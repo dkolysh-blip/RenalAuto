@@ -48,19 +48,13 @@
         <span data-hud="count"></span>
       </div>
       <div class="terminal-toasts"></div>
+      <div class="t-feed" data-feed></div>
       <div class="lot-sign"></div>
     </div>
     <div class="port-pop" id="port-pop" hidden></div>
     <ul class="sr-only">{% for v in cars[:12] %}<li><a href="{{ v.path }}">{{ v.title }}</a></li>{% endfor %}</ul>
     {# путь машины: вода из порта продолжается здесь — судно уходит из терминала в эту полосу, из Китая едет автовоз #}
     <p class="terminal-note muted small">Каждая машина — реальное объявление с площадки Кореи или Китая, цена ориентировочная. Наведите или нажмите на машину.</p>
-    <section class="feed" data-feed aria-labelledby="feed-title">
-      <header class="feed-head">
-        <span class="feed-ava" aria-hidden="true"><img src="/static/brand/renal-auto-mark-white.svg" alt="" width="34" height="14"></span>
-        <span class="feed-who"><b id="feed-title">Новые объявления</b><small><i class="feed-live"></i><span data-feed-status>в реальном времени с Encar и Dongchedi</span></small></span>
-      </header>
-      <div class="feed-list" data-feed-list role="log" aria-live="polite" aria-label="Новые объявления"></div>
-    </section>
     <section class="track" id="route" data-route aria-labelledby="track-title">
       <div class="tk-head">
         <div><span class="tk-eb">Путь машины</span>

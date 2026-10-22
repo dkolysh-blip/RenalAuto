@@ -329,7 +329,7 @@ def test_port_feed_recent(settings):
     client, app = make_client(settings, [car])
     try:
         page = client.get("/port").text
-        assert "data-feed" in page and "Новые объявления" in page
+        assert "data-feed" in page
         scene = json.loads(page.split('id="port-data">')[1].split("</script>")[0])
         assert scene["recent"][0]["title"] == "Kia K5" and scene["recent"][0]["seen"]
     finally:
