@@ -362,7 +362,9 @@ body.pop-sheet .cta-bar { display: none; }
 .max-float img { border-radius: 8px; }
 .cta-bar .max-btn, .cta-bar .sms-btn, .cta-bar .call-btn { flex: 0 0 auto; padding-left: 12px; padding-right: 12px; }
 /* звонок в нижней панели: значок трубки и подпись; на узком экране подписи у звонка и MAX прячем */
-.call-btn { display: inline-flex; align-items: center; gap: 6px; color: #15803d; border-color: #b7e0c4; }
+.call-btn { display: inline-flex; align-items: center; gap: 6px; }
+.btn.ghost.call-btn { background: #16a34a; border-color: #16a34a; color: #fff; }
+.btn.ghost.call-btn:hover { background: #15803d; border-color: #15803d; }
 .call-btn svg { flex: 0 0 auto; }
 .cta-acts { display: flex; gap: 8px; align-items: center; }
 @media (max-width: 480px) {
