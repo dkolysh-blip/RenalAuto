@@ -1043,3 +1043,11 @@ body.port-page footer { margin-top: 0; }
 }
 /* отзывы: карточки одной высоты */
 .rv-track { align-items: stretch; }
+
+/* поделиться: подборкой у результата фильтра и машиной в карточке */
+.pf-share { border: 0; background: #0f1012; color: #fff; font: 700 13px/1.2 Onest, system-ui, sans-serif; padding: 7px 14px 7px 12px; border-radius: 999px; cursor: pointer; margin-left: 4px; }
+.pf-share::before { content: "↗ "; }
+.pop-row { display: flex; align-items: flex-start; gap: 10px; }
+.pop-row .pop-note { flex: 1; }
+.pop-share { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: #0f172a; display: grid; place-items: center; cursor: pointer; }
+.pop-share:hover { border-color: var(--sea); color: var(--sea); }

@@ -405,8 +405,19 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             guess_cc(c)
         scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched,
                  "rates": {k: v for k, v in cur.items() if v}, "rates_source": rates.source}
+        # заголовок для превью ссылки в мессенджере, если ей поделились подборкой: «Авто из Кореи до 2,5 млн ₽ от 2020 г.»
+        share_bits = []
+        budget, year_from, country_q = _int(q.get("budget")), _int(q.get("year_from")), q.get("country")
+        what = _clean(q.get("q")) or matched
+        share_bits.append(f"{what} из" if what else "Авто из")
+        share_bits.append({"KR": "Кореи", "CN": "Китая"}.get(country_q or "", "Кореи и Китая"))
+        if budget:
+            share_bits.append(f"до {budget / 1e6:.2f}".rstrip("0").rstrip(".").replace(".", ",") + " млн ₽")
+        if year_from:
+            share_bits.append(f"от {year_from} г.")
+        share_title = " ".join(share_bits) if (budget or year_from or country_q or q.get("q")) else None
         return render(
-            request, "port.html", cars=cars, matched=matched, reviews=load_reviews(),
+            request, "port.html", cars=cars, matched=matched, reviews=load_reviews(), share_title=share_title,
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),
         )
 

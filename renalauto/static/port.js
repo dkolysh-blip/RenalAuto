@@ -771,6 +771,13 @@
 
   // --- HUD и плашки ------------------------------------------------------------------
   const toasts = root.querySelector('.terminal-toasts');
+  async function share({title, text, url}) {
+    goal('share');
+    if (navigator.share) { try { await navigator.share({title, text, url}); } catch (err) { /* отменили */ } return; }
+    try { await navigator.clipboard.writeText(url); } catch (err) { /* без доступа к буферу — ссылка видна в тосте */ }
+    toast(`Ссылка скопирована — отправьте её в MAX или <a href="https://vk.com/share.php?url=${encodeURIComponent(url)}" target="_blank" rel="noopener">ВКонтакте →</a>`);
+  }
+  window.RenalShare = share;
   function toast(html) {
     const el = document.createElement('div');
     el.className = 'terminal-toast';
@@ -861,9 +868,14 @@
           <button class="btn" type="button" data-act="want">Рассчитать стоимость</button>
           ${d.path ? `<a class="btn ghost" href="${esc(d.path)}" data-act="more">Подробнее о машине →</a>` : ''}
         </div>
-        <p class="pop-note">Менеджер посчитает доставку, таможню и оформление до вашего города</p>
+        <div class="pop-row"><p class="pop-note">Менеджер посчитает доставку, таможню и оформление до вашего города</p>
+          <button type="button" class="pop-share" data-act="share" aria-label="Поделиться машиной"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
       </div>`;
     popEl.querySelector('[data-act="close"]').addEventListener('click', () => { cam.follow = null; hidePop(); });
+    popEl.querySelector('[data-act="share"]').addEventListener('click', () => {
+      const url = new URL(d.path || location.pathname, location.origin).href;
+      share({title: label(d), url, text: `${label(d)}${d.turnkey ? ` — ≈ ${mln(d.turnkey)} с растаможкой во Владивостоке` : ''}. Нашёл в живой подборке Ренал Авто`});
+    });
     popEl.querySelector('[data-act="more"]')?.addEventListener('click', e => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;  // в новой вкладке — как обычная ссылка
       e.preventDefault();
@@ -1059,6 +1071,15 @@
     if (my !== filterSeq) return;
     goal('filter');
     filterOut.innerHTML = resultText(r.found.length, r.total);
+    const qs = new URLSearchParams(filter);
+    for (const k of ['demo', 'utm_source', 'utm_medium', 'utm_campaign']) { const v = new URLSearchParams(location.search).get(k); if (v) qs.set(k, v); }
+    history.replaceState(null, '', location.pathname + (qs.toString() ? '?' + qs : '') + location.hash);
+    if (r.found.length && filterActive()) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'pf-share'; b.textContent = 'Поделиться подборкой';
+      b.addEventListener('click', () => share({title: document.title, text: `${lotName()}: ${r.total} ${carWord(r.total).replace('машину', 'машина')} в живой подборке Ренал Авто`, url: location.href}));
+      filterOut.append(' ', b);
+    }
     switchLot(r.found, lotName());
     if (!r.found.length && filterActive()) suggestNear(my);
   }
@@ -1197,7 +1218,12 @@
     } else {
       queue.splice(0).forEach(d => arrive(d, true));
     }
-    if (filterForm && filterForm.elements.q.value) applyFilter();  // ?model=… из рекламы — сразу как фильтр
+    if (filterForm) {  // ссылка с подборкой (?budget=…&year_from=…) или ?model=… из рекламы — сразу как фильтр
+      const u = new URLSearchParams(location.search), f = filterForm.elements;
+      if (u.get('budget')) { budgetRange.value = u.get('budget'); budgetRange.dispatchEvent(new Event('input')); }
+      for (const k of ['country', 'year_from', 'q']) if (u.get(k) && f[k]) f[k].value = u.get(k);
+      if (['budget', 'country', 'year_from', 'q'].some(k => u.get(k)) || f.q.value) { filterForm.classList.add('open'); applyFilter(); }
+    }
     let wide = !matchMedia('(max-width: 640px)').matches;
     addEventListener('resize', () => {
       if (pop.car) position(pop.car);

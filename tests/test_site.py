@@ -283,3 +283,13 @@ def test_only_configured_sources_on_site(settings):
         assert [c["source"] for c in r["cars"]] == ["encar"]
     finally:
         client.__exit__(None, None, None)
+
+
+def test_port_share_title(settings):
+    # ссылка с подборкой: заголовок страницы (и превью в мессенджере) описывает выбор
+    client, app = make_client(settings, [])
+    try:
+        page = client.get("/port", params={"country": "KR", "budget": "2500000", "year_from": "2020"})
+        assert "<title>Авто из Кореи до 2,5 млн ₽ от 2020 г. — живая подборка | Ренал Авто</title>" in page.text
+    finally:
+        client.__exit__(None, None, None)
