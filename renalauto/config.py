@@ -74,7 +74,7 @@ class Settings:
     # бесплатный номер 8 800 — в шапке и подвале; мобильный COMPANY_PHONE остаётся для SMS и в подвале
     company_hotline: str | None = field(default_factory=lambda: os.getenv("COMPANY_HOTLINE", "8 800 250-57-78") or None)
     company_email: str | None = field(
-        default_factory=lambda: os.getenv("COMPANY_EMAIL", "ren125primorye@gmail.com") or None
+        default_factory=lambda: os.getenv("COMPANY_EMAIL", "renal_auto@mail.ru") or None
     )
     # Реквизиты юрлица для подвала сайта
     company_legal_name: str | None = field(
