@@ -60,30 +60,36 @@
     <p class="terminal-note muted small">Каждая машина — реальное объявление с площадки Кореи или Китая, цена ориентировочная. Наведите или нажмите на машину.</p>
     <section class="track" id="route" data-route aria-labelledby="track-title">
       <div class="tk-head">
-        <div><span class="sec-eyebrow">Путь машины</span>
+        <div><span class="tk-eb">Путь машины</span>
           <h2 id="track-title" data-tk-title></h2>
-          <p class="tk-car" data-route-car aria-live="polite">Листайте — покажем каждый этап. Или нажмите на машину на стоянке.</p></div>
+          <p class="tk-car" data-route-car aria-live="polite">Пять этапов — от подбора до ключей. Нажмите на этап или листайте.</p></div>
         <div class="tk-tabs" role="group" aria-label="Откуда везём">
-          <button type="button" data-vy-mode="kr" aria-pressed="true">Из Кореи — морем</button>
-          <button type="button" data-vy-mode="cn" aria-pressed="false">Из Китая — по суше</button>
+          <button type="button" data-vy-mode="kr" aria-pressed="true">Корея — морем</button>
+          <button type="button" data-vy-mode="cn" aria-pressed="false">Китай — по суше</button>
         </div>
       </div>
-      <div class="tk-geo" aria-hidden="true" data-tk-geo></div>
-      <div class="tk-line" aria-hidden="true">
-        <i class="tk-rail"></i><i class="tk-sea" data-tk-sea></i><i class="tk-fill" data-tk-fill></i>
-        {% for i in range(5) %}<i class="tk-node" data-vy-pin style="--x: {{ [10, 30, 50, 70, 90][i] }}%"><b>{{ i + 1 }}</b></i>{% endfor %}
-        <span class="tk-veh" data-tk-veh><span class="tk-ship"><svg viewBox="0 0 66 26"><path d="M2 8h50l12 9-6 7H8L2 8z" fill="#1b2733"/><rect x="10" y="3" width="36" height="7" rx="1.5" fill="#e9ecef"/><rect x="40" y="0" width="7" height="6" rx="1" fill="#dd1f1f"/></svg></span><span class="tk-truck"><svg viewBox="0 0 66 26"><rect x="2" y="6" width="44" height="14" rx="2" fill="#dfe3e7" stroke="#39404a" stroke-width="2"/><rect x="8" y="9" width="10" height="8" rx="2" fill="#16191d"/><rect x="24" y="9" width="10" height="8" rx="2" fill="#dd1f1f"/><rect x="48" y="5" width="15" height="16" rx="3" fill="#dd1f1f"/><circle cx="12" cy="22" r="3" fill="#16191d"/><circle cx="38" cy="22" r="3" fill="#16191d"/><circle cx="56" cy="22" r="3" fill="#16191d"/></svg></span></span>
+      <div class="tk-grid">
+        <figure class="tk-stage" data-tk-stage>
+          <div class="tk-bars" role="tablist" aria-label="Этапы">{% for i in range(5) %}<button type="button" role="tab" data-vy-step="{{ i }}" data-vy-pin aria-label="Этап {{ i + 1 }}"><i></i></button>{% endfor %}</div>
+          <img data-tk-photo alt="" width="1280" height="800">
+          <figcaption>
+            <span class="tk-count"><b data-tk-n>01</b> / 05</span>
+            <b class="tk-title" data-tk-t></b>
+            <span class="tk-place" data-tk-pl></span>
+          </figcaption>
+          <button type="button" class="tk-nav prev" data-tk-prev aria-label="Предыдущий этап">←</button>
+          <button type="button" class="tk-nav next" data-tk-next aria-label="Следующий этап">→</button>
+        </figure>
+        <div class="tk-side">
+          <ul class="tk-facts">
+            <li><i><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span><small>Делаем</small><b data-tk-do></b></span></li>
+            <li><i><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z M14 3v5h5 M9 13h7 M9 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span><small>Вы получаете</small><b data-tk-get></b></span></li>
+            <li class="money"><i><svg viewBox="0 0 24 24"><path d="M8 20V4h5.5a4 4 0 0 1 0 8H6 M6 16h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span><small>Деньги</small><b data-tk-money></b></span></li>
+          </ul>
+          <ol class="tk-list">{% for i in range(5) %}<li><button type="button" data-vy-step="{{ i }}" data-tk-step="{{ i }}"><em>{{ '%02d' % (i + 1) }}</em><span data-tk-li></span></button></li>{% endfor %}</ol>
+        </div>
       </div>
-      <ol class="tk-steps">{% for i in range(5) %}
-        <li class="tk-step" data-tk-step="{{ i }}">
-          <button type="button" class="tk-sum" data-vy-step="{{ i }}"><i class="tk-num"><b>{{ i + 1 }}</b></i><span><b data-tk-t></b><small data-tk-pl></small></span></button>
-          <div class="tk-body"><img data-tk-photo alt="" loading="lazy" width="640" height="400">
-            <p class="tk-row"><i>Делаем</i><span data-tk-do></span></p>
-            <p class="tk-row"><i>Вы получаете</i><span data-tk-get></span></p>
-            <p class="tk-row tk-money"><i>Деньги</i><span data-tk-money></span></p></div>
-        </li>{% endfor %}
-      </ol>
-      <p class="tk-foot"><span>Агентский договор с {{ company_legal_name or company }}</span> Машину покупаем от вашего имени и за ваш счёт — каждая трата в отчёте.</p>
+      <p class="tk-foot">Агентский договор с {{ company_legal_name or company }} · машину покупаем от вашего имени и за ваш счёт, каждая трата — в отчёте</p>
       <script type="application/json" id="vy-data">{{ {
         "kr": {"title": "Из Кореи — до " ~ deal.delivery_weeks ~ " недель до Владивостока",
           "geo": [["Корея · Пусан", 0, 32, ""], ["Японское море · ≈ 1 000 км", 33, 34, "sea"], ["Россия", 68, 32, ""]], "sea": [30, 40],

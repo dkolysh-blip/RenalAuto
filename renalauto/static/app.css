@@ -611,74 +611,67 @@ body.pop-sheet .cta-bar { display: none; }
 /* путь машины */
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .pr-eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--sea); }
-/* путь машины — как отслеживание посылки: линия этапов и карточки «делаем / вы получаете / деньги» */
-.track { margin-top: 22px; padding: 26px 28px 24px; border-radius: 24px; background: #fff; border: 1px solid var(--line); box-shadow: 0 18px 44px rgba(11,40,70,.10); }
-.tk-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 18px; }
-.tk-head h2 { font: 700 26px/1.15 Unbounded, Onest, sans-serif; color: #0f172a; margin: 8px 0 6px; }
-.tk-car { margin: 0; font-size: 15px; color: var(--muted); } .tk-car b { color: #0f172a; }
-.tk-tabs { display: inline-flex; padding: 4px; border-radius: 999px; background: #f2f5f8; border: 1px solid var(--line); }
-.tk-tabs button { border: 0; background: none; padding: 9px 16px; border-radius: 999px; font: 700 14px/1 Onest, system-ui, sans-serif; color: #475467; cursor: pointer; }
-.tk-tabs button[aria-pressed="true"] { background: #0f1012; color: #fff; }
-.tk-geo { position: relative; height: 26px; }
-.tk-geo span { position: absolute; top: 0; padding-top: 8px; border-top: 2px solid #d5dde5; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  font: 700 11.5px/1 Onest, system-ui, sans-serif; letter-spacing: .12em; text-transform: uppercase; color: #8a94a3; }
-.tk-geo .sea { color: var(--sea); border-color: #9cc3dd; }
-.tk-line { position: relative; height: 78px; }
-.tk-rail, .tk-fill, .tk-sea { position: absolute; top: 44px; height: 4px; border-radius: 2px; }
-.tk-rail { left: 10%; right: 10%; background: #e6ebf0; }
-.tk-sea { top: 38px; height: 16px; border-radius: 8px; background: repeating-linear-gradient(90deg, transparent 0 10px, rgba(11,92,143,.16) 10px 22px); }
-.tk-fill { left: 10%; width: 0; background: linear-gradient(90deg, var(--sea), #2f86c2); }
-.tk-node { position: absolute; top: 28px; left: var(--x); transform: translateX(-50%); width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
-  background: #fff; color: #98a2b3; box-shadow: inset 0 0 0 2px #d5dde5; font-style: normal; transition: background .25s, color .25s, box-shadow .25s; }
-.tk-node b, .tk-num b { font: 800 14px/1 Onest, system-ui, sans-serif; }
-.tk-node.done { background: var(--sea); color: #fff; box-shadow: none; }
-.tk-node.on { background: var(--accent); color: #fff; box-shadow: 0 0 0 6px rgba(221,31,31,.15); }
-.tk-veh { position: absolute; top: 0; left: 10%; z-index: 1; transform: translateX(-50%); width: 60px; height: 24px; pointer-events: none; }
-.tk-veh svg { width: 60px; height: 24px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.25)); }
-.tk-veh .tk-ship { display: none; } .tk-veh.ship .tk-ship { display: block; } .tk-veh.ship .tk-truck { display: none; }
-.tk-steps { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
-.tk-step { border-radius: 16px; border: 1px solid var(--line); background: #fff; transition: box-shadow .25s, outline-color .25s; outline: 2px solid transparent; }
-.tk-step.done { background: #f7fafc; }
-.tk-step.on { outline-color: var(--accent); box-shadow: 0 16px 36px rgba(11,40,70,.16); }
-.tk-sum { width: 100%; display: flex; align-items: flex-start; gap: 10px; padding: 14px 14px 0; border: 0; background: none; text-align: left; cursor: pointer; font: inherit; }
-.tk-num { display: none; }
-.tk-sum span { display: grid; gap: 3px; }
-.tk-sum b { font: 700 15px/1.25 Onest, system-ui, sans-serif; color: #0f172a; }
-.tk-sum small { font-size: 12.5px; color: var(--muted); }
-.tk-step.done .tk-sum span > b::before { content: "✓ "; color: var(--ok); }
-/* пройденный этап: в кружке галочка вместо номера */
-.tk-node.done b, .tk-step.done .tk-num b { font-size: 0; }
-.tk-node.done b::before, .tk-step.done .tk-num b::before { content: "✓"; font-size: 16px; color: #fff; }
-.tk-body { padding: 4px 14px 16px; }
-.tk-body img { display: none; width: 100%; height: 100px; object-fit: cover; border-radius: 10px; margin: 8px 0 2px; background: var(--line); }
-.tk-step.on .tk-body img { display: block; }
-.tk-row { margin: 9px 0 0; display: grid; gap: 4px; }
-.tk-row i { font: 700 10px/1 Onest, system-ui, sans-serif; font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: #8a94a3; }
-.tk-row span { font-size: 13.5px; line-height: 1.45; color: #344054; }
-.tk-money span { color: #0f172a; font-weight: 600; }
-.tk-foot { margin: 16px 0 0; font-size: 13.5px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: center; }
-.tk-foot span { padding: 6px 12px; border-radius: 999px; background: #eef4f9; color: var(--sea); font-weight: 700; }
-/* телефон: вертикальный трекинг, подробности — только у текущего этапа */
+/* путь машины — как сторис: тёмный блок, большое фото этапа с полосками прогресса, справа факты и список этапов */
+.track { margin-top: 22px; padding: 28px; border-radius: 28px; background: #0f1114; color: #fff;
+  background-image: radial-gradient(120% 80% at 100% 0%, rgba(11,92,143,.35), transparent 60%); box-shadow: 0 24px 60px rgba(11,20,40,.28); }
+.tk-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 22px; }
+.tk-eb { font: 800 11px/1 Onest, system-ui, sans-serif; letter-spacing: .2em; text-transform: uppercase; color: #ff5a5a; }
+.tk-head h2 { font: 700 28px/1.15 Unbounded, Onest, sans-serif; color: #fff; margin: 10px 0 8px; letter-spacing: -.01em; }
+.tk-car { margin: 0; font-size: 15px; color: rgba(255,255,255,.62); } .tk-car b { color: #fff; }
+.tk-tabs { display: inline-flex; padding: 4px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); }
+.tk-tabs button { border: 0; background: none; padding: 10px 18px; border-radius: 999px; font: 700 14px/1 Onest, system-ui, sans-serif; color: rgba(255,255,255,.7); cursor: pointer; }
+.tk-tabs button[aria-pressed="true"] { background: #fff; color: #0f1114; }
+.tk-grid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 22px; align-items: stretch; }
+/* фото этапа */
+.tk-stage { position: relative; margin: 0; min-height: 420px; border-radius: 22px; overflow: hidden; background: #1b1f25; }
+.tk-stage img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.tk-stage::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,.45) 0%, transparent 28%, transparent 45%, rgba(0,0,0,.82) 100%); }
+.tk-stage.swap img { animation: tk-in .6s ease; } .tk-stage.swap figcaption { animation: tk-up .45s ease; }
+@keyframes tk-in { from { opacity: .3; transform: scale(1.04); } }
+@keyframes tk-up { from { opacity: 0; transform: translateY(10px); } }
+.tk-bars { position: absolute; z-index: 2; left: 16px; right: 16px; top: 14px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.tk-bars button { --p: 0; height: 18px; padding: 7px 0; border: 0; background: none; cursor: pointer; }
+.tk-bars i { display: block; height: 4px; border-radius: 2px; background: rgba(255,255,255,.3); overflow: hidden; position: relative; }
+.tk-bars i::after { content: ""; position: absolute; inset: 0; background: #fff; transform-origin: left; transform: scaleX(var(--p)); }
+.tk-stage figcaption { position: absolute; z-index: 2; left: 24px; right: 24px; bottom: 22px; display: grid; gap: 6px; }
+.tk-count { font: 600 13px/1 Onest, system-ui, sans-serif; color: rgba(255,255,255,.7); letter-spacing: .08em; }
+.tk-count b { font: 700 30px/1 Unbounded, Onest, sans-serif; color: #fff; letter-spacing: 0; margin-right: 2px; }
+.tk-title { font: 700 26px/1.15 Unbounded, Onest, sans-serif; color: #fff; }
+.tk-place { font-size: 15px; color: rgba(255,255,255,.78); }
+.tk-nav { position: absolute; z-index: 2; bottom: 24px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.35);
+  background: rgba(15,17,20,.35); color: #fff; font-size: 18px; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.tk-nav.prev { right: 74px; } .tk-nav.next { right: 22px; }
+.tk-nav:hover { background: rgba(255,255,255,.18); }
+/* справа: три факта и список этапов */
+.tk-side { display: grid; gap: 16px; align-content: start; }
+.tk-facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tk-facts li { display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08); }
+.tk-facts i { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; flex: 0 0 auto; background: rgba(255,255,255,.08); color: #9cc9ea; }
+.tk-facts i svg { width: 22px; height: 22px; }
+.tk-facts .money i { background: rgba(221,31,31,.18); color: #ff7a7a; }
+.tk-facts span { display: grid; gap: 4px; }
+.tk-facts small { font-size: 12.5px; color: rgba(255,255,255,.55); }
+.tk-facts b { font: 600 15.5px/1.4 Onest, system-ui, sans-serif; color: #fff; }
+.tk-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.tk-list button { width: 100%; display: flex; align-items: center; gap: 14px; padding: 9px 12px; border: 0; border-radius: 12px; background: none; cursor: pointer;
+  font: 600 14.5px/1.2 Onest, system-ui, sans-serif; color: rgba(255,255,255,.55); text-align: left; transition: background .2s, color .2s; }
+.tk-list em { font: 700 12px/1 Unbounded, Onest, sans-serif; font-style: normal; color: rgba(255,255,255,.35); width: 24px; }
+.tk-list button:hover { color: #fff; }
+.tk-list button.done { color: rgba(255,255,255,.8); } .tk-list button.done em { color: #9cc9ea; }
+.tk-list button.on { background: rgba(255,255,255,.1); color: #fff; } .tk-list button.on em { color: #ff5a5a; }
+.tk-foot { margin: 20px 0 0; padding-top: 16px; border-top: 1px solid rgba(255,255,255,.1); font-size: 13.5px; color: rgba(255,255,255,.55); }
+/* телефон: фото сверху на всю ширину, под ним факты; список этапов не нужен — есть полоски и свайп */
 @media (max-width: 900px) {
-  .track { padding: 20px 16px; border-radius: 20px; }
-  .tk-head h2 { font-size: 20px; }
-  .tk-tabs { width: 100%; } .tk-tabs button { flex: 1; padding: 10px 6px; font-size: 13px; }
-  .tk-geo, .tk-line { display: none; }
-  .tk-steps { grid-template-columns: minmax(0, 1fr); gap: 0; position: relative; margin-top: 4px; }
-  .tk-step { border: 0; background: none; outline: 0; position: relative; padding-left: 46px; }
-  .tk-step::before { content: ""; position: absolute; left: 17px; top: 0; bottom: 0; width: 3px; background: #e6ebf0; }
-  .tk-step.done::before { background: var(--sea); }
-  .tk-step.done .tk-sum span > b::before { content: none; }
-  .tk-step:first-child::before { top: 18px; } .tk-step:last-child::before { bottom: calc(100% - 18px); }
-  .tk-step.done, .tk-step.on { background: none; box-shadow: none; }
-  .tk-num { display: grid; place-items: center; position: absolute; left: 0; top: 2px; width: 36px; height: 36px; border-radius: 50%; font-style: normal; z-index: 1;
-    background: #fff; color: #98a2b3; box-shadow: inset 0 0 0 2px #d5dde5; }
-  .tk-step.done .tk-num { background: var(--sea); color: #fff; box-shadow: none; }
-  .tk-step.on .tk-num { background: var(--accent); color: #fff; box-shadow: 0 0 0 5px rgba(221,31,31,.15); }
-  .tk-sum { padding: 8px 0 14px; }
-  .tk-body { display: none; }
-  .tk-step.on .tk-body { display: block; margin: -4px 0 16px; padding: 12px; border-radius: 14px; outline: 2px solid var(--accent); box-shadow: 0 12px 28px rgba(11,40,70,.14); background: #fff; }
-  .tk-step.on .tk-body img { height: 130px; margin-top: 0; }
+  .track { padding: 20px 14px 18px; border-radius: 24px; margin-left: -4px; margin-right: -4px; }
+  .tk-head h2 { font-size: 21px; }
+  .tk-tabs { width: 100%; } .tk-tabs button { flex: 1; padding: 11px 6px; font-size: 13.5px; }
+  .tk-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+  .tk-stage { min-height: 0; aspect-ratio: 4 / 5; border-radius: 20px; }
+  .tk-stage figcaption { left: 18px; right: 18px; bottom: 18px; }
+  .tk-title { font-size: 22px; } .tk-count b { font-size: 24px; }
+  .tk-nav { display: none; }
+  .tk-list { display: none; }
+  .tk-facts li { padding: 14px; }
 }
 .port-page .terminal-note { margin-top: 10px; }
 

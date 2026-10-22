@@ -1,97 +1,83 @@
-// «Путь машины» под сценой порта — как отслеживание посылки: линия из пяти этапов, по ней едет судно (Корея)
-// или автовоз (Китай). Под линией у каждого этапа — что делаем, что вы получаете и что с деньгами.
-// Прокрутка проводит по этапам; сцена порта управляет блоком через RenalRoute и событие renal:car.
+// «Путь машины» под сценой порта — как сторис: пять этапов, у каждого фото, что делаем, что вы получаете и что с деньгами.
+// Когда блок на экране, этапы листаются сами (полоски сверху заполняются); нажатие, свайп или стрелки — вручную.
+// Сцена порта управляет блоком через RenalRoute (t: 0…1 по пути) и событие renal:car.
 (() => {
   const box = document.querySelector('[data-route]');
   const dataEl = document.getElementById('vy-data');
   if (!box || !dataEl) return;
   const DATA = JSON.parse(dataEl.textContent);
   const $ = s => box.querySelector(s), $$ = s => [...box.querySelectorAll(s)];
-  const pins = $$('[data-vy-pin]'), steps = $$('[data-tk-step]');
-  const fill = $('[data-tk-fill]'), veh = $('[data-tk-veh]'), sea = $('[data-tk-sea]'), geo = $('[data-tk-geo]');
-  const carEl = $('[data-route-car]'), titleEl = $('[data-tk-title]');
+  const bars = $$('.tk-bars [data-vy-step]'), rows = $$('[data-tk-step]'), stageEl = $('[data-tk-stage]');
+  const photo = $('[data-tk-photo]'), carEl = $('[data-route-car]');
+  const f = {n: $('[data-tk-n]'), t: $('[data-tk-t]'), pl: $('[data-tk-pl]'), do: $('[data-tk-do]'), get: $('[data-tk-get]'), money: $('[data-tk-money]')};
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
-  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
-  let mode = 'kr', stage = -1, t = 0, raf = 0, locked = false, lockY = 0;
+  const STEP_MS = 5200;
+  let mode = 'kr', stage = 0, raf = 0, t0 = 0, playing = false, visible = false, touched = false;
 
-  function fill_() {
-    const d = DATA[mode];
-    titleEl.textContent = d.title;
-    geo.innerHTML = d.geo.map(([text, left, width, cls]) =>
-      `<span class="${cls}" style="left:${left}%;width:${width}%">${text}</span>`).join('');
-    sea.style.left = `${d.sea[0]}%`; sea.style.width = `${d.sea[1]}%`;
-    steps.forEach((li, i) => {
-      const s = d.steps[i];
-      li.querySelector('[data-tk-t]').textContent = s.title;
-      li.querySelector('[data-tk-pl]').textContent = s.place;
-      li.querySelector('[data-tk-do]').textContent = s.do;
-      li.querySelector('[data-tk-get]').textContent = s.get;
-      li.querySelector('[data-tk-money]').textContent = s.money;
-      const img = li.querySelector('[data-tk-photo]');
-      img.src = `/static/media/route/${s.photo}.webp`; img.alt = s.title;
-    });
+  function render() {
+    const d = DATA[mode], s = d.steps[stage];
+    $('[data-tk-title]').textContent = d.title;
+    rows.forEach((r, i) => { r.querySelector('[data-tk-li]').textContent = d.steps[i].title; });
+    f.n.textContent = String(stage + 1).padStart(2, '0');
+    f.t.textContent = s.title; f.pl.textContent = s.place;
+    f.do.textContent = s.do; f.get.textContent = s.get; f.money.textContent = s.money;
+    photo.src = `/static/media/route/${s.photo}.webp`; photo.alt = s.title;
+    bars.forEach((b, i) => { b.classList.toggle('done', i < stage); b.classList.toggle('on', i === stage); b.setAttribute('aria-selected', String(i === stage)); b.style.setProperty('--p', i < stage ? 1 : 0); });
+    rows.forEach((r, i) => { r.classList.toggle('done', i < stage); r.classList.toggle('on', i === stage); });
+    stageEl.classList.remove('swap'); void stageEl.offsetWidth; stageEl.classList.add('swap');  // заново проиграть появление
   }
+  function go(i) { stage = (i + 5) % 5; t0 = performance.now(); render(); }
 
-  // t: 0…1 по всему пути; этапы — на 10 %, 30 %, 50 %, 70 %, 90 % ширины линии
-  function show(next) {
-    t = clamp(next);
-    const x = 10 + t * 80;
-    fill.style.width = `${x - 10}%`;
-    veh.style.left = `${x}%`;
-    // из Кореи до Владивостока — судно, дальше и из Китая — автовоз
-    veh.classList.toggle('ship', mode === 'kr' && t < 0.5);
-    const s = Math.round(t * 4);
-    pins.forEach((p, i) => { p.classList.toggle('done', i < s); p.classList.toggle('on', i === s); });
-    steps.forEach((li, i) => { li.classList.toggle('done', i < s); li.classList.toggle('on', i === s); });
-    stage = s;
+  // автопрокрутка: полоска текущего этапа заполняется, потом — следующий этап; после последнего — заново
+  function tick(now) {
+    if (!playing) return;
+    const k = Math.min(1, (now - t0) / STEP_MS);
+    bars[stage].style.setProperty('--p', k);
+    if (k >= 1) go(stage + 1);
+    raf = requestAnimationFrame(tick);
   }
+  function play() { if (playing || reduce.matches || touched) return; playing = true; t0 = performance.now(); raf = requestAnimationFrame(tick); }
+  function pause() { playing = false; cancelAnimationFrame(raf); }
+  const manual = i => { touched = true; pause(); go(i); bars[stage].style.setProperty('--p', 1); };
 
   function setMode(m) {
     mode = m === 'cn' ? 'cn' : 'kr';
     box.classList.toggle('land', mode === 'cn');
     $$('[data-vy-mode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.vyMode === mode)));
-    fill_();
-    show(t);
+    render();
   }
 
-  function run(a, b, ms, then) {
-    cancelAnimationFrame(raf);
-    locked = true; lockY = scrollY;
-    if (reduce.matches) { show(b); then && then(); return; }
-    const t0 = performance.now();
-    const tick = now => {
-      const k = Math.min(1, (now - t0) / ms), e = k < .5 ? 2 * k * k : 1 - (-2 * k + 2) ** 2 / 2;
-      show(a + (b - a) * e);
-      if (k < 1) raf = requestAnimationFrame(tick); else then && then();
-    };
-    raf = requestAnimationFrame(tick);
-  }
-  window.RenalRoute = {at: v => { cancelAnimationFrame(raf); locked = true; lockY = scrollY; show(v); }, run: (a, b, ms) => run(a, b, ms)};
+  // сцена порта: at — показать точку пути, run — пройти путь заново
+  const at = v => Math.max(0, Math.min(4, Math.round(v * 4)));
+  window.RenalRoute = {
+    at: v => { pause(); touched = true; go(at(v)); bars[stage].style.setProperty('--p', 1); },
+    run: (a) => { touched = false; pause(); go(at(a)); if (visible) play(); },
+  };
 
-  // прокрутка: путь проходится, пока блок поднимается от низа экрана к верхней трети
-  function onScroll() {
-    if (locked) { if (Math.abs(scrollY - lockY) < 160) return; locked = false; }
-    const r = box.getBoundingClientRect(), vh = innerHeight;
-    show((vh * 0.9 - r.top) / (vh * 0.9 - vh * 0.15));
-  }
-  let ticking = false;
-  addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(() => { ticking = false; onScroll(); }); } }, {passive: true});
-  addEventListener('resize', onScroll);
-
-  $$('[data-vy-mode]').forEach(b => b.addEventListener('click', () => { setMode(b.dataset.vyMode); run(0, 1, 3600); }));
-  $$('[data-vy-step]').forEach(b => b.addEventListener('click', () => run(t, +b.dataset.vyStep / 4, 600)));
+  new IntersectionObserver(([e]) => { visible = e.isIntersecting; if (visible) play(); else pause(); }, {threshold: .45}).observe(box);
+  $$('[data-vy-step]').forEach(b => b.addEventListener('click', () => manual(+b.dataset.vyStep)));
+  $('[data-tk-prev]').addEventListener('click', () => manual(stage - 1));
+  $('[data-tk-next]').addEventListener('click', () => manual(stage + 1));
+  $$('[data-vy-mode]').forEach(b => b.addEventListener('click', () => { setMode(b.dataset.vyMode); touched = false; pause(); go(0); play(); }));
+  // свайп по фото
+  let sx = null;
+  stageEl.addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, {passive: true});
+  stageEl.addEventListener('touchend', e => {
+    if (sx === null) return;
+    const dx = e.changedTouches[0].clientX - sx; sx = null;
+    if (Math.abs(dx) > 40) manual(stage + (dx < 0 ? 1 : -1));
+  });
 
   addEventListener('renal:car', e => {
-    const {title, country, turnkey, manual} = e.detail || {};
+    const {title, country, turnkey, manual: hand} = e.detail || {};
     if (!title) return;
     box.classList.add('picked');
     carEl.innerHTML = `<b></b> — ${country === 'cn' ? 'из Китая по суше' : 'из Кореи морем'}` +
       `${turnkey ? `, ≈ ${Math.round(turnkey).toLocaleString('ru-RU')} ₽ с растаможкой` : ''}`;
     carEl.querySelector('b').textContent = title;
     setMode(country);
-    if (!manual) run(0, 1, 4200);
+    if (!hand) { touched = false; pause(); go(0); play(); }
   });
 
   setMode('kr');
-  if (reduce.matches) show(0); else onScroll();
 })();
