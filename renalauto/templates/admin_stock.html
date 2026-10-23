@@ -14,7 +14,7 @@
     <label>Пробег, км<input name="mileage_km" type="number" min="0" placeholder="45000"></label>
     <label>Двигатель<input name="engine" maxlength="60" placeholder="2,0 л · бензин"></label>
     <label>Откуда<select name="country"><option value="KR">Корея</option><option value="CN">Китай</option></select></label>
-    <label>Цена под ключ, ₽<input name="price_rub" type="number" min="0" placeholder="2350000"></label>
+    <label>Цена во Владивостоке с растаможкой, ₽<input name="price_rub" type="number" min="0" placeholder="2350000"></label>
     <label>Статус<select name="status">{% for k, v in labels.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
     <label class="wide">Коротко о машине<input name="note" maxlength="500" placeholder="Один владелец, без ДТП, полный привод"></label>
     <label class="wide">Фото (до 12, первое — главное)<input name="photos" type="file" accept="image/*" multiple></label>

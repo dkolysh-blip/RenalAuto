@@ -949,7 +949,7 @@ body.port-page footer { margin-top: 0; }
 
 /* первый экран: лента в реальном времени, подборка лучших — в канале MAX */
 .port-page .top nav { display: none; }  /* на лендинге без меню: одна страница, один путь */
-.live-lead { margin: 0 0 14px; font-size: 17px; line-height: 1.55; color: #334155; }
+.live-lead { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #334155; }
 .live-lead b { color: #0f172a; }
 .best-pick { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: #0f1012; color: #fff;
   box-shadow: 0 14px 32px rgba(15,16,18,.22); transition: transform .15s ease, box-shadow .15s ease; margin-bottom: 16px; }

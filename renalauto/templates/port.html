@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "_macros.html" import consent %}
-{% block title %}{% if share_title %}{{ share_title }} — {{ 'цены с растаможкой' if share_title.startswith('Сравнение') else 'живая подборка' }} | {{ company }}{% else %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Авто из Кореи и Китая{% endif %} — подберём оптимальный вариант | {{ company }}{% endif %}{% endblock %}
-{% block description %}Поможем найти оптимальный автомобиль в Корее и Китае: сравним объявления, проверим историю и проходимость в РФ, посчитаем стоимость с растаможкой. Агентский договор, вознаграждение до 50 000 ₽.{% endblock %}
+{% block title %}{% if share_title %}{{ share_title }} — {{ 'цены с растаможкой' if share_title.startswith('Сравнение') else 'живая подборка' }} | {{ company }}{% else %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Автомобили из Кореи и Китая{% endif %} — подбор, проверка и доставка | {{ company }}{% endif %}{% endblock %}
+{% block description %}Подберём автомобиль в Корее или Китае под ваш бюджет, проверим историю и допуск к ввозу в РФ, посчитаем цену с растаможкой и привезём. Работаем по агентскому договору, вознаграждение — до 50 000 ₽.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
 {% block html_attrs %} data-theme="light"{% endblock %}
 {% block body_class %}has-cta port-page{% endblock %}
@@ -12,23 +12,23 @@
   <div class="port-offer">
     <div class="offer-main">
     <div class="eyebrow"><span class="dot on"></span> Объявления в реальном времени</div>
-    <h1>{% if matched %}Найдём <em>{{ matched }}</em> в Корее и Китае{% else %}Найдём оптимальный авто в <em>Корее</em> и <em>Китае</em>{% endif %}</h1>
-    <p class="hero-sub">Сравним варианты на площадках, проверим историю и проходимость в РФ — до того, как вы заплатите</p>
+    <h1>{% if matched %}Привезём <em>{{ matched }}</em> из Кореи и Китая{% else %}Привезём автомобиль из <em>Кореи</em> и <em>Китая</em>{% endif %}</h1>
+    <p class="hero-sub">Подберём машину под ваш бюджет и до оплаты проверим её историю и допуск к ввозу в РФ. Работаем по агентскому договору, наше вознаграждение — до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽.</p>
     </div>
     <div class="offer-side">
-    <p class="live-lead"><b>Это живая лента:</b> все свежие объявления с площадок Кореи и Китая появляются здесь в реальном времени, без отбора, сразу с ориентировочной ценой в рублях.</p>
+    <p class="live-lead"><b>Ниже — живая лента</b> объявлений с Encar и Dongchedi. Показываем только машины, которые можно ввезти в РФ, и сразу считаем ориентировочную цену с растаможкой.</p>
     {# главное действие для рекламного трафика: первый вопрос квиза прямо на первом экране #}
     <div class="hero-quiz">
-      <p class="hq-title">Ваш бюджет с растаможкой?</p>
+      <p class="hq-title">На какой бюджет рассчитываете?</p>
       <div class="hq-opts">
         <button type="button" data-hq="1500000" data-goal="hero_budget">до 1,5 млн</button><button type="button" data-hq="2500000" data-goal="hero_budget">до 2,5 млн</button>
-        <button type="button" data-hq="4000000" data-goal="hero_budget">до 4 млн</button><button type="button" data-hq="" data-goal="hero_budget">больше</button>
+        <button type="button" data-hq="4000000" data-goal="hero_budget">до 4 млн</button><button type="button" data-hq="" data-goal="hero_budget">от 4 млн</button>
       </div>
-      <p class="hq-note">Бесплатно · пришлём 3 варианта с ценой под ключ · комиссия до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽</p>
+      <p class="hq-note">Выберите бюджет, ответьте ещё на два вопроса — и менеджер пришлёт подходящие машины с расчётом цены. Бесплатно.</p>
     </div>
     {% if company_max %}<a class="best-pick mini" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">
       <img class="best-pick-ico" src="/static/brand/max.webp" alt="" width="28" height="28">
-      <span><b>Подборки вручную — в канале MAX</b></span>
+      <span><b>Наш канал в MAX: подборки и выдачи</b></span>
       <span class="best-pick-go" aria-hidden="true">→</span>
     </a>{% endif %}
     </div>
@@ -63,12 +63,12 @@
     <div class="port-pop" id="port-pop" hidden></div>
     <ul class="sr-only">{% for v in cars[:12] %}<li><a href="{{ v.path }}">{{ v.title }}</a></li>{% endfor %}</ul>
     {# путь машины: вода из порта продолжается здесь — судно уходит из терминала в эту полосу, из Китая едет автовоз #}
-    <p class="terminal-note muted small">Каждая машина — реальное объявление с площадки Кореи или Китая, цена ориентировочная. Наведите или нажмите на машину.</p>
+    <p class="terminal-note muted small">Каждая машина на стоянке — настоящее объявление с Encar или Dongchedi. Цена ориентировочная. Нажмите на машину, чтобы увидеть расчёт.</p>
     <section class="track" id="route" data-route aria-labelledby="track-title">
       <div class="tk-head">
         <div><span class="tk-eb">Путь машины</span>
           <h2 id="track-title" data-tk-title></h2>
-          <p class="tk-car" data-route-car aria-live="polite">Пять этапов — от подбора до ключей. Нажмите на этап или листайте.</p></div>
+          <p class="tk-car" data-route-car aria-live="polite">Пять этапов — от подбора до ключей. Нажмите на этап, чтобы узнать подробнее.</p></div>
         <div class="tk-tabs" role="group" aria-label="Откуда везём">
           <button type="button" data-vy-mode="kr" aria-pressed="true">Корея — морем</button>
           <button type="button" data-vy-mode="cn" aria-pressed="false">Китай — по суше</button>
@@ -97,24 +97,24 @@
           <ol class="tk-list">{% for i in range(5) %}<li><button type="button" data-vy-step="{{ i }}" data-tk-step="{{ i }}"><em>{{ '%02d' % (i + 1) }}</em><span data-tk-li></span></button></li>{% endfor %}</ol>
         </div>
       </div>
-      <p class="tk-foot">Агентский договор с {{ company_legal_name or company }} · машину покупаем от вашего имени и за ваш счёт, каждая трата — в отчёте</p>
+      <p class="tk-foot">Работаем по агентскому договору с {{ company_legal_name or company }}: покупаем машину от вашего имени и за ваш счёт, по каждой трате даём отчёт.</p>
       <script type="application/json" id="vy-data">{{ {
         "kr": {"title": "Из Кореи — до " ~ deal.delivery_weeks ~ " недель до Владивостока",
           "geo": [["Корея · Пусан", 0, 32, ""], ["Японское море · ≈ 1 000 км", 33, 34, "sea"], ["Россия", 68, 32, ""]], "sea": [30, 40],
           "steps": [
-          {"photo": "busan", "title": "Подбор и проверка", "place": "Корея · до " ~ deal.pick_days ~ " дней", "do": "Ищем по заявке, проверяем историю и проходимость в РФ", "get": "Фото, видео и отчёт о машине", "money": "Не подобрали за " ~ deal.pick_days ~ " дней — вернём предоплату"},
+          {"photo": "busan", "title": "Подбор и проверка", "place": "Корея · до " ~ deal.pick_days ~ " дней", "do": "Ищем машину по вашей заявке, проверяем историю и допуск к ввозу в РФ", "get": "Фото, видео и отчёт о машине", "money": "Не подобрали за " ~ deal.pick_days ~ " дней — вернём предоплату"},
           {"photo": "busan-cranes", "title": "Бронь и выкуп", "place": "Пусан", "do": "Бронируем у продавца и выкупаем от вашего имени", "get": "Инвойс продавца", "money": "Бронь " ~ fmt(deal.deposit) ~ " ₽ → инвойс за " ~ deal.invoice_days ~ " дней → бронь вернём за 1 рабочий день"},
-          {"photo": "ship", "title": "В море", "place": "Пусан → Владивосток", "do": "Везём на судне-автовозе", "get": "Фото и видео на этапах — по запросу", "money": "Доставка — по факту, с отчётом"},
-          {"photo": "vlad", "title": "Владивосток", "place": "таможня и документы", "do": "Растаможка, утильсбор, СБКТС, ЭПТС — оформляем сами", "get": "ПТД, ТПО, СБКТС, ЭПТС", "money": "Таможня и утильсбор — по факту, каждую сумму подтверждаем"},
-          {"photo": "keys", "title": "Ключи у вас", "place": "ваш город или Владивосток", "do": "Автовоз или ЖД до вашего города — или забираете сами", "get": "Машину, документы и отчёт по всем расходам", "money": "Наша комиссия — до " ~ fmt(deal.fee) ~ " ₽, не процент от цены"}]},
+          {"photo": "ship", "title": "В море", "place": "Пусан → Владивосток", "do": "Везём на судне-автовозе", "get": "Фото и видео на этапах — по запросу", "money": "Доставка — по фактической стоимости, с отчётом"},
+          {"photo": "vlad", "title": "Владивосток", "place": "таможня и документы", "do": "Растаможиваем, платим утильсбор, оформляем СБКТС и ЭПТС", "get": "ПТД, ТПО, СБКТС, ЭПТС", "money": "Пошлина и утильсбор — по факту, каждую сумму подтверждаем документом"},
+          {"photo": "keys", "title": "Ключи у вас", "place": "ваш город или Владивосток", "do": "Отправляем автовозом или по ЖД в ваш город — или забираете сами во Владивостоке", "get": "Машину, документы и отчёт по всем расходам", "money": "Наше вознаграждение — до " ~ fmt(deal.fee) ~ " ₽, это не процент от цены машины"}]},
         "cn": {"title": "Из Китая — до " ~ deal.delivery_weeks ~ " недель до Владивостока",
           "geo": [["Китай", 0, 32, ""], ["Граница · ≈ 700 км по дороге", 33, 34, ""], ["Россия", 68, 32, ""]], "sea": [0, 0],
           "steps": [
-          {"photo": "suifenhe", "title": "Подбор и проверка", "place": "Китай · до " ~ deal.pick_days ~ " дней", "do": "Ищем по заявке, проверяем историю и проходимость в РФ", "get": "Фото, видео и отчёт о машине", "money": "Не подобрали за " ~ deal.pick_days ~ " дней — вернём предоплату"},
+          {"photo": "suifenhe", "title": "Подбор и проверка", "place": "Китай · до " ~ deal.pick_days ~ " дней", "do": "Ищем машину по вашей заявке, проверяем историю и допуск к ввозу в РФ", "get": "Фото, видео и отчёт о машине", "money": "Не подобрали за " ~ deal.pick_days ~ " дней — вернём предоплату"},
           {"photo": "truck-cn-near", "title": "Бронь и выкуп", "place": "Китай", "do": "Бронируем у продавца и выкупаем от вашего имени", "get": "Инвойс продавца", "money": "Бронь " ~ fmt(deal.deposit) ~ " ₽ → инвойс за " ~ deal.invoice_days ~ " дней → бронь вернём за 1 рабочий день"},
-          {"photo": "truck-cn", "title": "Граница", "place": "Суйфэньхэ → Пограничный", "do": "Везём автовозом до Владивостока", "get": "Фото и видео на этапах — по запросу", "money": "Доставка — по факту, с отчётом"},
-          {"photo": "vlad", "title": "Владивосток", "place": "таможня и документы", "do": "Растаможка, утильсбор, СБКТС, ЭПТС — оформляем сами", "get": "ПТД, ТПО, СБКТС, ЭПТС", "money": "Таможня и утильсбор — по факту, каждую сумму подтверждаем"},
-          {"photo": "keys", "title": "Ключи у вас", "place": "ваш город или Владивосток", "do": "Автовоз или ЖД до вашего города — или забираете сами", "get": "Машину, документы и отчёт по всем расходам", "money": "Наша комиссия — до " ~ fmt(deal.fee) ~ " ₽, не процент от цены"}]}
+          {"photo": "truck-cn", "title": "Граница", "place": "Суйфэньхэ → Пограничный", "do": "Везём автовозом до Владивостока", "get": "Фото и видео на этапах — по запросу", "money": "Доставка — по фактической стоимости, с отчётом"},
+          {"photo": "vlad", "title": "Владивосток", "place": "таможня и документы", "do": "Растаможиваем, платим утильсбор, оформляем СБКТС и ЭПТС", "get": "ПТД, ТПО, СБКТС, ЭПТС", "money": "Пошлина и утильсбор — по факту, каждую сумму подтверждаем документом"},
+          {"photo": "keys", "title": "Ключи у вас", "place": "ваш город или Владивосток", "do": "Отправляем автовозом или по ЖД в ваш город — или забираете сами во Владивостоке", "get": "Машину, документы и отчёт по всем расходам", "money": "Наше вознаграждение — до " ~ fmt(deal.fee) ~ " ₽, это не процент от цены машины"}]}
       }|tojson }}</script>
     </section>
   </div>
@@ -127,7 +127,7 @@
     <div class="st-head">
       <span class="st-eyebrow">В наличии и в пути</span>
       <h2 id="stock-title">Уже выкуплены — можно забронировать</h2>
-      <p>Машины, которые мы купили и везём или уже привезли во Владивосток. Цена — под ключ, без ожидания подбора.</p>
+      <p>Эти машины мы уже купили: часть в пути, часть стоит во Владивостоке. Цена указана с растаможкой — ждать подбора не нужно.</p>
     </div>
     <div class="st-track" data-stock>
       {% for c in stock %}
@@ -141,7 +141,7 @@
           <b>{{ c.title }}{% if c.year %}, {{ c.year }}{% endif %}</b>
           <small>{{ 'Из Кореи' if c.country == 'KR' else 'Из Китая' }}{% if c.mileage_km is not none %} · {{ fmt(c.mileage_km) }} км{% endif %}{% if c.engine %} · {{ c.engine }}{% endif %}</small>
           {% if c.note %}<p>{{ c.note }}</p>{% endif %}
-          <div class="st-price">{% if c.price_rub %}{{ fmt(c.price_rub) }} ₽ <span>под ключ во Владивостоке</span>{% else %}<span>цену назовёт менеджер</span>{% endif %}</div>
+          <div class="st-price">{% if c.price_rub %}{{ fmt(c.price_rub) }} ₽ <span>во Владивостоке, с растаможкой</span>{% else %}<span>цену назовёт менеджер</span>{% endif %}</div>
           <button type="button" class="btn st-go" data-stock-lead="{{ c.title }}{% if c.year %} {{ c.year }}{% endif %}{% if c.price_rub %} · {{ fmt(c.price_rub) }} ₽{% endif %}" data-goal="stock_lead">Забронировать</button>
         </div>
       </article>
@@ -156,7 +156,7 @@
   <div class="sec-head">
     <span class="sec-eyebrow">Отзывы</span>
     <h2 id="vydachi-title">Что говорят клиенты</h2>
-    <p class="sec-lead">Видео с выдач и отзывы из 2ГИС — без правок, как написали люди.</p>
+    <p class="sec-lead">Видео с выдачи машин и отзывы клиентов из 2ГИС. Публикуем без правок.</p>
   </div>
   <div class="rv">
     <div class="rv-media">
@@ -203,19 +203,19 @@
         </div>
       </div>
       {% endif %}
-      {% if company_max %}<a class="rv-max" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="28" height="28"><span><b>Все выдачи — в канале MAX</b><small>Фото и видео машин, которые мы привезли, без постановки</small></span><i aria-hidden="true">→</i></a>{% endif %}
+      {% if company_max %}<a class="rv-max" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="28" height="28"><span><b>Все выдачи — в нашем канале MAX</b><small>Фото и видео машин, которые мы привезли клиентам</small></span><i aria-hidden="true">→</i></a>{% endif %}
     </div>
   </div>
 </section>
 <section class="port-section final-cta" aria-labelledby="final-title">
   <div class="wrap fc">
     <div class="fc-text">
-      <h2 id="final-title">Не нашли свою машину на стоянке?</h2>
-      <p>Подберём под ваш бюджет, проверим историю и проходимость в РФ, посчитаем цену под ключ.
-        Не подобрали за {{ deal.pick_days }} дней — вернём предоплату.</p>
+      <h2 id="final-title">Не нашли подходящую машину?</h2>
+      <p>Расскажите, что ищете: подберём варианты под ваш бюджет, проверим историю и допуск к ввозу, посчитаем итоговую цену.
+        Если за {{ deal.pick_days }} дней не подберём — вернём предоплату.</p>
     </div>
     <div class="fc-acts">
-      <button class="btn fc-main" type="button" data-lead-open data-goal="final_cta">Подобрать за 3 вопроса <span aria-hidden="true">→</span></button>
+      <button class="btn fc-main" type="button" data-lead-open data-goal="final_cta">Подобрать машину <span aria-hidden="true">→</span></button>
       {% if company_hotline %}<a class="fc-call" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call"><b>{{ company_hotline }}</b><small>бесплатно по России</small></a>{% endif %}
     </div>
   </div>
@@ -309,12 +309,12 @@
       <p>Расчёт ориентировочный: итог зависит от курса на день оплаты инвойса и от таможенных ставок на дату подачи декларации. Если курс или ставки изменятся, изменится и сумма — заранее предупредим и покажем расчёт.</p>
     </details>
     <details>
-      <summary>Что если машина не пройдёт по утильсбору или запрету на вывоз?</summary>
+      <summary>Что если машину нельзя будет ввезти — из-за утильсбора или запрета на вывоз?</summary>
       <p>На сайте показываем только машины, которые проходят по правилам ввоза в РФ. Перед бронью менеджер ещё раз проверяет мощность, объём и возраст — платёж продавцу не вносится, пока машина не проверена.</p>
     </details>
     <details>
       <summary>Можно заказать машину с конкретными характеристиками?</summary>
-      <p>Да. Подберём варианты строго под ваши требования: марка, модель, год, пробег, комплектация и бюджет.</p>
+      <p>Да. Подберём варианты под ваши требования: марку, модель, год, пробег, комплектацию и бюджет.</p>
     </details>
     <details>
       <summary>Зачем платёж за бронь и вернётся ли он?</summary>

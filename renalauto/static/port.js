@@ -677,10 +677,11 @@
     routeAt(0);
     cam.follow = car; focusOn(car);
     drawRoute(car);
-    toast(`<b>${esc(label(d))}</b> — выкуплена и едет ${byShip ? 'на погрузку в порт' : 'к автовозу'}`);
+    // это показ пути на примере объявления, а не сделка: не пишем «выкуплена»
+    toast(`Так поедет <b>${esc(label(d))}</b>: ${byShip ? 'погрузка на судно в Пусане' : 'автовоз до границы'}`);
     const done = () => {
       routeAt(1);
-      toast(`<b>${esc(label(d))}</b> во Владивостоке: таможня, документы — и к вам. <a href="#" data-lead-open>Хочу так же →</a>`);
+      toast(`Дальше — таможня во Владивостоке и доставка к вам. <a href="#" data-lead-open>Подобрать машину →</a>`);
       setTimeout(() => { delivering = false; arrive(d, true); hud(); }, reduce.matches ? 0 : 1200);
     };
     const whenDocked = fn => (ship.state === 'docked' ? fn() : setTimeout(() => whenDocked(fn), 500));
@@ -901,7 +902,7 @@
       const m = l => l && l.rub ? (l.rub >= 1e6 ? mln(l.rub).replace(' ₽', '') : Math.round(l.rub / 1000) + ' тыс') : null;
       const by = Object.fromEntries(lines.map(l => [l.k, l]));
       const parts = [by.car && `машина ${m(by.car)}`, by.duty && by.duty.rub && `пошлина ${m(by.duty)}`, by.fee && `комиссия до ${m(by.fee)}`].filter(Boolean);
-      share({title: label(d), url, text: `${label(d)}${d.turnkey ? ` — ≈ ${mln(d.turnkey)} с растаможкой во Владивостоке` : ''}${parts.length ? ` (${parts.join(', ')})` : ''}. Нашёл в живой подборке Ренал Авто`});
+      share({title: label(d), url, text: `${label(d)}${d.turnkey ? ` — ≈ ${mln(d.turnkey)} с растаможкой во Владивостоке` : ''}${parts.length ? ` (${parts.join(', ')})` : ''}. Расчёт на сайте Ренал Авто`});
     });
     popEl.querySelector('[data-act="cmp"]').addEventListener('click', e => {
       const on = cmpToggle(d);
@@ -994,12 +995,12 @@
   const blank = form.innerHTML;
   let formCar = null, sent = false;
   // заявка без конкретной машины: «Подобрать под бюджет», «Получить точный расчёт», «Хочу так же»
-  function openLead({title = 'Подобрать под бюджет', note = 'Подберём оптимальные варианты в Корее и Китае и посчитаем, во сколько обойдётся каждый.', comment = '', quiz = false} = {}) {
+  function openLead({title = 'Подобрать под бюджет', note = 'Подберём машины в Корее и Китае под ваш бюджет и посчитаем итоговую цену каждой.', comment = '', quiz = false} = {}) {
     goal('form_open');
     if (!form.querySelector('[name="name"]')) form.innerHTML = blank;
     form.querySelector('#car-dialog-title').textContent = quiz ? 'Подберём 3 варианта' : title;
     form.querySelector('[data-cd-car]').hidden = true;
-    form.querySelector('[data-car-name]').textContent = quiz ? 'Ответьте на три вопроса — пришлём машины с ценой под ключ.' : note;
+    form.querySelector('[data-car-name]').textContent = quiz ? 'Три коротких вопроса — и менеджер пришлёт подходящие машины с расчётом цены.' : note;
     form.querySelector('[name="source"]').value = '';
     form.querySelector('[name="external_id"]').value = '';
     form.querySelector('[name="comment"]').value = comment;
@@ -1029,17 +1030,17 @@
   function quizDone() {
     const BODY = {sedan: 'седан', suv: 'кроссовер', van: 'минивэн'}, CTRY = {KR: 'из Кореи', CN: 'из Китая'};
     const b = +qAns.budget || 0;
-    const want = [b ? budgetText(b) : 'бюджет больше 4 млн ₽', BODY[qAns.body], CTRY[qAns.country] || 'где выгоднее'].filter(Boolean).join(' · ');
+    const want = [b ? budgetText(b) : 'бюджет от 4 млн ₽', BODY[qAns.body], CTRY[qAns.country] || 'где выгоднее'].filter(Boolean).join(' · ');
     form.querySelector('[data-quiz]').hidden = true;
     form.querySelector('.cd-body').hidden = false;
     form.querySelector('#car-dialog-title').textContent = 'Куда прислать варианты?';
     const note = form.querySelector('[data-car-name]'), head = `${want[0].toUpperCase()}${want.slice(1)}.`;
-    note.textContent = `${head} Менеджер подберёт варианты среди актуальных объявлений и посчитает цену под ключ.`;
+    note.textContent = `${head} Менеджер подберёт варианты среди актуальных объявлений и посчитает итоговую цену каждого.`;
     // сколько подходящих — по всем свежим объявлениям площадок, а не только по машинам на сцене
     const f = {...(b ? {budget: b} : {}), ...(qAns.country ? {country: qAns.country} : {}), ...(qAns.body ? {body: qAns.body} : {})};
     search(f).then(r => {
       if (r.total && form.querySelector('[data-car-name]') === note)
-        note.textContent = `${head} Подходящих среди свежих объявлений Encar и Dongchedi: ${r.total} ${carWord(r.total).replace('машину', 'машина')}. Менеджер выберет лучшие и посчитает цену под ключ.`;
+        note.textContent = `${head} Сейчас на Encar и Dongchedi подходящих объявлений: ${r.total}. Менеджер выберет лучшие и посчитает итоговую цену каждого.`;
     }).catch(() => {});
     form.querySelector('[name="comment"]').value = `Квиз: ${want}`;
     form.querySelector('[data-q-bar]').style.width = '100%';
@@ -1067,7 +1068,7 @@
     el.className = 'nudge'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Подбор похожих машин');
     el.innerHTML = `<button type="button" class="nudge-x" aria-label="Закрыть">×</button>
       <b>${budget ? `Подобрать похожие ${budgetText(budget)}?` : budget === '' ? 'Подобрать похожие?' : 'Не нашли подходящую?'}</b>
-      <span>Пришлём 3 варианта с ценой под ключ — бесплатно, за 3 вопроса</span>
+      <span>Менеджер пришлёт 3 похожих варианта с расчётом цены. Бесплатно.</span>
       <button type="button" class="btn nudge-go">Подобрать</button>`;
     document.body.appendChild(el);
     goal('nudge_show');
@@ -1141,7 +1142,7 @@
     const car = formCar;
     formCar = null;
     if (!car || !cars.has(car.d.key)) { cam.follow = null; unfocus(); return; }
-    if (sent) { depart(car); toast('Заявка принята · менеджер посчитает итоговую цену'); }
+    if (sent) { depart(car); toast('Заявка принята — менеджер посчитает итоговую цену'); }
     else if (car.state === 'at-ramp') backToSlot(car);
     else car.g.classList.remove('chosen');
     cam.follow = null;
@@ -1173,7 +1174,7 @@
       if (cmp.length >= CMP_MAX) { toast(`В сравнении уже ${CMP_MAX} машины — уберите одну`); return false; }
       cmp.push(cmpPick(d));
       goal('cmp_add');
-      if (cmp.length === 1) toast('Добавили к сравнению · выберите ещё одну машину на стоянке');
+      if (cmp.length === 1) toast('Добавили к сравнению — выберите на стоянке ещё одну машину');
     }
     cmpSave(); cmpTray();
     return cmpHas(d);
