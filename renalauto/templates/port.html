@@ -166,7 +166,7 @@
       </video>
       <button type="button" class="reel-sound" data-reel-sound aria-pressed="false">Включить звук</button>
     </figure>
-    {% set shots = [('vydacha-1', 'Выдача клиентке', 'кадр из видео'), ('vydacha-2', 'Передача ключей', 'кадр из видео'), ('2gis-1', 'Фото клиента', 'из отзыва в 2ГИС'), ('2gis-2', 'Фото клиента', 'из отзыва в 2ГИС')] %}
+    {% set shots = [('vydacha-2', 'Передача ключей', 'кадр из видео'), ('2gis-1', 'Фото клиента', 'из отзыва в 2ГИС'), ('2gis-2', 'Фото клиента', 'из отзыва в 2ГИС')] %}
     <ul class="rv-shots" aria-label="Фото с выдач">{% for f, t, src in shots %}<li><button type="button" data-shot="/static/media/vydachi/{{ f }}.webp" data-shot-cap="{{ t }} · {{ src }}"><img src="/static/media/vydachi/{{ f }}.webp" alt="{{ t }}, {{ src }}" loading="lazy" width="300" height="300"></button></li>{% endfor %}</ul>
     </div>
     <div class="rv-side">
@@ -203,20 +203,20 @@
         </div>
       </div>
       {% endif %}
-      {% if company_max %}<a class="rv-max" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="28" height="28"><span><b>Все выдачи — в нашем канале MAX</b><small>Фото и видео машин, которые мы привезли клиентам</small></span><i aria-hidden="true">→</i></a>{% endif %}
-      {# как нас проверить: офис, юрлицо в реестре, договор — проверяемые факты для тех, кто видит нас впервые #}
-      {% set inn = (company_requisites or '').split('ИНН ')[1].split(' ')[0] if 'ИНН ' in (company_requisites or '') else '' %}
-      <div class="rv-check">
-        <b class="rv-check-h">Как нас проверить</b>
-        {% if company_address %}<a class="rvc" href="{{ company_2gis or '#' }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.webp" alt="" width="34" height="34">
-          <span><b>Офис во Владивостоке</b><small>{{ company_address.split('Владивосток, ')[-1] }} · открыть в 2ГИС</small></span></a>{% endif %}
-        {% if company_legal_name %}<a class="rvc" href="https://egrul.nalog.ru/" target="_blank" rel="noopener" data-goal="egrul"{% if inn %} data-copy="{{ inn }}" data-copy-note="ИНН {{ inn }} скопирован — вставьте его в поиск на сайте ФНС"{% endif %}><i class="rvc-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12M9 21v-6h6v6M3 21h18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></i>
-          <span><b>{{ company_legal_name }}</b><small>{% if inn %}ИНН {{ inn }} · проверить в реестре ФНС{% else %}юридическое лицо{% endif %}</small></span></a>{% endif %}
-        <div class="rvc"><i class="rvc-i doc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></i>
-          <span><b>Агентский договор</b><small>Покупаем машину от вашего имени, по каждой трате — отчёт</small></span></div>
-      </div>
     </div>
   </div>
+    {# как нас проверить: офис, юрлицо, договор и канал с выдачами — одной строкой под отзывами #}
+      {% set inn = (company_requisites or '').split('ИНН ')[1].split(' ')[0] if 'ИНН ' in (company_requisites or '') else '' %}
+    <ul class="trust-row">
+      {% if company_address %}<li><a href="{{ company_2gis or '#' }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.webp" alt="" width="36" height="36">
+        <span><b>Офис во Владивостоке</b><small>{{ company_address.split('Владивосток, ')[-1] }}</small></span></a></li>{% endif %}
+      {% if company_legal_name %}<li><a href="https://egrul.nalog.ru/" target="_blank" rel="noopener" data-goal="egrul"{% if inn %} data-copy="{{ inn }}" data-copy-note="ИНН {{ inn }} скопирован — вставьте его в поиск на сайте ФНС"{% endif %}><i class="rvc-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12M9 21v-6h6v6M3 21h18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></i>
+        <span><b>{{ company_legal_name }}</b><small>{% if inn %}ИНН {{ inn }} · проверить в ФНС{% else %}юридическое лицо{% endif %}</small></span></a></li>{% endif %}
+      <li><div><i class="rvc-i doc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></i>
+        <span><b>Агентский договор</b><small>Отчёт по каждой трате</small></span></div></li>
+      {% if company_max %}<li><a href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="36" height="36">
+        <span><b>Все выдачи — в MAX</b><small>Фото и видео машин клиентов</small></span></a></li>{% endif %}
+    </ul>
 </section>
 <section class="port-section final-cta" aria-labelledby="final-title">
   <div class="wrap fc">
