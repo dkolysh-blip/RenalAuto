@@ -1250,10 +1250,14 @@
     });
   }
 
-  // --- новые объявления прямо на сцене: короткие сообщения в углу стоянки, как в чате ------------------
-  // на компьютере видно два последних, на телефоне — одно, и оно само прячется, чтобы не закрывать стоянку
-  const feedList = root.querySelector('[data-feed]');
-  const CHAT_MAX = 2;
+  // --- новые объявления прямо на сцене: сообщения выходят по одному, живут несколько секунд и уходят ------
+  // пачку из ленты ставим в очередь; на экране — не больше двух (на телефоне одно). Сверху — плашка-счётчик:
+  // по нажатию раскрывает последние объявления, из любого можно перейти к машине на стоянке
+  const feedBox = root.querySelector('[data-feed]');
+  const FEED_GAP = 3600, FEED_LIFE = 9000, FEED_HISTORY = 8;
+  const feedMax = () => matchMedia('(max-width: 640px)').matches ? 1 : 2;
+  const feedQ = [], feedHist = [];
+  let feedNew = 0, feedTimer = 0;
   function ago(t) {
     const s = (Date.now() - t) / 1000, d = new Date(t);
     if (s < 60) return 'только что';
@@ -1261,39 +1265,83 @@
     if (s < 86400 && new Date().toDateString() === d.toDateString()) return `в ${d.toLocaleTimeString('ru-RU', {hour: '2-digit', minute: '2-digit'})}`;
     return d.toLocaleDateString('ru-RU', {day: 'numeric', month: 'short'});
   }
-  function chatAdd(d, {at = Date.now(), fresh = false} = {}) {
-    if (!feedList || feedList.querySelector(`[data-key="${CSS.escape(d.key)}"]`)) return;
-    const put = el => {
-      feedList.appendChild(el);
-      const msgs = feedList.querySelectorAll('.fm');
-      if (msgs.length > CHAT_MAX) { const old = msgs[0]; old.classList.add('out'); setTimeout(() => old.remove(), 400); }
-      clearTimeout(feedList.t);
-      feedList.classList.remove('idle');
-      feedList.t = setTimeout(() => feedList.classList.add('idle'), 7000);  // на телефоне — спрятать через 7 с
-    };
-    const msg = document.createElement('button');
-    msg.type = 'button';
-    msg.className = 'fm' + (fresh ? ' new' : ''); msg.dataset.key = d.key; msg.dataset.at = at;
-    const img = d.photo ? `<img src="${esc(d.photo)}" alt="" loading="lazy">`
-      : `<span class="fm-sprite"><img src="${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}" alt=""></span>`;
-    msg.innerHTML = `<span class="fm-ph">${img}</span><span class="fm-body">
-        <small><i></i>${fresh ? 'Новое' : 'Недавно'} · ${d.country === 'CN' ? 'Китай' : 'Корея'} · <time>${ago(at)}</time></small>
-        <b>${esc(label(d))}</b>
-        <em>${d.turnkey ? `≈ ${mln(d.turnkey)} с растаможкой` : d.price ? `≈ ${esc(d.price)} ₽ на площадке` : 'цену посчитает менеджер'}</em></span>`;
-    msg.addEventListener('click', () => {
-      goal('feed_click');
-      const car = cars.get(d.key);
-      if (car && car.state === 'parked') { showPop(car, true); focusOn(car); } else if (d.path) location.href = d.path;
-    });
-    if (!fresh || reduce.matches) { put(msg); return; }
-    const typing = document.createElement('div');  // «печатает…» — и сообщение появляется
-    typing.className = 'fm-typing'; typing.innerHTML = '<i></i><i></i><i></i>';
-    feedList.appendChild(typing);
-    setTimeout(() => { typing.remove(); put(msg); }, 900);
+  const feedPrice = d => d.turnkey ? `≈ ${mln(d.turnkey)} с растаможкой` : d.price ? `≈ ${esc(d.price)} ₽ на площадке` : 'цену посчитает менеджер';
+  const feedImg = d => d.photo ? `<img src="${esc(d.photo)}" alt="" loading="lazy">`
+    : `<span class="fm-sprite"><img src="${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}" alt=""></span>`;
+  function feedOpenCar(d) {
+    goal('feed_click');
+    const car = cars.get(d.key);
+    if (car && car.state === 'parked') { showPop(car, true); focusOn(car); } else if (d.path) location.href = d.path;
   }
-  if (feedList) {
-    (DATA.recent || []).slice(0, CHAT_MAX).reverse().forEach(d => chatAdd(d, {at: d.seen ? Date.parse(d.seen) : Date.now()}));
-    setInterval(() => feedList.querySelectorAll('.fm').forEach(m => { const t = m.querySelector('time'); if (t) t.textContent = ago(+m.dataset.at); }), 30000);
+  let feedStream, feedPill, feedPanel;
+  if (feedBox) {
+    feedBox.innerHTML = `<button type="button" class="fm-pill" aria-expanded="false"><i></i><span>Новые объявления</span><b hidden></b></button>
+      <div class="fm-panel" hidden></div><div class="fm-stream"></div>`;
+    [feedPill, feedPanel, feedStream] = [feedBox.querySelector('.fm-pill'), feedBox.querySelector('.fm-panel'), feedBox.querySelector('.fm-stream')];
+    feedPill.addEventListener('click', e => { e.stopPropagation(); feedToggle(feedPanel.hidden); });
+    document.addEventListener('click', e => { if (!feedPanel.hidden && !feedBox.contains(e.target)) feedToggle(false); });
+  }
+  function feedToggle(open) {
+    feedPanel.hidden = !open;
+    feedPill.setAttribute('aria-expanded', String(open));
+    feedBox.classList.toggle('open', open);
+    if (!open) return;
+    goal('feed_open');
+    feedPanel.innerHTML = feedHist.length ? feedHist.map(({d, at}, i) => `<button type="button" class="fm-row" data-i="${i}"><span class="fm-ph">${feedImg(d)}</span>
+        <span class="fm-body"><b>${esc(label(d))}</b><em>${feedPrice(d)}</em></span><time>${ago(at)}</time></button>`).join('')
+      : '<p class="fm-empty">Новые объявления появятся здесь, как только площадки их опубликуют</p>';
+    feedPanel.querySelectorAll('[data-i]').forEach(b => b.addEventListener('click', () => { feedToggle(false); feedOpenCar(feedHist[+b.dataset.i].d); }));
+  }
+  function feedShow({d, at, fresh}) {
+    const live = [...feedStream.querySelectorAll('.fm:not(.out)')];
+    while (live.length >= feedMax()) feedDrop(live.shift());
+    const msg = document.createElement('button');
+    msg.type = 'button'; msg.className = 'fm new';
+    msg.innerHTML = `<span class="fm-ph">${feedImg(d)}</span><span class="fm-body">
+        <small><i></i>${fresh ? 'Новое' : 'Недавно'} · ${d.country === 'CN' ? 'Китай' : 'Корея'} · ${ago(at)}</small>
+        <b>${esc(label(d))}</b><em>${feedPrice(d)}</em></span>`;
+    msg.addEventListener('click', () => feedOpenCar(d));
+    feedStream.appendChild(msg);
+    msg.t = setTimeout(() => feedDrop(msg), FEED_LIFE);
+  }
+  function feedDrop(el) {
+    if (!el || el.classList.contains('out')) return;
+    clearTimeout(el.t); el.classList.add('out');
+    setTimeout(() => el.remove(), 420);
+  }
+  // очередь: «печатает…» — и следующее сообщение; пауза между сообщениями, чтобы их успевали прочитать
+  function feedPump() {
+    feedTimer = 0;
+    const item = feedQ.shift();
+    if (!item || !feedStream) return;
+    if (reduce.matches || !item.fresh) { feedShow(item); }
+    else {
+      const typing = document.createElement('div');
+      typing.className = 'fm-typing'; typing.innerHTML = '<i></i><i></i><i></i>';
+      feedStream.appendChild(typing);
+      setTimeout(() => { typing.remove(); feedShow(item); }, 800);
+    }
+    if (feedQ.length) feedTimer = setTimeout(feedPump, FEED_GAP);
+  }
+  function chatAdd(d, {at = Date.now(), fresh = false} = {}) {
+    if (!feedBox || /^\d/.test(label(d)) || feedHist.some(h => h.d.key === d.key)) return;  // без марки в названии — не в ленту
+    const item = {d, at, fresh};
+    feedHist.unshift(item); feedHist.length = Math.min(feedHist.length, FEED_HISTORY);
+    if (fresh) {
+      feedNew++;
+      const n = feedPill.querySelector('b'); n.hidden = false; n.textContent = `+${feedNew}`;
+      feedPill.classList.remove('bump'); void feedPill.offsetWidth; feedPill.classList.add('bump');
+    }
+    if (!feedPanel.hidden) feedToggle(true);  // открытый список — обновить
+    feedQ.push(item);
+    while (feedQ.length > 4) feedQ.shift();  // пришла пачка — показываем последние, остальные есть в списке
+    if (!feedTimer) feedTimer = setTimeout(feedPump, fresh ? 300 : 1200);
+  }
+  window.RenalFeed = {add: d => chatAdd(d, {fresh: true})};  // для проверки ленты из консоли
+  if (feedBox) {
+    // при открытии страницы — последние объявления в список, одно самое свежее — коротким сообщением
+    const seed = (DATA.recent || []).slice().reverse();
+    seed.forEach((d, i) => { chatAdd(d, {at: d.seen ? Date.parse(d.seen) : Date.now()}); if (i < seed.length - 1) feedQ.pop(); });
   }
 
   // --- данные: стартовый набор, затем живая лента (или тестовый поток) -------------------

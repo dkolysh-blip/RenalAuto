@@ -1168,7 +1168,23 @@ body.port-page footer { margin-top: 0; }
 }
 
 /* новые объявления на сцене: стопка коротких сообщений в правом верхнем углу стоянки */
-.t-feed { position: absolute; z-index: 3; right: 10px; top: 42px; width: 272px; display: flex; flex-direction: column; gap: 6px; transition: opacity .4s, transform .4s; }
+.t-feed { position: absolute; z-index: 3; right: 10px; top: 42px; width: 272px; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; transition: opacity .4s, transform .4s; }
+.fm-stream { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.fm-pill { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border: 0; border-radius: 15px; cursor: pointer;
+  background: rgba(15,16,18,.78); color: #fff; font: 600 12.5px/1 Onest, system-ui, sans-serif; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+.fm-pill i { width: 7px; height: 7px; border-radius: 50%; background: #3ddc6f; box-shadow: 0 0 0 0 rgba(61,220,111,.6); animation: fm-live 2s infinite; }
+.fm-pill b { padding: 3px 7px; border-radius: 9px; background: #3ddc6f; color: #0f1012; font-size: 11.5px; }
+.fm-pill.bump b { animation: fm-bump .5s cubic-bezier(.3,1.6,.5,1); }
+.fm-pill::after { content: "▾"; font-size: 10px; opacity: .7; } .t-feed.open .fm-pill::after { content: "▴"; }
+@keyframes fm-live { 70% { box-shadow: 0 0 0 6px rgba(61,220,111,0); } 100% { box-shadow: 0 0 0 0 rgba(61,220,111,0); } }
+@keyframes fm-bump { 50% { transform: scale(1.35); } }
+.fm-panel { width: 100%; max-height: 320px; overflow-y: auto; padding: 6px; border-radius: 16px; background: rgba(255,255,255,.97); box-shadow: 0 14px 34px rgba(0,0,0,.35); }
+.fm-row { display: flex; align-items: center; gap: 9px; width: 100%; padding: 6px; border: 0; border-radius: 11px; background: none; text-align: left; cursor: pointer; font: inherit; color: #0f172a; }
+.fm-row:hover { background: #f2f5f8; }
+.fm-row time { margin-left: auto; flex: 0 0 auto; font-size: 10.5px; color: #8a96a6; white-space: nowrap; }
+.fm-row .fm-ph { width: 44px; height: 34px; }
+.fm-empty { margin: 8px; font-size: 13px; color: var(--muted); }
+.t-feed.open .fm-stream { display: none; }
 .fm { display: flex; align-items: center; gap: 10px; width: 100%; padding: 6px 10px 6px 6px; border: 0; border-radius: 14px 14px 14px 4px; text-align: left; cursor: pointer;
   background: rgba(255,255,255,.94); color: #0f172a; box-shadow: 0 6px 18px rgba(0,0,0,.28); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   transition: opacity .35s, transform .35s; font: inherit; }
@@ -1192,8 +1208,6 @@ body.port-page footer { margin-top: 0; }
 /* телефон: одно сообщение сверху во всю ширину, через 7 с прячется */
 @media (max-width: 640px) {
   .t-feed { left: 8px; right: 8px; top: 36px; width: auto; }
-  .t-feed .fm:not(:last-of-type) { display: none; }
-  .t-feed.idle { opacity: 0; transform: translateY(-6px); pointer-events: none; }
 }
 @media (prefers-reduced-motion: reduce) { .fm.new, .fm-typing i { animation: none; } }
 .cd [data-via-email][hidden] { display: none; }
@@ -1307,3 +1321,7 @@ img.gis-mark { width: 48px; height: 48px; padding: 0; background: none; border-r
   .top .logo-mark, .port-page .top .logo-mark { width: 58px; height: 23px; } .top .logo { gap: 6px; }
 }
 @media (max-width: 370px) { .top .logo-word small, .port-page .top .logo-word small { display: none; } .top .logo-word > span, .port-page .top .logo-word > span { font-size: 11px; letter-spacing: .08em; } }
+.fm-row .fm-body { flex: 1; min-width: 0; }
+.fm-row .fm-body b, .fm-row .fm-body em { overflow: hidden; text-overflow: ellipsis; }
+.t-feed.open { width: 320px; }
+@media (max-width: 640px) { .t-feed.open { width: auto; } }
