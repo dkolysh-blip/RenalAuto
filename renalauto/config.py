@@ -88,7 +88,7 @@ class Settings:
     )
     company_address: str | None = field(
         default_factory=lambda: os.getenv(
-            "COMPANY_ADDRESS", "690078, Приморский край, г. Владивосток, ул. Мыс Чумака, д. 1а, помещ. 408"
+            "COMPANY_ADDRESS", "690078, Приморский край, г. Владивосток, ул. Мыс Чумака, д. 1а, стр. 3"
         )
         or None
     )
