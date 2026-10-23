@@ -220,7 +220,7 @@ table.leads th, table.leads td { border-bottom: 1px solid var(--line); padding: 
 .mobile-only { display: none; }
 .cta-bar { display: none; }
 @media (max-width: 700px) {
-  .top { position: static; }
+  .top { position: sticky; top: 0; z-index: 30; box-shadow: 0 2px 10px rgba(15,23,42,.08); }  /* на телефоне шапка с контактами всегда на виду */
   .logo-word > span { font-size: 16px; } .logo-word small { font-size: 8.5px; }
   .logo-mark { width: 92px; height: 36px; }
   .top .wrap { gap: 8px 14px; padding-top: 8px; padding-bottom: 8px; min-height: 0; }
@@ -1292,6 +1292,18 @@ body.has-cmp .nudge { bottom: calc(84px + env(safe-area-inset-bottom)); }
 .foot-contacts .fc-row b { display: block; font-size: 18px; font-weight: 800; }
 .foot-contacts .fc-row small { color: var(--muted); font-size: 12.5px; }
 .foot-contacts .addr { color: var(--muted); font-size: 13.5px; }
-@media (max-width: 480px) { .top .contacts .max-btn[data-goal="avito"] { display: none; } .top .contacts, .port-page .top .contacts { gap: 5px; } .top .contacts .max-btn { padding: 6px; } .top .contacts .max-btn img { width: 22px; height: 22px; } }
+@media (max-width: 480px) { .top .contacts, .port-page .top .contacts { gap: 4px; } .top .contacts .max-btn { padding: 6px; } .top .contacts .max-btn img { width: 22px; height: 22px; } }
 img.gis-mark { width: 48px; height: 48px; padding: 0; background: none; border-radius: 12px; flex: 0 0 auto; }
 @media (max-width: 800px) { img.gis-mark { width: 40px; height: 40px; border-radius: 10px; } }
+/* узкий телефон: логотип поменьше, чтобы в шапку влезли MAX, ВК, 2ГИС и Авито */
+@media (max-width: 480px) {
+  .top .logo { gap: 8px; } .top .logo-mark, .port-page .top .logo-mark { width: 70px; height: 28px; }
+  .top .logo-word > span, .port-page .top .logo-word > span { font-size: 14px; } .top .logo-word small, .port-page .top .logo-word small { font-size: 7.5px; }
+  .top .contacts .max-btn { padding: 5px; border-radius: 10px; } .top .contacts .max-btn img { width: 22px; height: 22px; }
+  .top .wrap { gap: 8px; }
+}
+@media (max-width: 400px) {
+  .top .logo-word > span, .port-page .top .logo-word > span { font-size: 12px; } .top .logo-word small, .port-page .top .logo-word small { font-size: 6.5px; }
+  .top .logo-mark, .port-page .top .logo-mark { width: 58px; height: 23px; } .top .logo { gap: 6px; }
+}
+@media (max-width: 370px) { .top .logo-word small, .port-page .top .logo-word small { display: none; } .top .logo-word > span, .port-page .top .logo-word > span { font-size: 11px; letter-spacing: .08em; } }
