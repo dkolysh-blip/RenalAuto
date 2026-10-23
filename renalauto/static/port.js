@@ -1152,8 +1152,12 @@
   // --- сравнение 2–3 машин: кнопка в карточке, плашка внизу экрана, таблица и ссылка на сравнение --------
   const CMP_MAX = 3, CMP_KEY = 'renal-cmp';
   let cmp = [];
-  try { cmp = JSON.parse(localStorage.getItem(CMP_KEY) || '[]').filter(c => c && c.key).slice(0, CMP_MAX); } catch (err) { cmp = []; }
-  const cmpSave = () => { try { localStorage.setItem(CMP_KEY, JSON.stringify(cmp)); } catch (err) { /* без хранилища — до перезагрузки */ } };
+  // список хранится 3 дня, потом очищается сам
+  try {
+    const saved = JSON.parse(localStorage.getItem(CMP_KEY) || '{}');
+    cmp = Array.isArray(saved.cars) && Date.now() - (saved.at || 0) < 3 * 864e5 ? saved.cars.filter(c => c && c.key).slice(0, CMP_MAX) : [];
+  } catch (err) { cmp = []; }
+  const cmpSave = () => { try { localStorage.setItem(CMP_KEY, JSON.stringify({at: Date.now(), cars: cmp})); } catch (err) { /* без хранилища — до перезагрузки */ } };
   const cmpHas = d => cmp.some(c => c.key === d.key);
   const cmpWord = n => n === 1 ? 'машина' : n < 5 ? 'машины' : 'машин';
   const cmpPick = d => ({key: d.key, source: d.source, id: d.id, title: d.title, photo: d.photo, turnkey: d.turnkey, price: d.price,
@@ -1185,8 +1189,13 @@
     if (!cmp.length) return;
     tray.innerHTML = `<span class="cmp-thumbs">${cmp.map(cmpImg).join('')}</span>
       <b><span class="cmp-l">${cmp.length} ${cmpWord(cmp.length)} в сравнении</span><span class="cmp-s">Сравнение · ${cmp.length}</span></b>
-      <button type="button" class="cmp-go"${cmp.length < 2 ? ' disabled' : ''}>${cmp.length < 2 ? 'Ещё одну' : 'Сравнить'}</button>`;
+      <button type="button" class="cmp-go"${cmp.length < 2 ? ' disabled' : ''}>${cmp.length < 2 ? 'Ещё одну' : 'Сравнить'}</button>
+      <button type="button" class="cmp-x" aria-label="Очистить сравнение" title="Очистить сравнение">×</button>`;
     tray.querySelector('.cmp-go').addEventListener('click', () => cmpOpen());
+    tray.querySelector('.cmp-x').addEventListener('click', () => {
+      cmp = []; cmpSave(); cmpTray(); goal('cmp_clear');
+      popEl.querySelector('[data-act="cmp"]')?.classList.remove('on');
+    });
   }
   // лучшее в строке — зелёным: дешевле, новее, меньше пробег
   const num = v => v == null ? null : +String(v).replace(/\D/g, '') || null;

@@ -1389,3 +1389,5 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 .tk-rv .rv-card footer { flex-wrap: wrap; gap: 6px 14px; }
 .tk-rv .rv-card header { flex-wrap: wrap; } .tk-rv .rv-card header small, .tk-rv .rv-card time { white-space: nowrap; }
 .tk-rv .trust-row .rvc-i { background: linear-gradient(160deg, #5a6472, #2a3038); }
+.cmp-x { flex: 0 0 auto; width: 36px; height: 36px; border: 0; border-radius: 50%; background: rgba(255,255,255,.12); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
+.cmp-x:hover { background: rgba(255,255,255,.22); }
