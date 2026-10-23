@@ -17,9 +17,18 @@
     </div>
     <div class="offer-side">
     <p class="live-lead"><b>Это живая лента:</b> все свежие объявления с площадок Кореи и Китая появляются здесь в реальном времени, без отбора, сразу с ориентировочной ценой в рублях.</p>
-    {% if company_max %}<a class="best-pick" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">
-      <img class="best-pick-ico" src="/static/brand/max.webp" alt="" width="40" height="40">
-      <span><b>Хотите лучшие варианты?</b><small>Отбираем вручную и публикуем подборку в нашем канале MAX</small></span>
+    {# главное действие для рекламного трафика: первый вопрос квиза прямо на первом экране #}
+    <div class="hero-quiz">
+      <p class="hq-title">Ваш бюджет с растаможкой?</p>
+      <div class="hq-opts">
+        <button type="button" data-hq="1500000" data-goal="hero_budget">до 1,5 млн</button><button type="button" data-hq="2500000" data-goal="hero_budget">до 2,5 млн</button>
+        <button type="button" data-hq="4000000" data-goal="hero_budget">до 4 млн</button><button type="button" data-hq="" data-goal="hero_budget">больше</button>
+      </div>
+      <p class="hq-note">Бесплатно · пришлём 3 варианта с ценой под ключ · комиссия до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽</p>
+    </div>
+    {% if company_max %}<a class="best-pick mini" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">
+      <img class="best-pick-ico" src="/static/brand/max.webp" alt="" width="28" height="28">
+      <span><b>Подборки вручную — в канале MAX</b></span>
       <span class="best-pick-go" aria-hidden="true">→</span>
     </a>{% endif %}
     </div>

@@ -856,6 +856,7 @@
     car.g.classList.add('hover');
     const d = car.d;
     // выбранная машина «едет» дальше по странице — в блоке логистики
+    if (pinned && pop.car !== nudge.lastCar) { nudge.lastCar = car; nudge.last = car.d; if (++nudge.seen === 2) setTimeout(nudgeShow, 2500); }
     if (pinned) dispatchEvent(new CustomEvent('renal:car', {detail: {title: label(d), country: d.country === 'CN' ? 'cn' : 'kr', turnkey: d.turnkey,
       sprite: `${ASSETS}/cars/${spriteOf(d, LENGTH[d.body] ? d.body : 'sedan')}.webp?v=${V}`}}));
     // карточка: фото, название, главное о машине и два действия — расчёт у менеджера и страница машины
@@ -950,6 +951,7 @@
     pop.car = null; pop.pinned = false;
     popEl.hidden = true;
     root.classList.remove('pop-docked');
+    if (nudge.pending) { nudge.pending = false; setTimeout(nudgeShow, 700); }
     popEl.classList.remove('docked', 'sheet');
     document.body.classList.remove('pop-sheet');
     if (!cam.follow) unfocus();
@@ -1027,14 +1029,18 @@
   function quizDone() {
     const BODY = {sedan: 'седан', suv: 'кроссовер', van: 'минивэн'}, CTRY = {KR: 'из Кореи', CN: 'из Китая'};
     const b = +qAns.budget || 0;
-    const fits = [...cars.values()].filter(c => c.state === 'parked' && (!b || (c.d.turnkey && c.d.turnkey <= b))
-      && (!qAns.body || c.d.body === qAns.body) && (!qAns.country || c.d.country === qAns.country)).length;
     const want = [b ? budgetText(b) : 'бюджет больше 4 млн ₽', BODY[qAns.body], CTRY[qAns.country] || 'где выгоднее'].filter(Boolean).join(' · ');
     form.querySelector('[data-quiz]').hidden = true;
     form.querySelector('.cd-body').hidden = false;
     form.querySelector('#car-dialog-title').textContent = 'Куда прислать варианты?';
-    form.querySelector('[data-car-name]').textContent = `${want[0].toUpperCase()}${want.slice(1)}.` +
-      (fits ? ` Сейчас на стоянке подходящих: ${fits}. Менеджер выберет лучшие и посчитает цену под ключ.` : ' Менеджер подберёт варианты и посчитает цену под ключ.');
+    const note = form.querySelector('[data-car-name]'), head = `${want[0].toUpperCase()}${want.slice(1)}.`;
+    note.textContent = `${head} Менеджер подберёт варианты среди актуальных объявлений и посчитает цену под ключ.`;
+    // сколько подходящих — по всем свежим объявлениям площадок, а не только по машинам на сцене
+    const f = {...(b ? {budget: b} : {}), ...(qAns.country ? {country: qAns.country} : {}), ...(qAns.body ? {body: qAns.body} : {})};
+    search(f).then(r => {
+      if (r.total && form.querySelector('[data-car-name]') === note)
+        note.textContent = `${head} Подходящих среди свежих объявлений Encar и Dongchedi: ${r.total} ${carWord(r.total).replace('машину', 'машина')}. Менеджер выберет лучшие и посчитает цену под ключ.`;
+    }).catch(() => {});
     form.querySelector('[name="comment"]').value = `Квиз: ${want}`;
     form.querySelector('[data-q-bar]').style.width = '100%';
     goal('quiz_done');
@@ -1046,6 +1052,41 @@
     }
     setTimeout(() => form.querySelector('#cd-name')?.focus(), 50);
   }
+  // подсказка тем, кто смотрит машины, но заявку не оставляет: после второй открытой машины или 50 с на странице,
+  // один раз за визит — «Подберём похожие до X млн?»; бюджет берём из последней открытой машины
+  const nudge = {seen: 0, last: null, shown: false, lead: false};
+  try { nudge.shown = sessionStorage.getItem('renal-nudge') === '1'; } catch (err) { /* без хранилища — покажем один раз до перезагрузки */ }
+  const BUCKETS = [1500000, 2500000, 4000000];
+  function nudgeShow() {
+    if (nudge.shown || nudge.lead || dialog.open || document.hidden) return;
+    if (document.body.classList.contains('pop-sheet')) { nudge.pending = true; return; }  // карточка снизу — после неё
+    nudge.shown = true;
+    try { sessionStorage.setItem('renal-nudge', '1'); } catch (err) { /* ничего */ }
+    const t = nudge.last?.turnkey, budget = t ? (BUCKETS.find(b => b >= t) || '') : null;
+    const el = document.createElement('div');
+    el.className = 'nudge'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Подбор похожих машин');
+    el.innerHTML = `<button type="button" class="nudge-x" aria-label="Закрыть">×</button>
+      <b>${budget ? `Подобрать похожие ${budgetText(budget)}?` : budget === '' ? 'Подобрать похожие?' : 'Не нашли подходящую?'}</b>
+      <span>Пришлём 3 варианта с ценой под ключ — бесплатно, за 3 вопроса</span>
+      <button type="button" class="btn nudge-go">Подобрать</button>`;
+    document.body.appendChild(el);
+    goal('nudge_show');
+    el.querySelector('.nudge-x').addEventListener('click', () => el.remove());
+    el.querySelector('.nudge-go').addEventListener('click', () => {
+      el.remove(); goal('nudge_click');
+      openLead({quiz: true});
+      if (budget != null) { qAns.budget = String(budget); quizGo(1); }
+    });
+  }
+  setTimeout(nudgeShow, 50000);
+  dialog.addEventListener('close', () => { if (sent) nudge.lead = true; });
+  // бюджет, выбранный на первом экране, — первый ответ квиза: окно открывается сразу со второго вопроса
+  document.querySelectorAll('[data-hq]').forEach(b => b.addEventListener('click', () => {
+    openLead({quiz: true});
+    qAns.budget = b.dataset.hq;
+    goal('quiz_budget');
+    quizGo(1);
+  }));
   form.addEventListener('click', e => {
     const opt = e.target.closest('[data-q] [data-v]');
     if (opt) {

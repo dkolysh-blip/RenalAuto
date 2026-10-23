@@ -38,13 +38,15 @@
       if (data.budget_rub) data.budget_rub = parseInt(data.budget_rub, 10);
       data.page = location.pathname;
       const btn = form.querySelector('button[type=submit]');
+      const maxUrl = document.querySelector('a[href*="max.ru/"]')?.href;  // после заявки — мягко в канал
       btn.disabled = true;
       try {
         const res = await fetch('/api/leads', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)});
         const body = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(body.detail && typeof body.detail === 'string' ? body.detail : 'Не удалось отправить');
         form.innerHTML = '<div class="thanks"><span class="thanks-ico" aria-hidden="true">✓</span><b>Заявка у менеджера</b>' +
-          '<span>Он посчитает стоимость и свяжется с вами в ближайшее время.</span></div>';
+          '<span>Он посчитает стоимость и свяжется с вами в ближайшее время.</span>' +
+          (maxUrl ? `<a class="thanks-max" href="${esc(maxUrl)}" target="_blank" rel="noopener">Пока ждёте — выдачи и подборки в канале MAX →</a>` : '') + '</div>';
         form.dispatchEvent(new CustomEvent('lead:sent', {bubbles: true}));
         if (window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', 'lead');
       } catch (err) {
