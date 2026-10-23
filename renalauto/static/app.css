@@ -1325,3 +1325,16 @@ img.gis-mark { width: 48px; height: 48px; padding: 0; background: none; border-r
 .fm-row .fm-body b, .fm-row .fm-body em { overflow: hidden; text-overflow: ellipsis; }
 .t-feed.open { width: 320px; }
 @media (max-width: 640px) { .t-feed.open { width: auto; } }
+
+/* отзывы: «Как нас проверить» под каналом MAX, иконка 2ГИС у каждого отзыва */
+.rv-check { margin-top: 14px; display: grid; gap: 8px; padding: 16px; border-radius: 18px; background: #fff; border: 1px solid #e3e8ee; }
+.rv-check-h { font: 700 15px/1.2 Onest, system-ui, sans-serif; color: #0f172a; margin-bottom: 2px; }
+.rvc { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; color: #0f172a; text-decoration: none; }
+a.rvc:hover { background: #f4f7fa; text-decoration: none; }
+.rvc img, .rvc-i { width: 34px; height: 34px; border-radius: 10px; flex: 0 0 auto; }
+.rvc-i { display: grid; place-items: center; background: linear-gradient(160deg, #3a4250, #16191d); } .rvc-i.doc { background: linear-gradient(160deg, #2f7fc1, #0b5c8f); }
+.rvc-i svg { width: 19px; height: 19px; }
+.rvc span { display: grid; gap: 2px; min-width: 0; }
+.rvc b { font-size: 14.5px; } .rvc small { font-size: 12.5px; color: var(--muted); }
+.rv-card footer a[data-goal="reviews_2gis"] { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.rv-card footer a img { width: 14px; height: 14px; border-radius: 4px; display: block; }

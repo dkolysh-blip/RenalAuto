@@ -136,7 +136,10 @@ def load_reviews() -> list[dict[str, Any]]:
         items = json.loads((HERE / "reviews.json").read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return []
-    return [r for r in items if isinstance(r, dict) and r.get("name") and r.get("text")]
+    items = [r for r in items if isinstance(r, dict) and r.get("name") and r.get("text")]
+    # сначала подробные отзывы с настоящим именем, «Городской житель» и «Имя скрыто» — в конце
+    anon = lambda r: r["name"] in ("Городской житель", "Имя скрыто") or len(r["name"].replace(" ", "")) < 4
+    return sorted(items, key=lambda r: (anon(r), -min(len(r["text"]), 300)))
 
 
 def load_model_credits() -> list[dict[str, Any]]:
