@@ -1359,17 +1359,18 @@
     if (f.q && !d.title.toLowerCase().includes(f.q.toLowerCase())) return false;
     return true;
   }
-  function resultText(n, total) {
+  const RESET = ' <button type="button" class="pf-reset" data-pf-reset>Сбросить ×</button>';
+  function resultText(n, total, more) {
     if (!filterActive()) return '';
-    if (!n) return 'Под этот запрос машин сейчас нет — <a href="#" data-pf-lead>оставьте заявку</a>, пришлём, как только появятся.<span data-pf-near></span>';
+    if (!n) return 'Под этот запрос машин сейчас нет — <a href="#" data-pf-lead>оставьте заявку</a>, пришлём, как только появятся.<span data-pf-near></span>' + RESET;
     const word = total % 10 === 1 && total % 100 !== 11 ? 'машина' : [2, 3, 4].includes(total % 10) && ![12, 13, 14].includes(total % 100) ? 'машины' : 'машин';
-    return `Под ваш запрос — <b>${total} ${word}</b>.`;
+    return (more ? `Под ваш запрос — <b>больше ${total} машин</b>, на стоянке самые свежие.` : `Под ваш запрос — <b>${total} ${word}</b>.`) + RESET;
   }
   async function search(f) {
     if (DATA.demo) { const found = demoPool.filter(d => matches(d, f)); return {found, total: found.length}; }
     const res = await fetch('/api/port/cars?' + new URLSearchParams(f));
     const body = await res.json();
-    return {found: body.cars, total: body.total};
+    return {found: body.cars, total: body.total, more: body.more};
   }
   // ничего не нашлось — предлагаем, что ослабить: бюджет, год или марку, и сколько тогда будет машин
   const RELAX = [['budget', 'поднять бюджет'], ['year_from', 'взять постарше']];  // марку не трогаем: её человек выбрал сам
@@ -1398,7 +1399,7 @@
     try { r = await search(filter); } catch (err) { return; }
     if (my !== filterSeq) return;
     goal('filter');
-    filterOut.innerHTML = resultText(r.found.length, r.total);
+    filterOut.innerHTML = resultText(r.found.length, r.total, r.more);
     const qs = new URLSearchParams(filter);
     for (const k of ['demo', 'utm_source', 'utm_medium', 'utm_campaign']) { const v = new URLSearchParams(location.search).get(k); if (v) qs.set(k, v); }
     history.replaceState(null, '', location.pathname + (qs.toString() ? '?' + qs : '') + location.hash);
@@ -1478,6 +1479,14 @@
     e.currentTarget.setAttribute('aria-expanded', String(open));
   });
   filterOut?.addEventListener('click', e => {
+    if (e.target.closest('[data-pf-reset]')) {  // выйти из подборки: все поля — по умолчанию, стоянка — как была
+      const f = filterForm.elements;
+      for (const k of ['country', 'year_from', 'q']) if (f[k]) f[k].value = '';
+      budgetRange.value = budgetRange.max;
+      budgetRange.dispatchEvent(new Event('input', {bubbles: true}));
+      goal('filter_reset');
+      return;
+    }
     const relax = e.target.closest('[data-pf-relax]');
     if (relax) {  // сбросить мешающий фильтр и показать машины
       const f = filterForm.elements;

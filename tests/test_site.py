@@ -214,7 +214,7 @@ def test_port_filter_api(settings):
         assert client.get("/api/port/cars", params={"body": "suv"}).json()["total"] == 1
         cheap = client.get("/api/port/cars", params={"budget": 2_000_000}).json()
         assert [c["id"] for c in cheap["cars"]] == ["2"]
-        assert client.get("/api/port/cars", params={"country": "CN"}).json() == {"cars": [], "total": 0}
+        assert client.get("/api/port/cars", params={"country": "CN"}).json() == {"cars": [], "total": 0, "more": False}
     finally:
         client.__exit__(None, None, None)
 
@@ -357,5 +357,21 @@ def test_stock_cars_admin_and_landing(settings):
         assert "Уже выкуплены" not in client.get("/port").text
         assert client.delete(f"/api/stock/{car['id']}", headers=ADMIN).status_code == 204
         assert client.get(f"/media/stock/{car['photos'][0]}").status_code == 404
+    finally:
+        client.__exit__(None, None, None)
+
+
+def test_port_filter_total_not_capped(settings, monkeypatch):
+    # «под ваш запрос N машин»: когда перебрали не всё, без бюджета считаем по базе, а не «ровно PORT_SCAN»
+    import renalauto.api as api_mod
+    monkeypatch.setattr(api_mod, "PORT_SCAN", 2)
+    settings.sources = ["encar"]
+    cars = [kb(source="encar", external_id=str(30 + i), title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"}) for i in range(5)]
+    client, app = make_client(settings, cars)
+    try:
+        r = client.get("/api/port/cars", params={"country": "KR"}).json()
+        assert r["total"] == 5 and r["more"] is False
+        r = client.get("/api/port/cars", params={"country": "KR", "budget": 99_000_000}).json()
+        assert r["more"] is True
     finally:
         client.__exit__(None, None, None)

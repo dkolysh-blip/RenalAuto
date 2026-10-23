@@ -210,8 +210,8 @@
         <b class="rv-check-h">Как нас проверить</b>
         {% if company_address %}<a class="rvc" href="{{ company_2gis or '#' }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.webp" alt="" width="34" height="34">
           <span><b>Офис во Владивостоке</b><small>{{ company_address.split('Владивосток, ')[-1] }} · открыть в 2ГИС</small></span></a>{% endif %}
-        {% if company_legal_name %}<a class="rvc" href="{{ 'https://www.rusprofile.ru/search?query=' ~ inn if inn else '#' }}" target="_blank" rel="noopener nofollow" data-goal="egrul"><i class="rvc-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12M9 21v-6h6v6M3 21h18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></i>
-          <span><b>{{ company_legal_name }}</b><small>{% if inn %}ИНН {{ inn }} · проверить в реестре{% else %}юридическое лицо{% endif %}</small></span></a>{% endif %}
+        {% if company_legal_name %}<a class="rvc" href="https://egrul.nalog.ru/" target="_blank" rel="noopener" data-goal="egrul"{% if inn %} data-copy="{{ inn }}" data-copy-note="ИНН {{ inn }} скопирован — вставьте его в поиск на сайте ФНС"{% endif %}><i class="rvc-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12M9 21v-6h6v6M3 21h18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></i>
+          <span><b>{{ company_legal_name }}</b><small>{% if inn %}ИНН {{ inn }} · проверить в реестре ФНС{% else %}юридическое лицо{% endif %}</small></span></a>{% endif %}
         <div class="rvc"><i class="rvc-i doc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h7l5 5v13H7zM14 3v5h5M10 13h6M10 17h6" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></i>
           <span><b>Агентский договор</b><small>Покупаем машину от вашего имени, по каждой трате — отчёт</small></span></div>
       </div>

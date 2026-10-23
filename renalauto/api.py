@@ -508,7 +508,13 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                 continue
             found.append(car)
         shown = [c for c in found if c["country"] == "KR"][:PORT_PER_ZONE] + [c for c in found if c["country"] == "CN"][:PORT_PER_ZONE]
-        return {"cars": shown, "total": len(found)}
+        total, more = len(found), False
+        if len(rows) >= PORT_SCAN:  # перебрали не всё: без бюджета и марки считаем по базе, иначе — «больше N»
+            if not (budget or body or q or make or model):
+                total = storage_of(request).count_passable(country=country, year_from=year_from)
+            else:
+                more = True
+        return {"cars": shown, "total": total, "more": more}
 
     catalog_cache: dict[str, Any] = {"at": 0.0, "data": None}
 

@@ -7,6 +7,17 @@
     if (a && window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', 'max');
   });
 
+  // --- «проверить в реестре ФНС»: у egrul.nalog.ru нет ссылки на карточку, поэтому ИНН копируем в буфер --------
+  document.addEventListener('click', e => {
+    const a = e.target.closest('[data-copy]');
+    if (!a) return;
+    navigator.clipboard?.writeText(a.dataset.copy).catch(() => {});
+    const note = document.createElement('div');
+    note.className = 'copy-note'; note.textContent = a.dataset.copyNote || 'Скопировано';
+    document.body.appendChild(note);
+    setTimeout(() => note.remove(), 3500);
+  });
+
   // --- заявки --------------------------------------------------------------
   document.querySelectorAll('form[data-lead]').forEach(form => {
     // «Куда прислать расчёт: Почта» — показать поле для адреса

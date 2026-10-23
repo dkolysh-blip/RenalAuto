@@ -243,6 +243,18 @@ class Storage:
             row = self._conn.execute("SELECT COUNT(*) FROM listings").fetchone()
         return row[0]
 
+    def count_passable(self, country: str | None = None, year_from: int | None = None) -> int:
+        """Сколько проходных объявлений на сайте (с учётом площадок из SOURCES) — для «под ваш запрос N машин»."""
+        where, params = ["passable != 0"], []
+        if self.only_sources:
+            where.append("source IN (" + ",".join("?" for _ in self.only_sources) + ")")
+            params.extend(self.only_sources)
+        if country:
+            where.append("country = ?"); params.append(country)
+        if year_from:
+            where.append("year >= ?"); params.append(year_from)
+        return self._conn.execute("SELECT COUNT(*) FROM listings WHERE " + " AND ".join(where), params).fetchone()[0]
+
     SORTS = {
         "new": "first_seen DESC, rowid DESC",
         "price_asc": "price_usd IS NULL, price_usd ASC",
