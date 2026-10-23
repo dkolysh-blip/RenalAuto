@@ -1279,3 +1279,17 @@ body.has-cmp .nudge { bottom: calc(84px + env(safe-area-inset-bottom)); }
 .st-go { margin-top: 10px; height: 48px; border-radius: 14px; font-size: 16px; }
 @media (max-width: 1000px) { .st-track { grid-auto-columns: calc((100% - 16px) / 2); } }
 @media (max-width: 640px) { .stock { padding: 32px 0; } .st-head h2 { font-size: 22px; } .st-track { grid-auto-columns: 86%; gap: 12px; } }
+
+/* контакты в подвале: у каждой строки свой значок */
+.foot-contacts { gap: 10px; }
+.foot-contacts .fc-row { display: flex; align-items: center; gap: 12px; color: var(--text); text-decoration: none; font-size: 15px; line-height: 1.3; }
+.foot-contacts .fc-row:hover { text-decoration: none; } .foot-contacts .fc-row:hover span { text-decoration: underline; }
+.foot-contacts .fi { width: 30px; height: 30px; border-radius: 9px; flex: 0 0 auto; display: grid; place-items: center; }
+.foot-contacts .fi svg { width: 17px; height: 17px; }
+.foot-contacts .fi-call { background: linear-gradient(160deg, #3ddc6f, #0f9d4a); }
+.foot-contacts .fi-mail { background: linear-gradient(160deg, #3b9cff, #1f5fd6); }
+.foot-contacts .fi-pin { background: linear-gradient(160deg, #ff5a52, #d81f18); }
+.foot-contacts .fc-row b { display: block; font-size: 18px; font-weight: 800; }
+.foot-contacts .fc-row small { color: var(--muted); font-size: 12.5px; }
+.foot-contacts .addr { color: var(--muted); font-size: 13.5px; }
+@media (max-width: 480px) { .top .contacts .max-btn[data-goal="avito"] { display: none; } .top .contacts, .port-page .top .contacts { gap: 5px; } .top .contacts .max-btn { padding: 6px; } .top .contacts .max-btn img { width: 22px; height: 22px; } }

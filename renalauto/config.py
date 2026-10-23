@@ -97,6 +97,8 @@ class Settings:
     # Яндекс Метрика: номер счётчика. Пусто — счётчик на сайт не ставится
     ym_id: int | None = field(default_factory=lambda: _int_or_none("YM_ID") if os.getenv("YM_ID") is not None else 113699503)
     company_vk: str | None = field(default_factory=lambda: os.getenv("COMPANY_VK", "https://vk.ru/renal_auto") or None)
+    # профиль на Авито: пусто — значка нет
+    company_avito: str | None = field(default_factory=lambda: os.getenv("COMPANY_AVITO") or None)
     company_2gis: str | None = field(
         default_factory=lambda: os.getenv("COMPANY_2GIS", "https://2gis.ru/vladivostok/geo/70000001101310074") or None
     )

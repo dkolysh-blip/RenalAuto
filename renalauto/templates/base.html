@@ -52,6 +52,8 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call">{{ company_hotline }}</a>{% elif company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_max %}<a class="btn ghost max-btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="20" height="20">MAX</a>{% endif %}
       {% if company_vk %}<a class="btn ghost max-btn" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img src="/static/brand/vk.webp" alt="" width="20" height="20">ВК</a>{% endif %}
+      {% if company_2gis %}<a class="btn ghost max-btn" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.svg" alt="" width="20" height="20">2ГИС</a>{% endif %}
+      {% if company_avito %}<a class="btn ghost max-btn" href="{{ company_avito }}" target="_blank" rel="noopener" data-goal="avito"><img src="/static/brand/avito.svg" alt="" width="20" height="20">Авито</a>{% endif %}
     </div>
   </div>
 </header>
@@ -66,13 +68,14 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     </div>
     {% block footer_mid %}{% endblock %}
     <div class="foot-contacts">
-      {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}">{{ company_hotline }}</a><span class="muted small">бесплатно по России</span>{% endif %}
-      {% if company_phone %}<a href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
-      {% if company_email %}<a href="mailto:{{ company_email }}">{{ company_email }}</a>{% endif %}
-      {% if company_max %}<a class="max-link" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="18" height="18">Канал в MAX</a>{% endif %}
-      {% if company_vk %}<a class="max-link" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img src="/static/brand/vk.webp" alt="" width="18" height="18">ВКонтакте</a>{% endif %}
-      {% if company_2gis %}<a href="{{ company_2gis }}" target="_blank" rel="noopener">Мы в 2ГИС</a>{% endif %}
-      {% if company_address %}<span>{{ company_address }}</span>{% endif %}
+      {% if company_hotline %}<a class="fc-row phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call"><i class="fi fi-call"><svg viewBox="0 0 24 24"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></i><span><b>{{ company_hotline }}</b><small>бесплатно по России</small></span></a>{% endif %}
+      {% if company_phone %}<a class="fc-row" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call"><i class="fi fi-call"><svg viewBox="0 0 24 24"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></i><span>{{ company_phone }}</span></a>{% endif %}
+      {% if company_email %}<a class="fc-row" href="mailto:{{ company_email }}" data-goal="email"><i class="fi fi-mail"><svg viewBox="0 0 24 24"><path d="M16 12a4 4 0 1 1-1.2-2.85V12a2 2 0 0 0 4 0v-.5A7 7 0 1 0 15 17.7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></i><span>{{ company_email }}</span></a>{% endif %}
+      {% if company_max %}<a class="fc-row" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img class="fi" src="/static/brand/max.webp" alt="" width="30" height="30"><span>Канал в MAX</span></a>{% endif %}
+      {% if company_vk %}<a class="fc-row" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img class="fi" src="/static/brand/vk.webp" alt="" width="30" height="30"><span>ВКонтакте</span></a>{% endif %}
+      {% if company_avito %}<a class="fc-row" href="{{ company_avito }}" target="_blank" rel="noopener" data-goal="avito"><img class="fi" src="/static/brand/avito.svg" alt="" width="30" height="30"><span>Мы на Авито</span></a>{% endif %}
+      {% if company_2gis %}<a class="fc-row" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img class="fi" src="/static/brand/2gis.svg" alt="" width="30" height="30"><span>Мы в 2ГИС{% if company_2gis_rating %} · ★ {{ company_2gis_rating }}{% endif %}</span></a>{% endif %}
+      {% if company_address %}<a class="fc-row" href="{{ company_2gis or '#' }}" target="_blank" rel="noopener"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr">{{ company_address }}</span></a>{% endif %}
     </div>
   </div>
   <div class="wrap foot-legal">

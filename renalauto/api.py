@@ -240,6 +240,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         company_2gis_reviews=settings.company_2gis_reviews,
         model_credits=load_model_credits(),
         company_2gis=settings.company_2gis,
+        company_avito=settings.company_avito,
         deal=dict(fee=settings.deal_fee_rub, deposit=settings.deal_deposit_rub, pick_days=settings.deal_pick_days,
                   invoice_days=settings.deal_invoice_days, delivery_weeks=settings.deal_delivery_weeks),
         site_url=settings.site_url,
