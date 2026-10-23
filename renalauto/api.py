@@ -30,7 +30,8 @@ from .config import Settings
 from .customs import TurnkeyCalc, turnkey
 from .eligibility import RULES_AS_OF, engine_kind
 from .events import EventHub
-from .models import LEAD_KIND_LABELS, Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter
+from .models import (LEAD_KIND_LABELS, STOCK_STATUS_LABELS, Lead, LeadIn, LeadStatus, Listing, ListingEvent, SavedFilter,
+                     StockCar, StockIn, StockUpdate)
 from .notify import TelegramNotifier
 from .og import money, render_car
 from .poller import Poller
@@ -448,6 +449,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             share_title = "Сравнение: " + ", ".join(compared)
         return render(
             request, "port.html", cars=cars, matched=matched, reviews=load_reviews(), share_title=share_title,
+            stock=storage.list_stock(), stock_labels=STOCK_STATUS_LABELS,
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),
         )
 
@@ -827,6 +829,69 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if lead is None:
             raise HTTPException(404, "Заявка не найдена")
         return lead
+
+    # --- машины в наличии: заводит менеджер в /admin/stock, показываются на лендинге ----------------
+
+    stock_dir = Path(settings.db_path).resolve().parent / "stock"
+
+    def save_photo(data_url: str) -> str:
+        """data:image/...;base64 → webp до 1600 px в папке наличия; возвращает имя файла."""
+        import base64, io, secrets
+        from PIL import Image, ImageOps
+        if not data_url.startswith("data:image/") or ";base64," not in data_url:
+            raise HTTPException(422, "Фото должно быть картинкой")
+        raw = base64.b64decode(data_url.split(",", 1)[1], validate=False)
+        if len(raw) > 15_000_000:
+            raise HTTPException(413, "Фото больше 15 МБ")
+        try:
+            im = ImageOps.exif_transpose(Image.open(io.BytesIO(raw))).convert("RGB")
+        except Exception:  # noqa: BLE001
+            raise HTTPException(422, "Не удалось прочитать фото")
+        im.thumbnail((1600, 1600))
+        stock_dir.mkdir(parents=True, exist_ok=True)
+        name = f"{secrets.token_hex(8)}.webp"
+        im.save(stock_dir / name, "WEBP", quality=80, method=6)
+        return name
+
+    @app.get("/media/stock/{name}", include_in_schema=False)
+    async def stock_photo(name: str) -> Response:
+        if not re.fullmatch(r"[0-9a-f]{16}\.webp", name) or not (stock_dir / name).is_file():
+            raise HTTPException(404)
+        return Response((stock_dir / name).read_bytes(), media_type="image/webp", headers={"Cache-Control": "public, max-age=2592000, immutable"})
+
+    @app.get("/admin/stock", response_class=HTMLResponse, include_in_schema=False)
+    async def admin_stock(request: Request) -> HTMLResponse:
+        require_admin(request)
+        return render(request, "admin_stock.html", stock=storage_of(request).list_stock(include_sold=True), labels=STOCK_STATUS_LABELS)
+
+    @app.post("/api/stock", response_model=StockCar, status_code=201, dependencies=[Depends(require_admin)])
+    async def add_stock(request: Request, car: StockIn) -> StockCar:
+        photos = [save_photo(p) for p in car.photos_add]
+        return storage_of(request).save_stock({**car.model_dump(exclude={"photos_add"}), "photos": photos})
+
+    @app.patch("/api/stock/{stock_id}", response_model=StockCar, dependencies=[Depends(require_admin)])
+    async def update_stock(request: Request, stock_id: int, patch: StockUpdate) -> StockCar:
+        storage = storage_of(request)
+        car = storage.get_stock(stock_id)
+        if car is None:
+            raise HTTPException(404, "Машина не найдена")
+        data = car.model_dump(exclude={"id", "created_at"})
+        data.update(patch.model_dump(exclude={"photos_add", "photos_remove"}, exclude_unset=True))
+        data["photos"] = [p for p in data["photos"] if p not in patch.photos_remove] + [save_photo(p) for p in patch.photos_add]
+        for name in patch.photos_remove:
+            if re.fullmatch(r"[0-9a-f]{16}\.webp", name):
+                (stock_dir / name).unlink(missing_ok=True)
+        return storage.save_stock(data, stock_id)
+
+    @app.delete("/api/stock/{stock_id}", status_code=204, dependencies=[Depends(require_admin)])
+    async def delete_stock(request: Request, stock_id: int) -> Response:
+        storage = storage_of(request)
+        car = storage.get_stock(stock_id)
+        if car is None or not storage.delete_stock(stock_id):
+            raise HTTPException(404, "Машина не найдена")
+        for name in car.photos:
+            (stock_dir / name).unlink(missing_ok=True)
+        return Response(status_code=204)
 
     # --- API: удалённые сборщики ----------------------------------------------------
 

@@ -121,6 +121,35 @@
 </section>
 
 
+{% if stock %}
+<section class="port-section stock" id="nalichie" aria-labelledby="stock-title">
+  <div class="wrap">
+    <div class="st-head">
+      <span class="st-eyebrow">В наличии и в пути</span>
+      <h2 id="stock-title">Уже выкуплены — можно забронировать</h2>
+      <p>Машины, которые мы купили и везём или уже привезли во Владивосток. Цена — под ключ, без ожидания подбора.</p>
+    </div>
+    <div class="st-track" data-stock>
+      {% for c in stock %}
+      <article class="st-card">
+        <div class="st-ph">
+          {% if c.photos %}<div class="st-gal">{% for p in c.photos %}<img src="/media/stock/{{ p }}" alt="{{ c.title }}" loading="lazy" decoding="async" width="1600" height="1067">{% endfor %}</div>
+          {% if c.photos|length > 1 %}<span class="st-count">{{ c.photos|length }} фото</span>{% endif %}{% endif %}
+          <span class="st-status {{ c.status }}">{{ stock_labels[c.status] }}</span>
+        </div>
+        <div class="st-body">
+          <b>{{ c.title }}{% if c.year %}, {{ c.year }}{% endif %}</b>
+          <small>{{ 'Из Кореи' if c.country == 'KR' else 'Из Китая' }}{% if c.mileage_km is not none %} · {{ fmt(c.mileage_km) }} км{% endif %}{% if c.engine %} · {{ c.engine }}{% endif %}</small>
+          {% if c.note %}<p>{{ c.note }}</p>{% endif %}
+          <div class="st-price">{% if c.price_rub %}{{ fmt(c.price_rub) }} ₽ <span>под ключ во Владивостоке</span>{% else %}<span>цену назовёт менеджер</span>{% endif %}</div>
+          <button type="button" class="btn st-go" data-stock-lead="{{ c.title }}{% if c.year %} {{ c.year }}{% endif %}{% if c.price_rub %} · {{ fmt(c.price_rub) }} ₽{% endif %}" data-goal="stock_lead">Забронировать</button>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 <section class="port-section band band-white trust" id="vydachi" aria-labelledby="vydachi-title">
   {% set reviews_url = company_2gis ~ '/tab/reviews' if company_2gis else None %}
   {% set months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}

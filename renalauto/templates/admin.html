@@ -3,6 +3,7 @@
 {% block head %}<meta name="robots" content="noindex">{% endblock %}
 {% block content %}
 <h1>Заявки</h1>
+<p><a class="btn ghost" href="/admin/stock?token={{ request.query_params.get('token', '') }}">Машины в наличии →</a></p>
 <div class="stats">
   <div><b>{{ stats.total }}</b>всего</div>
   <div><b>{{ stats.new }}</b>новые</div>

@@ -121,3 +121,48 @@ class Lead(LeadIn):
     plate: str | None = None
     vin: str | None = None
     manager_note: str | None = None
+
+
+StockStatus = Literal["transit", "vlad", "sold"]
+STOCK_STATUS_LABELS = {"transit": "В пути", "vlad": "Во Владивостоке", "sold": "Продана"}
+
+
+class StockIn(BaseModel):
+    """Машина в наличии: уже выкуплена, едет или стоит во Владивостоке. Заводит менеджер в админке."""
+
+    title: str = Field(min_length=2, max_length=120)
+    year: int | None = Field(default=None, ge=1990, le=2100)
+    mileage_km: int | None = Field(default=None, ge=0, le=2_000_000)
+    engine: str | None = Field(default=None, max_length=60)  # «2,0 л · бензин»
+    country: Literal["KR", "CN"] = "KR"
+    price_rub: int | None = Field(default=None, ge=0, le=1_000_000_000)  # цена под ключ во Владивостоке
+    status: StockStatus = "transit"
+    note: str | None = Field(default=None, max_length=500)
+    photos_add: list[str] = Field(default_factory=list, max_length=12)  # data:image/...;base64 — новые фото
+
+
+class StockUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=2, max_length=120)
+    year: int | None = Field(default=None, ge=1990, le=2100)
+    mileage_km: int | None = Field(default=None, ge=0, le=2_000_000)
+    engine: str | None = Field(default=None, max_length=60)
+    country: Literal["KR", "CN"] | None = None
+    price_rub: int | None = Field(default=None, ge=0, le=1_000_000_000)
+    status: StockStatus | None = None
+    note: str | None = Field(default=None, max_length=500)
+    photos_add: list[str] = Field(default_factory=list, max_length=12)
+    photos_remove: list[str] = Field(default_factory=list)
+
+
+class StockCar(BaseModel):
+    id: int
+    created_at: str
+    title: str
+    year: int | None = None
+    mileage_km: int | None = None
+    engine: str | None = None
+    country: Literal["KR", "CN"] = "KR"
+    price_rub: int | None = None
+    status: StockStatus = "transit"
+    note: str | None = None
+    photos: list[str] = Field(default_factory=list)  # имена файлов в папке фото наличия

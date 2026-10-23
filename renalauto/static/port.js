@@ -1098,6 +1098,12 @@
     if (e.target.closest('[data-q-back]')) quizGo(Math.max(0, qAt - 1));
   });
   window.RenalLead = {open: openLead};
+  // машины в наличии: «Забронировать» — заявка с этой машиной в комментарии
+  document.querySelectorAll('[data-stock-lead]').forEach(b => b.addEventListener('click', () => {
+    goal('stock_lead');
+    openLead({title: 'Забронировать', note: `${b.dataset.stockLead}. Менеджер расскажет о машине, пришлёт фото и видео и объяснит, как забронировать.`,
+      comment: `В наличии: ${b.dataset.stockLead}`});
+  }));
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-lead-open]');
     if (b) { e.preventDefault(); openLead({quiz: b.dataset.leadOpen !== 'form'}); }

@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}В наличии | {{ company }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<h1>Машины в наличии</h1>
+<p class="muted">Машины, которые уже выкуплены: едут или стоят во Владивостоке. Показываются на лендинге в блоке «В наличии и в пути», пока статус не «Продана».
+  <a href="/admin?token={{ request.query_params.get('token', '') }}">← Заявки</a></p>
+
+<form class="panel stock-form" data-stock-new>
+  <h2>Добавить машину</h2>
+  <div class="sf-grid">
+    <label>Название<input name="title" required maxlength="120" placeholder="Kia K5 2.0 LPI Prestige"></label>
+    <label>Год<input name="year" type="number" min="1990" max="2100" placeholder="2021"></label>
+    <label>Пробег, км<input name="mileage_km" type="number" min="0" placeholder="45000"></label>
+    <label>Двигатель<input name="engine" maxlength="60" placeholder="2,0 л · бензин"></label>
+    <label>Откуда<select name="country"><option value="KR">Корея</option><option value="CN">Китай</option></select></label>
+    <label>Цена под ключ, ₽<input name="price_rub" type="number" min="0" placeholder="2350000"></label>
+    <label>Статус<select name="status">{% for k, v in labels.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
+    <label class="wide">Коротко о машине<input name="note" maxlength="500" placeholder="Один владелец, без ДТП, полный привод"></label>
+    <label class="wide">Фото (до 12, первое — главное)<input name="photos" type="file" accept="image/*" multiple></label>
+  </div>
+  <button class="btn" type="submit">Добавить</button> <span class="sf-msg muted small"></span>
+</form>
+
+<div class="stock-admin">
+  {% for c in stock %}
+  <div class="panel sa-card" data-stock-id="{{ c.id }}">
+    <div class="sa-photos">{% for p in c.photos %}<span><img src="/media/stock/{{ p }}" alt=""><button type="button" data-rm-photo="{{ p }}" title="Убрать фото">×</button></span>{% else %}<span class="muted small">Нет фото</span>{% endfor %}</div>
+    <b>{{ c.title }}{% if c.year %}, {{ c.year }}{% endif %}</b>
+    <div class="muted small">{{ 'Корея' if c.country == 'KR' else 'Китай' }}{% if c.mileage_km is not none %} · {{ fmt(c.mileage_km) }} км{% endif %}{% if c.engine %} · {{ c.engine }}{% endif %}</div>
+    <div class="sa-row">
+      <select data-field="status">{% for k, v in labels.items() %}<option value="{{ k }}" {{ 'selected' if c.status == k }}>{{ v }}</option>{% endfor %}</select>
+      <input data-field="price_rub" type="number" min="0" value="{{ c.price_rub or '' }}" placeholder="Цена, ₽">
+    </div>
+    <input data-field="note" maxlength="500" value="{{ c.note or '' }}" placeholder="Коротко о машине">
+    <div class="sa-row">
+      <label class="btn ghost small-btn">+ фото<input type="file" accept="image/*" multiple data-add-photos hidden></label>
+      <button type="button" class="btn ghost small-btn" data-delete>Удалить</button>
+      <span class="sa-msg small muted"></span>
+    </div>
+  </div>
+  {% else %}<p class="muted">Пока пусто — добавьте первую машину выше.</p>{% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}
+<style>
+.stock-form h2 { margin-top: 0; }
+.sf-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.sf-grid label { display: grid; gap: 4px; font-size: 13px; font-weight: 600; }
+.sf-grid .wide { grid-column: 1 / -1; }
+.sf-grid input, .sf-grid select, .sa-card input, .sa-card select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; font: inherit; }
+.stock-admin { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; margin-top: 16px; }
+.sa-card { display: grid; gap: 8px; }
+.sa-photos { display: flex; gap: 6px; overflow-x: auto; }
+.sa-photos span { position: relative; flex: 0 0 auto; }
+.sa-photos img { width: 96px; height: 64px; object-fit: cover; border-radius: 8px; display: block; }
+.sa-photos button { position: absolute; right: 2px; top: 2px; width: 22px; height: 22px; border: 0; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; cursor: pointer; }
+.sa-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.small-btn { padding: 6px 12px; font-size: 13px; cursor: pointer; }
+</style>
+<script>
+(() => {
+  const token = new URLSearchParams(location.search).get('token') || '';
+  const api = (url, method, body) => fetch(url, {method, headers: {'Content-Type': 'application/json', 'X-Admin-Token': token}, body: body && JSON.stringify(body)});
+  // фото уменьшаем в браузере до 1600 px — заявки летят быстро даже с телефона
+  const shrink = file => new Promise((ok, fail) => {
+    const img = new Image();
+    img.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(img.src); ok(c.toDataURL('image/jpeg', 0.86));
+    };
+    img.onerror = fail; img.src = URL.createObjectURL(file);
+  });
+  const photos = async input => Promise.all([...input.files].slice(0, 12).map(shrink));
+  const num = v => v === '' ? null : +v;
+
+  const nf = document.querySelector('[data-stock-new]');
+  nf.addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = nf.elements, msg = nf.querySelector('.sf-msg');
+    msg.textContent = 'Загружаем…';
+    const body = {title: f.title.value, year: num(f.year.value), mileage_km: num(f.mileage_km.value), engine: f.engine.value || null,
+      country: f.country.value, price_rub: num(f.price_rub.value), status: f.status.value, note: f.note.value || null, photos_add: await photos(f.photos)};
+    const res = await api('/api/stock', 'POST', body);
+    if (res.ok) location.reload(); else msg.textContent = 'Ошибка: ' + ((await res.json().catch(() => ({}))).detail || res.status);
+  });
+
+  document.querySelectorAll('[data-stock-id]').forEach(card => {
+    const id = card.dataset.stockId, msg = card.querySelector('.sa-msg');
+    const patch = async body => {
+      msg.textContent = '…';
+      const res = await api('/api/stock/' + id, 'PATCH', body);
+      msg.textContent = res.ok ? 'Сохранено' : 'Ошибка';
+      return res.ok;
+    };
+    card.querySelectorAll('[data-field]').forEach(el => el.addEventListener('change', () => {
+      const v = el.dataset.field === 'price_rub' ? num(el.value) : (el.value || null);
+      patch({[el.dataset.field]: v});
+    }));
+    card.querySelector('[data-add-photos]').addEventListener('change', async e => { if (await patch({photos_add: await photos(e.target)})) location.reload(); });
+    card.querySelectorAll('[data-rm-photo]').forEach(b => b.addEventListener('click', async () => { if (await patch({photos_remove: [b.dataset.rmPhoto]})) b.parentElement.remove(); }));
+    card.querySelector('[data-delete]').addEventListener('click', async () => {
+      if (!confirm('Удалить машину и её фото?')) return;
+      const res = await api('/api/stock/' + id, 'DELETE');
+      if (res.ok) card.remove();
+    });
+  });
+})();
+</script>
+{% endblock %}

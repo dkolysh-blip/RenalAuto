@@ -334,3 +334,28 @@ def test_port_feed_recent(settings):
         assert scene["recent"][0]["title"] == "Kia K5" and scene["recent"][0]["seen"]
     finally:
         client.__exit__(None, None, None)
+
+
+def test_stock_cars_admin_and_landing(settings):
+    # машины в наличии: менеджер добавляет с фото, на лендинге — карточка; «Продана» — пропадает
+    import base64, io
+    from PIL import Image
+    buf = io.BytesIO(); Image.new("RGB", (40, 30), (200, 30, 30)).save(buf, "PNG")
+    photo = "data:image/png;base64," + base64.b64encode(buf.getvalue()).decode()
+    client, app = make_client(settings, [])
+    try:
+        assert client.post("/api/stock", json={"title": "Kia K5"}).status_code == 403
+        r = client.post("/api/stock", headers=ADMIN, json={"title": "Kia K5 2.0", "year": 2021, "price_rub": 2350000,
+                                                           "status": "vlad", "photos_add": [photo]})
+        assert r.status_code == 201
+        car = r.json()
+        assert len(car["photos"]) == 1 and client.get(f"/media/stock/{car['photos'][0]}").headers["content-type"] == "image/webp"
+        page = client.get("/port").text
+        assert "Уже выкуплены" in page and "Kia K5 2.0, 2021" in page and "Во Владивостоке" in page and "2 350 000 ₽" in page
+        assert "Машины в наличии" in client.get("/admin/stock", params={"token": "secret"}).text
+        assert client.patch(f"/api/stock/{car['id']}", headers=ADMIN, json={"status": "sold"}).json()["status"] == "sold"
+        assert "Уже выкуплены" not in client.get("/port").text
+        assert client.delete(f"/api/stock/{car['id']}", headers=ADMIN).status_code == 204
+        assert client.get(f"/media/stock/{car['photos'][0]}").status_code == 404
+    finally:
+        client.__exit__(None, None, None)

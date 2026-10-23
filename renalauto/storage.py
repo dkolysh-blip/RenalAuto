@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from typing import Literal
 
 from . import i18n
-from .models import Lead, LeadIn, Listing, SavedFilter
+from .models import Lead, LeadIn, Listing, SavedFilter, StockCar
 
 UpsertStatus = Literal["new", "price_changed", "updated", "unchanged"]
 
@@ -56,6 +56,12 @@ CREATE TABLE IF NOT EXISTS leads (
     data TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS ix_leads_created ON leads (created_at);
+
+CREATE TABLE IF NOT EXISTS stock (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL,
+    data TEXT NOT NULL
+);
 
 CREATE TABLE IF NOT EXISTS filters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -112,6 +118,34 @@ class Storage:
             "SELECT data FROM listings WHERE source = ? AND external_id = ?", (source, external_id)
         ).fetchone()
         return Listing.model_validate_json(row["data"]) if row else None
+
+    # --- машины в наличии -------------------------------------------------------
+
+    def list_stock(self, include_sold: bool = False) -> list[StockCar]:
+        rows = self._conn.execute("SELECT id, created_at, data FROM stock ORDER BY id DESC").fetchall()
+        cars = [StockCar(id=r["id"], created_at=r["created_at"], **json.loads(r["data"])) for r in rows]
+        return cars if include_sold else [c for c in cars if c.status != "sold"]
+
+    def get_stock(self, stock_id: int) -> StockCar | None:
+        r = self._conn.execute("SELECT id, created_at, data FROM stock WHERE id = ?", (stock_id,)).fetchone()
+        return StockCar(id=r["id"], created_at=r["created_at"], **json.loads(r["data"])) if r else None
+
+    def save_stock(self, data: dict, stock_id: int | None = None) -> StockCar:
+        """Новая машина (stock_id=None) или обновление: data — поля StockCar без id и created_at."""
+        with self._lock:
+            payload = json.dumps(data, ensure_ascii=False)
+            if stock_id is None:
+                stock_id = self._conn.execute("INSERT INTO stock (created_at, data) VALUES (?, ?)", (_now(), payload)).lastrowid
+            else:
+                self._conn.execute("UPDATE stock SET data = ? WHERE id = ?", (payload, stock_id))
+            self._conn.commit()
+        return self.get_stock(stock_id)
+
+    def delete_stock(self, stock_id: int) -> bool:
+        with self._lock:
+            cur = self._conn.execute("DELETE FROM stock WHERE id = ?", (stock_id,))
+            self._conn.commit()
+        return cur.rowcount > 0
 
     def first_seen(self, keys: list[tuple[str, str]]) -> dict[tuple[str, str], str]:
         """Когда объявления впервые попали к нам (ISO-время) — для ленты «новые объявления»."""
