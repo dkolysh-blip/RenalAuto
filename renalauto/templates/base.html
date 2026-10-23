@@ -52,7 +52,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call">{{ company_hotline }}</a>{% elif company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
       {% if company_max %}<a class="btn ghost max-btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="20" height="20">MAX</a>{% endif %}
       {% if company_vk %}<a class="btn ghost max-btn" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img src="/static/brand/vk.webp" alt="" width="20" height="20">ВК</a>{% endif %}
-      {% if company_2gis %}<a class="btn ghost max-btn" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.svg" alt="" width="20" height="20">2ГИС</a>{% endif %}
+      {% if company_2gis %}<a class="btn ghost max-btn" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.webp" alt="" width="20" height="20">2ГИС</a>{% endif %}
       {% if company_avito %}<a class="btn ghost max-btn" href="{{ company_avito }}" target="_blank" rel="noopener" data-goal="avito"><img src="/static/brand/avito.svg" alt="" width="20" height="20">Авито</a>{% endif %}
     </div>
   </div>
@@ -74,7 +74,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       {% if company_max %}<a class="fc-row" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img class="fi" src="/static/brand/max.webp" alt="" width="30" height="30"><span>Канал в MAX</span></a>{% endif %}
       {% if company_vk %}<a class="fc-row" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img class="fi" src="/static/brand/vk.webp" alt="" width="30" height="30"><span>ВКонтакте</span></a>{% endif %}
       {% if company_avito %}<a class="fc-row" href="{{ company_avito }}" target="_blank" rel="noopener" data-goal="avito"><img class="fi" src="/static/brand/avito.svg" alt="" width="30" height="30"><span>Мы на Авито</span></a>{% endif %}
-      {% if company_2gis %}<a class="fc-row" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img class="fi" src="/static/brand/2gis.svg" alt="" width="30" height="30"><span>Мы в 2ГИС{% if company_2gis_rating %} · ★ {{ company_2gis_rating }}{% endif %}</span></a>{% endif %}
+      {% if company_2gis %}<a class="fc-row" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img class="fi" src="/static/brand/2gis.webp" alt="" width="30" height="30"><span>Мы в 2ГИС{% if company_2gis_rating %} · ★ {{ company_2gis_rating }}{% endif %}</span></a>{% endif %}
       {% if company_address %}<a class="fc-row" href="{{ company_2gis or '#' }}" target="_blank" rel="noopener"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr">{{ company_address }}</span></a>{% endif %}
     </div>
   </div>

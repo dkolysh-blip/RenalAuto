@@ -172,7 +172,7 @@
     <div class="rv-side">
       {% if company_2gis_rating %}
       <a class="rv-score" href="{{ reviews_url or company_2gis }}" target="_blank" rel="noopener" data-goal="reviews_2gis">
-        <span class="gis-mark">2ГИС</span>
+        <img class="gis-mark" src="/static/brand/2gis.webp" alt="2ГИС" width="48" height="48">
         <span class="rv-score-num">{{ company_2gis_rating }}</span>
         <span class="rv-score-meta"><span class="stars" aria-hidden="true">★★★★★</span>
           <span>{% if company_2gis_reviews %}{{ company_2gis_reviews }} оценок · {% endif %}все отзывы в 2ГИС →</span></span>
