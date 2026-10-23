@@ -11,6 +11,7 @@
   const photo = $('[data-tk-photo]'), carEl = $('[data-route-car]');
   const rfill = $('[data-tk-rfill]'), rveh = $('[data-tk-rveh]'), dots = $$('[data-tk-dot]');
   const f = {n: $('[data-tk-n]'), t: $('[data-tk-t]'), pl: $('[data-tk-pl]'), do: $('[data-tk-do]'), get: $('[data-tk-get]'), money: $('[data-tk-money]')};
+  const icEl = $('[data-tk-ic]'), rvLink = $('[data-tk-rv]');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
   const STEP_MS = 5200, PHOTO_V = 6;
   // на телефоне — уменьшенные копии фото (800 px), на компьютере — полные
@@ -26,6 +27,10 @@
     f.n.textContent = String(stage + 1).padStart(2, '0');
     f.t.textContent = s.title; f.pl.textContent = s.place;
     f.do.textContent = s.do; f.get.textContent = s.get; f.money.textContent = s.money;
+    // иконка «что делаем» — та же, что у этапа на маршруте
+    const ic = ['search', 'buy', mode === 'cn' ? 'truck' : 'ship', 'docs', 'keys'][stage];
+    if (icEl) icEl.src = `/static/media/route/ic/${ic}.webp?v=1`;
+    if (rvLink) rvLink.hidden = stage !== 4;
     photo.src = src(s.photo); photo.alt = s.title;
     bars.forEach((b, i) => { b.classList.toggle('done', i < stage); b.classList.toggle('on', i === stage); b.setAttribute('aria-selected', String(i === stage)); b.style.setProperty('--p', i < stage ? 1 : 0); });
     rows.forEach((r, i) => { r.classList.toggle('done', i < stage); r.classList.toggle('on', i === stage); });

@@ -84,79 +84,28 @@
             <span class="tk-count"><b data-tk-n>01</b> / 05</span>
             <b class="tk-title" data-tk-t></b>
             <span class="tk-place" data-tk-pl></span>
+            <a class="tk-rv-link" href="#vydachi" data-tk-rv hidden>Отзывы клиентов ↓</a>
           </figcaption>
           <button type="button" class="tk-nav prev" data-tk-prev aria-label="Предыдущий этап">←</button>
           <button type="button" class="tk-nav next" data-tk-next aria-label="Следующий этап">→</button>
         </figure>
         <div class="tk-side">
           <ul class="tk-facts">
-            <li><i><svg viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span><small>Делаем</small><b data-tk-do></b></span></li>
-            <li><i><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z M14 3v5h5 M9 13h7 M9 17h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></i><span><small>Вы получаете</small><b data-tk-get></b></span></li>
-            <li class="money"><i><svg viewBox="0 0 24 24"><path d="M8 20V4h5.5a4 4 0 0 1 0 8H6 M6 16h9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></i><span><small>Деньги</small><b data-tk-money></b></span></li>
+            <li><img class="tf-ic" data-tk-ic src="/static/media/route/ic/search.webp?v=1" alt="" width="56" height="56"><span><small>Что делаем</small><b data-tk-do></b></span></li>
+            <li><img class="tf-ic" src="/static/media/route/ic/gift.webp?v=1" alt="" width="56" height="56"><span><small>Что вы получаете</small><b data-tk-get></b></span></li>
+            <li class="money"><img class="tf-ic" src="/static/media/route/ic/money.webp?v=1" alt="" width="56" height="56"><span><small>Деньги</small><b data-tk-money></b></span></li>
           </ul>
-          <ol class="tk-list">{% for i in range(5) %}<li><button type="button" data-vy-step="{{ i }}" data-tk-step="{{ i }}"><em>{{ '%02d' % (i + 1) }}</em><span data-tk-li></span></button></li>{% endfor %}</ol>
+          <ol class="tk-list">{% for i in range(5) %}<li><button type="button" data-vy-step="{{ i }}" data-tk-step="{{ i }}"><em>{{ i + 1 }}</em><span data-tk-li></span></button></li>{% endfor %}</ol>
         </div>
       </div>
-      <p class="tk-foot">Работаем по агентскому договору с {{ company_legal_name or company }}: покупаем машину от вашего имени и за ваш счёт, по каждой трате даём отчёт.</p>
-      <script type="application/json" id="vy-data">{{ {
-        "kr": {"title": "Из Кореи — до " ~ deal.delivery_weeks ~ " недель до Владивостока",
-          "geo": [["Корея · Пусан", 0, 32, ""], ["Японское море · ≈ 1 000 км", 33, 34, "sea"], ["Россия", 68, 32, ""]], "sea": [30, 40],
-          "steps": [
-          {"photo": "busan", "title": "Подбор и проверка", "place": "Корея · до " ~ deal.pick_days ~ " дней", "do": "Ищем машину по вашей заявке, проверяем историю и допуск к ввозу в РФ", "get": "Фото, видео и отчёт о машине", "money": "Не подобрали за " ~ deal.pick_days ~ " дней — вернём предоплату"},
-          {"photo": "busan-cranes", "title": "Бронь и выкуп", "place": "Пусан", "do": "Бронируем у продавца и выкупаем от вашего имени", "get": "Инвойс продавца", "money": "Бронь " ~ fmt(deal.deposit) ~ " ₽ → инвойс за " ~ deal.invoice_days ~ " дней → бронь вернём за 1 рабочий день"},
-          {"photo": "ship", "title": "В море", "place": "Пусан → Владивосток", "do": "Везём на судне-автовозе", "get": "Фото и видео на этапах — по запросу", "money": "Доставка — по фактической стоимости, с отчётом"},
-          {"photo": "vlad", "title": "Владивосток", "place": "таможня и документы", "do": "Растаможиваем, платим утильсбор, оформляем СБКТС и ЭПТС", "get": "ПТД, ТПО, СБКТС, ЭПТС", "money": "Пошлина и утильсбор — по факту, каждую сумму подтверждаем документом"},
-          {"photo": "keys", "title": "Ключи у вас", "place": "ваш город или Владивосток", "do": "Отправляем автовозом или по ЖД в ваш город — или забираете сами во Владивостоке", "get": "Машину, документы и отчёт по всем расходам", "money": "Наше вознаграждение — до " ~ fmt(deal.fee) ~ " ₽, это не процент от цены машины"}]},
-        "cn": {"title": "Из Китая — до " ~ deal.delivery_weeks ~ " недель до Владивостока",
-          "geo": [["Китай", 0, 32, ""], ["Граница · ≈ 700 км по дороге", 33, 34, ""], ["Россия", 68, 32, ""]], "sea": [0, 0],
-          "steps": [
-          {"photo": "suifenhe", "title": "Подбор и проверка", "place": "Китай · до " ~ deal.pick_days ~ " дней", "do": "Ищем машину по вашей заявке, проверяем историю и допуск к ввозу в РФ", "get": "Фото, видео и отчёт о машине", "money": "Не подобрали за " ~ deal.pick_days ~ " дней — вернём предоплату"},
-          {"photo": "truck-cn-near", "title": "Бронь и выкуп", "place": "Китай", "do": "Бронируем у продавца и выкупаем от вашего имени", "get": "Инвойс продавца", "money": "Бронь " ~ fmt(deal.deposit) ~ " ₽ → инвойс за " ~ deal.invoice_days ~ " дней → бронь вернём за 1 рабочий день"},
-          {"photo": "truck-cn", "title": "Граница", "place": "Суйфэньхэ → Пограничный", "do": "Везём автовозом до Владивостока", "get": "Фото и видео на этапах — по запросу", "money": "Доставка — по фактической стоимости, с отчётом"},
-          {"photo": "vlad", "title": "Владивосток", "place": "таможня и документы", "do": "Растаможиваем, платим утильсбор, оформляем СБКТС и ЭПТС", "get": "ПТД, ТПО, СБКТС, ЭПТС", "money": "Пошлина и утильсбор — по факту, каждую сумму подтверждаем документом"},
-          {"photo": "keys", "title": "Ключи у вас", "place": "ваш город или Владивосток", "do": "Отправляем автовозом или по ЖД в ваш город — или забираете сами во Владивостоке", "get": "Машину, документы и отчёт по всем расходам", "money": "Наше вознаграждение — до " ~ fmt(deal.fee) ~ " ₽, это не процент от цены машины"}]}
-      }|tojson }}</script>
-    </section>
-  </div>
-</section>
+      <div class="tk-rv" id="vydachi">
 
-
-{% if stock %}
-<section class="port-section stock" id="nalichie" aria-labelledby="stock-title">
-  <div class="wrap">
-    <div class="st-head">
-      <span class="st-eyebrow">В наличии и в пути</span>
-      <h2 id="stock-title">Уже выкуплены — можно забронировать</h2>
-      <p>Эти машины мы уже купили: часть в пути, часть стоит во Владивостоке. Цена указана с растаможкой — ждать подбора не нужно.</p>
-    </div>
-    <div class="st-track" data-stock>
-      {% for c in stock %}
-      <article class="st-card">
-        <div class="st-ph">
-          {% if c.photos %}<div class="st-gal">{% for p in c.photos %}<img src="/media/stock/{{ p }}" alt="{{ c.title }}" loading="lazy" decoding="async" width="1600" height="1067">{% endfor %}</div>
-          {% if c.photos|length > 1 %}<span class="st-count">{{ c.photos|length }} фото</span>{% endif %}{% endif %}
-          <span class="st-status {{ c.status }}">{{ stock_labels[c.status] }}</span>
-        </div>
-        <div class="st-body">
-          <b>{{ c.title }}{% if c.year %}, {{ c.year }}{% endif %}</b>
-          <small>{{ 'Из Кореи' if c.country == 'KR' else 'Из Китая' }}{% if c.mileage_km is not none %} · {{ fmt(c.mileage_km) }} км{% endif %}{% if c.engine %} · {{ c.engine }}{% endif %}</small>
-          {% if c.note %}<p>{{ c.note }}</p>{% endif %}
-          <div class="st-price">{% if c.price_rub %}{{ fmt(c.price_rub) }} ₽ <span>во Владивостоке, с растаможкой</span>{% else %}<span>цену назовёт менеджер</span>{% endif %}</div>
-          <button type="button" class="btn st-go" data-stock-lead="{{ c.title }}{% if c.year %} {{ c.year }}{% endif %}{% if c.price_rub %} · {{ fmt(c.price_rub) }} ₽{% endif %}" data-goal="stock_lead">Забронировать</button>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
-<section class="port-section band band-white trust" id="vydachi" aria-labelledby="vydachi-title">
   {% set reviews_url = company_2gis ~ '/tab/reviews' if company_2gis else None %}
   {% set months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'] %}
-  <div class="sec-head">
-    <span class="sec-eyebrow">Отзывы</span>
-    <h2 id="vydachi-title">Что говорят клиенты</h2>
-    <p class="sec-lead">Видео с выдачи машин и отзывы клиентов из 2ГИС. Публикуем без правок.</p>
+  <div class="tk-rv-head">
+    <span class="tk-rv-n">5</span>
+    <div><h3 id="vydachi-title">Ключи у вас: что говорят клиенты</h3>
+      <p>Видео с выдачи машин и отзывы клиентов. Публикуем без правок.</p></div>
   </div>
   <div class="rv">
     <div class="rv-media">
@@ -217,7 +166,60 @@
       {% if company_max %}<li><a href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="36" height="36">
         <span><b>Все выдачи — в MAX</b><small>Фото и видео машин клиентов</small></span></a></li>{% endif %}
     </ul>
+      </div>
+      <p class="tk-foot">Работаем по агентскому договору с {{ company_legal_name or company }}: покупаем машину от вашего имени и за ваш счёт, по каждой трате даём отчёт.</p>
+      <script type="application/json" id="vy-data">{{ {
+        "kr": {"title": "Из Кореи — до " ~ deal.delivery_weeks ~ " недель до Владивостока",
+          "geo": [["Корея · Пусан", 0, 32, ""], ["Японское море · ≈ 1 000 км", 33, 34, "sea"], ["Россия", 68, 32, ""]], "sea": [30, 40],
+          "steps": [
+          {"photo": "busan", "title": "Подбор и проверка", "place": "Корея · до " ~ deal.pick_days ~ " дней", "do": "Ищем машину по вашей заявке, проверяем историю и допуск к ввозу в РФ", "get": "Фото, видео и отчёт о машине", "money": "Не подобрали за " ~ deal.pick_days ~ " дней — вернём предоплату"},
+          {"photo": "busan-cranes", "title": "Бронь и выкуп", "place": "Пусан", "do": "Бронируем у продавца и выкупаем от вашего имени", "get": "Инвойс продавца", "money": "Бронь " ~ fmt(deal.deposit) ~ " ₽ → инвойс за " ~ deal.invoice_days ~ " дней → бронь вернём за 1 рабочий день"},
+          {"photo": "ship", "title": "В море", "place": "Пусан → Владивосток", "do": "Везём на судне-автовозе", "get": "Фото и видео на этапах — по запросу", "money": "Доставка — по фактической стоимости, с отчётом"},
+          {"photo": "vlad", "title": "Владивосток", "place": "таможня и документы", "do": "Растаможиваем, платим утильсбор, оформляем СБКТС и ЭПТС", "get": "ПТД, ТПО, СБКТС, ЭПТС", "money": "Пошлина и утильсбор — по факту, каждую сумму подтверждаем документом"},
+          {"photo": "keys", "title": "Ключи у вас", "place": "ваш город или Владивосток", "do": "Отправляем автовозом или по ЖД в ваш город — или забираете сами во Владивостоке", "get": "Машину, документы и отчёт по всем расходам", "money": "Наше вознаграждение — до " ~ fmt(deal.fee) ~ " ₽, это не процент от цены машины"}]},
+        "cn": {"title": "Из Китая — до " ~ deal.delivery_weeks ~ " недель до Владивостока",
+          "geo": [["Китай", 0, 32, ""], ["Граница · ≈ 700 км по дороге", 33, 34, ""], ["Россия", 68, 32, ""]], "sea": [0, 0],
+          "steps": [
+          {"photo": "suifenhe", "title": "Подбор и проверка", "place": "Китай · до " ~ deal.pick_days ~ " дней", "do": "Ищем машину по вашей заявке, проверяем историю и допуск к ввозу в РФ", "get": "Фото, видео и отчёт о машине", "money": "Не подобрали за " ~ deal.pick_days ~ " дней — вернём предоплату"},
+          {"photo": "truck-cn-near", "title": "Бронь и выкуп", "place": "Китай", "do": "Бронируем у продавца и выкупаем от вашего имени", "get": "Инвойс продавца", "money": "Бронь " ~ fmt(deal.deposit) ~ " ₽ → инвойс за " ~ deal.invoice_days ~ " дней → бронь вернём за 1 рабочий день"},
+          {"photo": "truck-cn", "title": "Граница", "place": "Суйфэньхэ → Пограничный", "do": "Везём автовозом до Владивостока", "get": "Фото и видео на этапах — по запросу", "money": "Доставка — по фактической стоимости, с отчётом"},
+          {"photo": "vlad", "title": "Владивосток", "place": "таможня и документы", "do": "Растаможиваем, платим утильсбор, оформляем СБКТС и ЭПТС", "get": "ПТД, ТПО, СБКТС, ЭПТС", "money": "Пошлина и утильсбор — по факту, каждую сумму подтверждаем документом"},
+          {"photo": "keys", "title": "Ключи у вас", "place": "ваш город или Владивосток", "do": "Отправляем автовозом или по ЖД в ваш город — или забираете сами во Владивостоке", "get": "Машину, документы и отчёт по всем расходам", "money": "Наше вознаграждение — до " ~ fmt(deal.fee) ~ " ₽, это не процент от цены машины"}]}
+      }|tojson }}</script>
+    </section>
+  </div>
 </section>
+
+
+{% if stock %}
+<section class="port-section stock" id="nalichie" aria-labelledby="stock-title">
+  <div class="wrap">
+    <div class="st-head">
+      <span class="st-eyebrow">В наличии и в пути</span>
+      <h2 id="stock-title">Уже выкуплены — можно забронировать</h2>
+      <p>Эти машины мы уже купили: часть в пути, часть стоит во Владивостоке. Цена указана с растаможкой — ждать подбора не нужно.</p>
+    </div>
+    <div class="st-track" data-stock>
+      {% for c in stock %}
+      <article class="st-card">
+        <div class="st-ph">
+          {% if c.photos %}<div class="st-gal">{% for p in c.photos %}<img src="/media/stock/{{ p }}" alt="{{ c.title }}" loading="lazy" decoding="async" width="1600" height="1067">{% endfor %}</div>
+          {% if c.photos|length > 1 %}<span class="st-count">{{ c.photos|length }} фото</span>{% endif %}{% endif %}
+          <span class="st-status {{ c.status }}">{{ stock_labels[c.status] }}</span>
+        </div>
+        <div class="st-body">
+          <b>{{ c.title }}{% if c.year %}, {{ c.year }}{% endif %}</b>
+          <small>{{ 'Из Кореи' if c.country == 'KR' else 'Из Китая' }}{% if c.mileage_km is not none %} · {{ fmt(c.mileage_km) }} км{% endif %}{% if c.engine %} · {{ c.engine }}{% endif %}</small>
+          {% if c.note %}<p>{{ c.note }}</p>{% endif %}
+          <div class="st-price">{% if c.price_rub %}{{ fmt(c.price_rub) }} ₽ <span>во Владивостоке, с растаможкой</span>{% else %}<span>цену назовёт менеджер</span>{% endif %}</div>
+          <button type="button" class="btn st-go" data-stock-lead="{{ c.title }}{% if c.year %} {{ c.year }}{% endif %}{% if c.price_rub %} · {{ fmt(c.price_rub) }} ₽{% endif %}" data-goal="stock_lead">Забронировать</button>
+        </div>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
 <section class="port-section final-cta" aria-labelledby="final-title">
   <div class="wrap fc">
     <div class="fc-text">

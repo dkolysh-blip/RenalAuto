@@ -1353,3 +1353,39 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 .trust-row b { font-size: 14px; line-height: 1.25; } .trust-row small { font-size: 12.5px; color: var(--muted); }
 @media (max-width: 1000px) { .trust-row { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .trust-row { grid-template-columns: 1fr; gap: 4px; } }
+
+/* «Путь машины»: объёмные иконки в карточках фактов, список этапов — шкала с точками */
+.tk-facts li { align-items: center; gap: 16px; padding: 14px 18px 14px 12px; }
+.tk-facts .tf-ic { width: 56px; height: 56px; flex: 0 0 auto; filter: drop-shadow(0 6px 10px rgba(0,0,0,.4)); }
+.tk-facts small { font: 600 11.5px/1 Onest, system-ui, sans-serif; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+.tk-facts .money { background: linear-gradient(135deg, rgba(221,31,31,.16), rgba(255,255,255,.04)); border-color: rgba(255,90,90,.22); }
+.tk-list { position: relative; gap: 0; padding-left: 4px; }
+.tk-list::before { content: ""; position: absolute; left: 25px; top: 18px; bottom: 18px; width: 2px; background: rgba(255,255,255,.12); }
+.tk-list button { position: relative; gap: 16px; padding: 8px 12px 8px 8px; }
+.tk-list em { position: relative; z-index: 1; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto;
+  background: #1c2026; border: 2px solid rgba(255,255,255,.18); color: rgba(255,255,255,.55); font: 700 12px/1 Unbounded, Onest, sans-serif; }
+.tk-list button.done em { background: #9cc9ea; border-color: #9cc9ea; color: #0f1114; font-size: 0; }
+.tk-list button.done em::after { content: "✓"; font-size: 13px; }
+.tk-list button.on em { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 5px rgba(221,31,31,.25); }
+.tk-rv-link { justify-self: start; margin-top: 6px; padding: 7px 12px; border-radius: 10px; background: rgba(255,255,255,.14); color: #fff; font: 600 13px/1 Onest, system-ui, sans-serif; text-decoration: none; }
+.tk-rv-link:hover { background: rgba(255,255,255,.22); text-decoration: none; }
+.tk-rv-link[hidden] { display: none; }
+
+/* отзывы внутри «Пути машины»: продолжение этапа 5 */
+.tk-rv { margin-top: 26px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,.1); scroll-margin-top: 80px; }
+.tk-rv-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+.tk-rv-n { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; background: var(--accent); color: #fff; font: 700 16px/1 Unbounded, Onest, sans-serif; }
+.tk-rv-head h3 { margin: 0 0 4px; font: 700 24px/1.15 Unbounded, Onest, sans-serif; color: #fff; }
+.tk-rv-head p { margin: 0; color: rgba(255,255,255,.6); font-size: 15px; }
+.tk-rv .rv-card { background: #fff; color: #0f172a; }
+.tk-rv .rv-score { background: rgba(61,220,111,.1); border-color: rgba(61,220,111,.3); }
+.tk-rv .rv-score-num { color: #fff; } .tk-rv .rv-score-meta span { color: #7be39b; }
+.tk-rv .rv-count { color: rgba(255,255,255,.6); }
+.tk-rv .rv-btn { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: #fff; }
+.tk-rv .trust-row { border-top-color: rgba(255,255,255,.1); }
+.tk-rv .trust-row a, .tk-rv .trust-row li > div { color: #fff; } .tk-rv .trust-row a:hover { background: rgba(255,255,255,.06); }
+.tk-rv .trust-row small { color: rgba(255,255,255,.55); }
+@media (max-width: 700px) { .tk-rv-head h3 { font-size: 19px; } .tk-rv { margin-top: 18px; padding-top: 18px; } }
+.tk-rv .rv-card footer { flex-wrap: wrap; gap: 6px 14px; }
+.tk-rv .rv-card header { flex-wrap: wrap; } .tk-rv .rv-card header small, .tk-rv .rv-card time { white-space: nowrap; }
+.tk-rv .trust-row .rvc-i { background: linear-gradient(160deg, #5a6472, #2a3038); }
