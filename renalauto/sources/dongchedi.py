@@ -67,6 +67,8 @@ def parse_price_wan(value: Any) -> float | None:
 class DongchediSource(Source):
     name = "dongchedi"
     country = "CN"
+    # площадка отвечает 403, если спрашивать чаще пары раз в минуту: опрашиваем раз в 5 минут
+    min_poll_interval = 300
     currency = "CNY"
 
     def __init__(self, *args: Any, **kwargs: Any):

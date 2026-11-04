@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 import logging
 import random
 from datetime import datetime, timezone
@@ -52,13 +53,20 @@ class Poller:
         await asyncio.gather(*self._tasks, return_exceptions=True)
         self._tasks.clear()
 
+    def interval(self, source: Source) -> int:
+        """Пауза между опросами: POLL_INTERVAL_<ПЛОЩАДКА> или своя у площадки, иначе общая POLL_INTERVAL."""
+        env = os.getenv(f"POLL_INTERVAL_{source.name.upper()}")
+        if env:
+            return int(env)
+        return max(self.settings.poll_interval, getattr(source, "min_poll_interval", 0))
+
     async def _run(self, source: Source) -> None:
         failures = 0
         while True:
             try:
                 await self.poll_once(source)
                 failures = 0
-                delay = self.settings.poll_interval
+                delay = self.interval(source)
             except asyncio.CancelledError:
                 raise
             except Exception as exc:  # noqa: BLE001 — одна площадка не должна валить остальные
@@ -66,7 +74,7 @@ class Poller:
                 st = self.status[source.name]
                 st["last_error"] = f"{datetime.now(timezone.utc).isoformat(timespec='seconds')}: {exc}"
                 st["errors"] += 1
-                delay = min(MAX_BACKOFF, self.settings.poll_interval * 2**failures)
+                delay = min(MAX_BACKOFF, self.interval(source) * 2**failures)
                 log.warning("%s poll failed (%d in a row), retry in %ss: %s", source.name, failures, delay, exc)
             # Джиттер, чтобы не долбить площадку строго по таймеру
             await asyncio.sleep(delay * random.uniform(0.85, 1.15))
