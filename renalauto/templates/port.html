@@ -12,11 +12,11 @@
   <div class="port-offer">
     <div class="offer-main">
     <div class="eyebrow"><span class="dot on"></span> Обновляется каждую минуту</div>
-    <h1>{% if matched %}Привезём <em>{{ matched }}</em> из Кореи и Китая{% else %}Авто из <em>Кореи</em> и <em>Китая</em>, которые в продаже сейчас{% endif %}</h1>
+    <h1>{% if matched %}Привезём <em>{{ matched }}</em> из Кореи и Китая{% else %}Авто из <em>Кореи</em> и <em>Китая</em>: свежие объявления каждую минуту{% endif %}</h1>
     <p class="hero-sub">Не устаревшая база, а живые объявления с корейских и китайских площадок. Проверим историю и допуск к ввозу до оплаты, цена — сразу с растаможкой. Наша комиссия фиксирована: до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽.</p>
     </div>
     <div class="offer-side">
-    <p class="live-lead"><b>Каждая машина ниже есть в продаже сейчас.</b> Проданные исчезают со стоянки, новые появляются в течение минуты. Показываем только те, что можно ввезти в РФ.</p>
+    <p class="live-lead"><b>Новые машины появляются здесь каждую минуту</b> — прямо с корейских и китайских площадок. Наличие и точную цену менеджер проверит у продавца перед расчётом.</p>
     {# главное действие для рекламного трафика: первый вопрос квиза прямо на первом экране #}
     <div class="hero-quiz" id="podbor">
       <p class="hq-title">Какой у вас бюджет?</p>
@@ -24,7 +24,7 @@
         <button type="button" data-hq="1500000" data-goal="hero_budget">до 1,5 млн</button><button type="button" data-hq="2500000" data-goal="hero_budget">до 2,5 млн</button>
         <button type="button" data-hq="4000000" data-goal="hero_budget">до 4 млн</button><button type="button" data-hq="" data-goal="hero_budget">от 4 млн</button>
       </div>
-      <p class="hq-note">Ещё 2 вопроса — и менеджер пришлёт машины, которые продаются сегодня, с итоговой ценой. <b>Бесплатно и без обязательств.</b></p>
+      <p class="hq-note">Ещё 2 вопроса — и менеджер пришлёт подходящие машины с итоговой ценой. <b>Бесплатно и без обязательств.</b></p>
     </div>
     {% if company_max %}<a class="best-pick mini" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">
       <img class="best-pick-ico" src="/static/brand/max.webp" alt="" width="28" height="28">
