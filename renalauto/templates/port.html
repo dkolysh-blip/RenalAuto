@@ -2,7 +2,7 @@
 {% from "_macros.html" import consent %}
 {% block title %}{% if share_title %}{{ share_title }} — {{ 'цены с растаможкой' if share_title.startswith('Сравнение') else 'живая подборка' }} | {{ company }}{% else %}{% if matched %}{{ matched }} из Кореи и Китая{% else %}Автомобили из Кореи и Китая{% endif %} — подбор, проверка и доставка | {{ company }}{% endif %}{% endblock %}
 {% block description %}Подберём автомобиль в Корее или Китае под ваш бюджет, проверим историю и допуск к ввозу в РФ, посчитаем цену с растаможкой и привезём. Работаем по агентскому договору, вознаграждение — до 50 000 ₽.{% endblock %}
-{% block canonical %}<link rel="canonical" href="{{ site_url }}/port">{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ site_url }}/">{% endblock %}
 {% block html_attrs %} data-theme="light"{% endblock %}
 {% block body_class %}has-cta port-page{% endblock %}
 {% block head %}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,7 @@
     <div class="offer-side">
     <p class="live-lead"><b>Ниже — живая лента</b> объявлений с Encar и Dongchedi. Показываем только машины, которые можно ввезти в РФ, и сразу считаем ориентировочную цену с растаможкой.</p>
     {# главное действие для рекламного трафика: первый вопрос квиза прямо на первом экране #}
-    <div class="hero-quiz">
+    <div class="hero-quiz" id="podbor">
       <p class="hq-title">На какой бюджет рассчитываете?</p>
       <div class="hq-opts">
         <button type="button" data-hq="1500000" data-goal="hero_budget">до 1,5 млн</button><button type="button" data-hq="2500000" data-goal="hero_budget">до 2,5 млн</button>

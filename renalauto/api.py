@@ -367,15 +367,16 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
 
     # --- страницы ------------------------------------------------------------
 
-    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
-    async def index(request: Request) -> HTMLResponse:
+    @app.get("/cars", response_class=HTMLResponse, include_in_schema=False)
+    async def catalog(request: Request) -> HTMLResponse:
+        """Каталог: все проходные машины с фильтрами. Главная страница — порт (/)."""
         f = page_filters(request)
         cars, has_more = query_cars(f, PAGE_SIZE, (f.page - 1) * PAGE_SIZE)
         next_url = None
         if has_more:
             params = dict(request.query_params)
             params["page"] = str(f.page + 1)
-            next_url = "/?" + urlencode(params)
+            next_url = "/cars?" + urlencode(params)
         return render(
             request, "index.html", f=f, cars=cars, next_url=next_url, makes=POPULAR_MAKES,
             fuels=[(k, v[0]) for k, v in FUELS.items()], sorts=SORTS, stream_query=stream_query(f),
@@ -392,9 +393,19 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         macros = templates.env.get_template("_macros.html").module
         return HTMLResponse(str(macros.card(v, fresh=True)))
 
-    @app.get("/port", response_class=HTMLResponse, include_in_schema=False)
-    async def port_page(request: Request) -> HTMLResponse:
-        """Рекламный лендинг «Порт»: терминал, куда заезжают машины из живой ленты."""
+    @app.get("/port", include_in_schema=False)
+    async def port_legacy(request: Request) -> RedirectResponse:
+        """Старый адрес лендинга (ссылки в рекламе и мессенджерах) — на главную с теми же параметрами."""
+        qs = request.url.query
+        return RedirectResponse("/" + (f"?{qs}" if qs else ""), status_code=301)
+
+    @app.get("/", response_class=HTMLResponse, include_in_schema=False)
+    async def port_page(request: Request) -> Response:
+        """Главная — «Порт»: терминал, куда заезжают машины из живой ленты."""
+        q = request.query_params
+        # старые ссылки каталога (/?make=…&fuel=…, /?page=2) — в каталог
+        if any(k in q for k in ("fuel", "sort", "page", "price_max", "mileage_max", "year_to")):
+            return RedirectResponse(f"/cars?{request.url.query}", status_code=301)
         q = request.query_params
         # message match: ?model=k5 / ?make=kia из ссылки рекламы (или utm_term)
         model, make = _clean(q.get("model") or q.get("utm_term")), _clean(q.get("make"))
@@ -705,7 +716,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     async def sitemap(request: Request) -> Response:
         urls = [f"<url><loc>{settings.site_url}/</loc><changefreq>hourly</changefreq></url>",
                 f"<url><loc>{settings.site_url}/vin</loc></url>",
-                f"<url><loc>{settings.site_url}/port</loc></url>",
+                f"<url><loc>{settings.site_url}/cars</loc><changefreq>hourly</changefreq></url>",
                 f"<url><loc>{settings.site_url}/privacy</loc></url>"]
         for source, external_id, last_seen in storage_of(request).recent_listing_keys(5000):
             urls.append(f"<url><loc>{settings.site_url}/car/{source}/{external_id}</loc><lastmod>{last_seen[:10]}</lastmod></url>")

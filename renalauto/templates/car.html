@@ -12,10 +12,10 @@
 <script type="application/ld+json">{{ jsonld|safe }}</script>
 {% endblock %}
 {% block content %}
-<div class="crumbs"><a href="/">Все авто</a> › <a href="/?country={{ l.country }}">{{ v.country_name }}</a>{% if v.make %} › <a href="/?make={{ v.make|urlencode }}">{{ v.make }}</a>{% endif %}</div>
+<div class="crumbs"><a href="/">Главная</a> › <a href="/cars">Каталог</a> › <a href="/cars?country={{ l.country }}">{{ v.country_name }}</a>{% if v.make %} › <a href="/cars?country={{ l.country }}&make={{ v.make|urlencode }}">{{ v.make }}</a>{% endif %}</div>
 {% if v.eligibility.verdict == 'bad' %}
 <div class="badge bad" style="margin:10px 0"><b>Эту машину не получится привезти в Россию по обычной схеме</b>
-  <span>{{ v.eligibility.summary }}. <a href="/{% if v.make %}?make={{ v.make|urlencode }}{% endif %}">Посмотреть проходные {{ v.make or '' }}</a> или оставьте заявку — подберём похожую.</span></div>
+  <span>{{ v.eligibility.summary }}. <a href="/cars{% if v.make %}?make={{ v.make|urlencode }}{% endif %}">Посмотреть проходные {{ v.make or '' }}</a> или оставьте заявку — подберём похожую.</span></div>
 {% endif %}
 <div class="car-head">
   <h1>{{ v.title }}{% if l.year %}, {{ l.year }}{% endif %}</h1>

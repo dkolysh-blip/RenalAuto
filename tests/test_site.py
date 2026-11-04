@@ -58,17 +58,23 @@ def test_pages_render_and_filter(settings):
     ok_car = kb(external_id="2", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"})
     client, app = make_client(settings, [kb(), ok_car])
     try:
-        page = client.get("/")
+        page = client.get("/cars")
         assert page.headers["cache-control"] == "no-cache"
         assert client.get("/favicon.ico").status_code == 200
         html = page.text
         # Palisade 3.8 из Кореи не проходит (объём > 2 л) — на витрине его нет
         assert "Kia K5" in html and "Hyundai Palisade" not in html
         assert "₽" in html
-        by_make = client.get("/", params={"make": "Kia"}).text
+        by_make = client.get("/cars", params={"make": "Kia"}).text
         assert "Kia K5" in by_make
-        assert "Kia K5" not in client.get("/", params={"make": "Hyundai"}).text
+        assert "Kia K5" not in client.get("/cars", params={"make": "Hyundai"}).text
         assert "/car/kbchachacha/1" not in client.get("/sitemap.xml").text
+        # одна главная: порт на «/», старые адреса ведут туда же
+        assert 'id="terminal"' in client.get("/").text
+        old = client.get("/port", params={"model": "k5"}, follow_redirects=False)
+        assert old.status_code == 301 and old.headers["location"] == "/?model=k5"
+        old_cat = client.get("/", params={"fuel": "ev"}, follow_redirects=False)
+        assert old_cat.status_code == 301 and old_cat.headers["location"].startswith("/cars?")
         assert client.get("/partials/card/kbchachacha/1").status_code == 204
 
         car = client.get("/car/kbchachacha/1")
@@ -141,7 +147,7 @@ def test_port_landing_scene_and_message_match(settings):
     ok_car = kb(external_id="2", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc", "color": "흰색"})
     client, app = make_client(settings, [kb(), ok_car])
     try:
-        page = client.get("/port", params={"model": "k5"})
+        page = client.get("/", params={"model": "k5"})
         assert page.status_code == 200
         assert "<em>Kia K5</em>" in page.text
         assert 'id="terminal" aria-hidden="true"' in page.text
@@ -153,10 +159,10 @@ def test_port_landing_scene_and_message_match(settings):
         assert [c["key"] for c in scene["cars"]] == ["kbchachacha:2"]  # непроходной Palisade 3.8 не попадает
         assert scene["cars"][0] | {"title": "Kia K5", "body": "sedan", "color": "#eceef0"} == scene["cars"][0]
         assert scene["match"] == "Kia K5" and scene["demo"] is False
-        assert client.get("/port", params={"demo": "1"}).text.count('"demo": true') == 1
+        assert client.get("/", params={"demo": "1"}).text.count('"demo": true') == 1
         # ключевая фраза из рекламы в utm_term — не модель: заголовок общий, а «kia k5» из utm_term находит машину
-        assert '"match": null' in client.get("/port", params={"utm_term": "авто из кореи"}).text
-        assert '"match": "Kia K5"' in client.get("/port", params={"utm_term": "k5"}).text
+        assert '"match": null' in client.get("/", params={"utm_term": "авто из кореи"}).text
+        assert '"match": "Kia K5"' in client.get("/", params={"utm_term": "k5"}).text
 
         assert client.get("/api/port/kbchachacha/2").json()["title"] == "Kia K5"
         assert client.get("/api/port/kbchachacha/1").status_code == 204
@@ -181,7 +187,7 @@ def test_privacy_consent_and_metrika(settings):
     settings.ym_id = None
     client, app = make_client(settings, [])
     try:
-        page = client.get("/port").text
+        page = client.get("/").text
         assert page.count('name="consent" required') == 1  # одна всплывающая форма заявки на всю страницу
         assert "mc.yandex.ru" not in page  # без YM_ID счётчика нет
         privacy = client.get("/privacy")
@@ -191,7 +197,7 @@ def test_privacy_consent_and_metrika(settings):
     settings.ym_id = 12345678
     client, app = make_client(settings, [])
     try:
-        assert 'ym(12345678,"init"' in client.get("/port").text
+        assert 'ym(12345678,"init"' in client.get("/").text
         assert "Яндекс Метрика" in client.get("/privacy").text
     finally:
         client.__exit__(None, None, None)
@@ -250,7 +256,7 @@ def test_not_found_page_favicon_and_share_image(settings):
         assert page.status_code == 404 and "Такой страницы нет" in page.text
         assert client.get("/api/nope").json() == {"detail": "Not Found"}
         assert client.get("/favicon.ico").headers["content-type"] == "image/x-icon"
-        port = client.get("/port").text
+        port = client.get("/").text
         assert "/static/brand/og.jpg" in port and 'href="/credits"' in port
         credits = client.get("/credits").text
         assert "Hyundai Tucson" in credits and "Wikimedia Commons" in credits and "CC BY-SA 4.0" in credits
@@ -289,7 +295,7 @@ def test_port_share_title(settings):
     # ссылка с подборкой: заголовок страницы (и превью в мессенджере) описывает выбор
     client, app = make_client(settings, [])
     try:
-        page = client.get("/port", params={"country": "KR", "budget": "2500000", "year_from": "2020"})
+        page = client.get("/", params={"country": "KR", "budget": "2500000", "year_from": "2020"})
         assert "<title>Авто из Кореи до 2,5 млн ₽ от 2020 г. — живая подборка | Ренал Авто</title>" in page.text
     finally:
         client.__exit__(None, None, None)
@@ -316,7 +322,7 @@ def test_port_compare_share_title(settings):
     b = kb(source="encar", external_id="12", title="현대 투싼 1.6", make="현대", model="투싼", year=2022, extra={"displacement": "1,598cc"})
     client, app = make_client(settings, [a, b])
     try:
-        page = client.get("/port", params={"cmp": "encar:11,encar:12,encar:nope"})
+        page = client.get("/", params={"cmp": "encar:11,encar:12,encar:nope"})
         assert "<title>Сравнение: Kia K5 2021, Hyundai Tucson 2022 — цены с растаможкой | Ренал Авто</title>" in page.text
     finally:
         client.__exit__(None, None, None)
@@ -328,7 +334,7 @@ def test_port_feed_recent(settings):
     car = kb(source="encar", external_id="21", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"})
     client, app = make_client(settings, [car])
     try:
-        page = client.get("/port").text
+        page = client.get("/").text
         assert "data-feed" in page
         scene = json.loads(page.split('id="port-data">')[1].split("</script>")[0])
         assert scene["recent"][0]["title"] == "Kia K5" and scene["recent"][0]["seen"]
@@ -350,11 +356,11 @@ def test_stock_cars_admin_and_landing(settings):
         assert r.status_code == 201
         car = r.json()
         assert len(car["photos"]) == 1 and client.get(f"/media/stock/{car['photos'][0]}").headers["content-type"] == "image/webp"
-        page = client.get("/port").text
+        page = client.get("/").text
         assert "Уже выкуплены" in page and "Kia K5 2.0, 2021" in page and "Во Владивостоке" in page and "2 350 000 ₽" in page
         assert "Машины в наличии" in client.get("/admin/stock", params={"token": "secret"}).text
         assert client.patch(f"/api/stock/{car['id']}", headers=ADMIN, json={"status": "sold"}).json()["status"] == "sold"
-        assert "Уже выкуплены" not in client.get("/port").text
+        assert "Уже выкуплены" not in client.get("/").text
         assert client.delete(f"/api/stock/{car['id']}", headers=ADMIN).status_code == 204
         assert client.get(f"/media/stock/{car['photos'][0]}").status_code == 404
     finally:

@@ -1,28 +1,15 @@
 {% extends "base.html" %}
 {% from "_macros.html" import card, lead_form %}
 {% block title %}{% if f.make %}{{ f.make }} {% endif %}{% if f.country == 'KR' %}Авто из Кореи{% elif f.country == 'CN' %}Авто из Китая{% else %}Авто из Кореи и Китая{% endif %} — свежие объявления, цены в рублях | {{ company }}{% endblock %}
-{% block canonical %}<link rel="canonical" href="{{ site_url }}/{% if f.country %}?country={{ f.country }}{% endif %}">{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ site_url }}/cars{% if f.country %}?country={{ f.country }}{% endif %}">{% endblock %}
 {% block content %}
-<section class="hero hero-main">
-  <div class="hero-text">
-    <div class="eyebrow"><span class="dot on"></span> Свежие объявления каждую минуту</div>
-    <h1>{% if f.country == 'KR' %}Авто из <em>Кореи</em>{% elif f.country == 'CN' %}Авто из <em>Китая</em>{% else %}Авто из <em>Кореи</em> и <em>Китая</em>{% endif %} — подберём оптимальный вариант с проверкой истории</h1>
-    <p>Собираем объявления с крупнейших площадок, переводим, считаем цену в рублях и сразу показываем, пройдёт ли машина по правилам ввоза в РФ. Расчёт итоговой цены и проверку истории делает менеджер {{ company }} — бесплатно.</p>
-    <div class="hero-cta">
-      <a class="btn" href="#cars">Смотреть машины</a>
-      <a class="btn ghost" href="#podbor">Подбор под бюджет</a>
-    </div>
-    <ul class="usp">
-      <li><b>1 мин</b><span>обновление ленты</span></li>
-      <li><b>РФ</b><span>только проходные авто</span></li>
-      <li><b>VIN</b><span>история и проверка</span></li>
-      <li><b>35–50</b><span>дней до ключей</span></li>
-    </ul>
-  </div>
-  <div class="hero-art"><img src="/static/hero.webp?v={{ asset_version }}" width="1400" height="1121" alt="Автомобиль под красными воротами-тории — символ {{ company }}" fetchpriority="high"></div>
+<div class="crumbs"><a href="/">Главная</a> › Каталог</div>
+<section class="catalog-head">
+  <h1>{{ f.make or 'Авто' }} {% if f.country == 'KR' %}из Кореи{% elif f.country == 'CN' %}из Китая{% else %}из Кореи и Китая{% endif %}: все машины, которые можно ввезти в РФ</h1>
+  <p class="muted">Объявления Encar и Dongchedi в реальном времени, цены в рублях. Итоговую цену с доставкой и растаможкой посчитает менеджер — бесплатно. Не хотите выбирать сами? <a href="/#podbor">Подберём под бюджет</a>.</p>
 </section>
 
-<form class="filters" id="cars" method="get" action="/">
+<form class="filters" id="cars" method="get" action="/cars">
   <div><label>Страна</label>
     <select name="country"><option value="">Корея и Китай</option>
       <option value="KR" {{ 'selected' if f.country == 'KR' }}>🇰🇷 Корея</option>
@@ -55,7 +42,7 @@
 <div class="empty">По этим условиям пока ничего нет. Новые объявления появятся здесь автоматически — или оставьте заявку, и менеджер подберёт варианты.</div>
 {% endif %}
 
-<section id="podbor" class="car-grid">
+<section id="zayavka" class="car-grid">
   <div class="panel">
     <h2>Как мы работаем</h2>
     <ol>

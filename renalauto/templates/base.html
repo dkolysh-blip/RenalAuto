@@ -39,10 +39,10 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <span class="logo-word"><span>{{ company|upper }}</span><small>Корея · Китай</small></span>
     </a>
     <nav>
-      <a href="/?country=KR">Корея</a>
-      <a href="/?country=CN">Китай</a>
+      <a href="/cars">Каталог</a>
       <a href="/vin">Проверка VIN</a>
-      <a href="/#podbor">Подбор под бюджет</a>
+      <a href="/#vydachi">Отзывы</a>
+      <a href="/#faq">Вопросы</a>
     </nav>
     {% if header_rates %}{% set rates_label = ('Курс ЦБ' ~ (' на ' ~ rates_date if rates_date else '')) if rates_source == 'ЦБ РФ' else 'Курс' %}
     <div class="top-rates" title="Цены в рублях на сайте посчитаны по этому курсу"><span class="sr-only">{{ rates_label }}: {% for r in header_rates %}{{ r.name }} — {{ r.value }} ₽{{ ', ' if not loop.last }}{% endfor %}</span>

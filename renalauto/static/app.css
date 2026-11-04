@@ -39,7 +39,7 @@ footer .logo-mark.on-dark { display: none; } footer .logo-mark.on-light { displa
 .logo-word > span { font: 600 20px/1 Unbounded, Onest, sans-serif; letter-spacing: .14em; margin-right: -.14em; }
 .logo-word small { font: 700 10.6px/1 Onest, system-ui, sans-serif; letter-spacing: .8em; margin-right: -.8em; text-transform: uppercase; color: var(--accent); }
 .top .logo { color: #fff; }
-.top nav { display: flex; gap: 20px; flex: 1; flex-wrap: wrap; }
+.top nav { display: flex; gap: 20px; flex: 0 1 auto; flex-wrap: nowrap; white-space: nowrap; }
 .top nav a { color: rgba(255,255,255,.72); font-weight: 500; }
 .top nav a:hover { color: #fff; text-decoration: none; }
 .top .contacts { display: flex; gap: 12px; align-items: center; }
@@ -67,7 +67,7 @@ footer .logo-mark.on-dark { display: none; } footer .logo-mark.on-light { displa
   .port-page .top .contacts .max-btn { padding: 10px 18px 10px 12px; font-size: 16px; font-weight: 700; border-radius: 12px; }
   .port-page .top .contacts .max-btn img { width: 24px; height: 24px; }
 }
-@media (max-width: 1240px) { .port-page .top-rates { display: none; } }
+@media (max-width: 1500px) { .port-page .top-rates { display: none; } }
 .top .contacts .phone { color: #fff; font-weight: 700; white-space: nowrap; }
 .top .btn.ghost { color: #fff; border-color: rgba(255,255,255,.28); }
 .top .btn.ghost:hover { background: rgba(255,255,255,.08); }
@@ -948,7 +948,6 @@ body.port-page footer { margin-top: 0; }
 @media (max-width: 900px) { .port-page .calc { grid-template-columns: minmax(0, 1fr); } .port-page .calc-result { position: static; } }
 
 /* первый экран: лента в реальном времени, подборка лучших — в канале MAX */
-.port-page .top nav { display: none; }  /* на лендинге без меню: одна страница, один путь */
 .live-lead { margin: 0 0 20px; font-size: 17px; line-height: 1.55; color: #334155; }
 .live-lead b { color: #0f172a; }
 .best-pick { display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-radius: 16px; background: #0f1012; color: #fff;
@@ -1391,3 +1390,6 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 .tk-rv .trust-row .rvc-i { background: linear-gradient(160deg, #5a6472, #2a3038); }
 .cmp-x { flex: 0 0 auto; width: 36px; height: 36px; border: 0; border-radius: 50%; background: rgba(255,255,255,.12); color: #fff; font-size: 20px; line-height: 1; cursor: pointer; }
 .cmp-x:hover { background: rgba(255,255,255,.22); }
+/* шапка с меню: на средних экранах в шапке остаются телефон и MAX, остальные соцсети — в подвале */
+@media (max-width: 1500px) { .top .contacts [data-goal="2gis"], .top .contacts [data-goal="avito"] { display: none; } }
+@media (max-width: 1300px) { .top .contacts [data-goal="vk"] { display: none; } }
