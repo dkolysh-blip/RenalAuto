@@ -681,7 +681,7 @@
     toast(`Так поедет <b>${esc(label(d))}</b>: ${byShip ? 'погрузка на судно в Пусане' : 'автовоз до границы'}`);
     const done = () => {
       routeAt(1);
-      toast(`Дальше — таможня во Владивостоке и доставка к вам. <a href="#" data-lead-open>Подобрать машину →</a>`);
+      toast(`Дальше — таможня во Владивостоке и доставка к вам. <a href="#" data-lead-open>Получить полный расчёт →</a>`);
       setTimeout(() => { delivering = false; arrive(d, true); hud(); }, reduce.matches ? 0 : 1200);
     };
     const whenDocked = fn => (ship.state === 'docked' ? fn() : setTimeout(() => whenDocked(fn), 500));
@@ -1070,14 +1070,13 @@
     el.innerHTML = `<button type="button" class="nudge-x" aria-label="Закрыть">×</button>
       <b>${budget ? `Подобрать похожие ${budgetText(budget)}?` : budget === '' ? 'Подобрать похожие?' : 'Не нашли подходящую?'}</b>
       <span>Менеджер пришлёт 3 похожих варианта с расчётом цены. Бесплатно.</span>
-      <button type="button" class="btn nudge-go">Подобрать</button>`;
+      <button type="button" class="btn nudge-go">Получить расчёт</button>`;
     document.body.appendChild(el);
     goal('nudge_show');
     el.querySelector('.nudge-x').addEventListener('click', () => el.remove());
     el.querySelector('.nudge-go').addEventListener('click', () => {
       el.remove(); goal('nudge_click');
-      openLead({quiz: true});
-      if (budget != null) { qAns.budget = String(budget); quizGo(1); }
+      openLead();
     });
   }
   setTimeout(nudgeShow, 50000);
