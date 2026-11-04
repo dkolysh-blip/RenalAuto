@@ -819,8 +819,8 @@
     const list = [...cars.values()].filter(c => c.state !== 'out');
     const makes = new Set(list.map(c => c.d.make).filter(Boolean));
     el.textContent = typeof filterActive === 'function' && filterActive()
-      ? `Показано: ${lotName()}`
-      : `Все марки${makes.size ? ' · ' + makes.size + ' ' + (makes.size % 10 === 1 && makes.size % 100 !== 11 ? 'марка' : [2, 3, 4].includes(makes.size % 10) && ![12, 13, 14].includes(makes.size % 100) ? 'марки' : 'марок') : ''} · цифры — цена под ключ, млн ₽`;
+      ? `Из всей базы: ${lotName()}`
+      : 'Новые объявления в реальном времени · цифры — цена под ключ, млн ₽';
   }
   function hud() {
     board();
@@ -1377,6 +1377,8 @@
     if (f.body && d.body !== f.body) return false;
     if (f.year_from && !(d.year && d.year >= +f.year_from)) return false;
     if (f.budget && !(d.turnkey && d.turnkey <= +f.budget)) return false;
+    if (f.make && d.make !== f.make) return false;
+    if (f.model && d.model_name !== f.model) return false;
     if (f.q && !d.title.toLowerCase().includes(f.q.toLowerCase())) return false;
     return true;
   }

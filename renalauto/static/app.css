@@ -1472,3 +1472,5 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 .pb-acts .btn { grid-column: 1 / -1; }
 .pb-ic { width: auto; height: 40px; display: flex; gap: 6px; align-items: center; justify-content: center; font: 600 13px/1 Onest, system-ui, sans-serif; padding: 0 8px; }
 .pb-ic svg { width: 17px; height: 17px; flex: none; }
+.pf-how { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13px; color: var(--muted); }
+.port-filter:has(.pf-result:not(:empty)) .pf-how { display: none; }

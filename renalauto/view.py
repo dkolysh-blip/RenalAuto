@@ -212,6 +212,7 @@ def scene_car(v: CarView) -> dict[str, Any]:
         "id": v.listing.external_id,
         "country": v.listing.country,
         "title": title,
+        "make": v.make, "model_name": v.model,
         "year": v.listing.year,
         "mileage": fmt_int(v.listing.mileage_km) if v.listing.mileage_km is not None else None,
         "cc": v.eligibility.displacement_cc,
