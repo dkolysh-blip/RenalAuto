@@ -995,7 +995,8 @@
   const blank = form.innerHTML;
   let formCar = null, sent = false;
   // заявка без конкретной машины: «Подобрать под бюджет», «Получить точный расчёт», «Хочу так же»
-  function openLead({title = 'Подобрать под бюджет', note = 'Подберём машины в Корее и Китае под ваш бюджет и посчитаем итоговую цену каждой.', comment = '', quiz = false} = {}) {
+  function openLead({title = 'Получить полный расчёт', note = 'Оставьте телефон — менеджер подберёт машину и посчитает цену под ключ в вашем городе.', comment = ''} = {}) {
+    const quiz = false; // квиз убран: сразу форма
     goal('form_open');
     if (!form.querySelector('[name="name"]')) form.innerHTML = blank;
     form.querySelector('#car-dialog-title').textContent = quiz ? 'Подберём 3 варианта' : title;

@@ -5,27 +5,18 @@
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/">{% endblock %}
 {% block html_attrs %} data-theme="light"{% endblock %}
 {% block body_class %}has-cta port-page{% endblock %}
-{% block head %}<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&family=Unbounded:wght@600;700&display=swap" rel="stylesheet">{% endblock %}
+
 {% block content %}
 <section class="port-hero band band-dark">
   <div class="port-offer">
     <div class="offer-main">
-    <div class="eyebrow"><span class="dot on"></span> Обновляется каждую минуту</div>
-    <h1>{% if matched %}Привезём <em>{{ matched }}</em> из Кореи и Китая{% else %}Авто из <em>Кореи</em> и <em>Китая</em>: свежие объявления каждую минуту{% endif %}</h1>
-    <p class="hero-sub">Не устаревшая база, а живые объявления с корейских и китайских площадок. Проверим историю и допуск к ввозу до оплаты, цена — сразу с растаможкой. Наша комиссия фиксирована: до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽.</p>
+    <h1>{% if matched %}Привезём <em>{{ matched }}</em> из Кореи и Китая{% else %}Свежие авто из <em>Кореи</em> и <em>Китая</em>{% endif %}</h1>
+    <p class="hero-sub">Не устаревшая база, а живые объявления с корейских и китайских площадок. Проверим историю и допуск к ввозу до оплаты, цена — сразу с растаможкой.</p>
     </div>
     <div class="offer-side">
     <p class="live-lead"><b>Новые машины появляются здесь каждую минуту</b> — прямо с корейских и китайских площадок. Наличие и точную цену менеджер проверит у продавца перед расчётом.</p>
-    {# главное действие для рекламного трафика: первый вопрос квиза прямо на первом экране #}
-    <div class="hero-quiz" id="podbor">
-      <p class="hq-title">Какой у вас бюджет?</p>
-      <div class="hq-opts">
-        <button type="button" data-hq="1500000" data-goal="hero_budget">до 1,5 млн</button><button type="button" data-hq="2500000" data-goal="hero_budget">до 2,5 млн</button>
-        <button type="button" data-hq="4000000" data-goal="hero_budget">до 4 млн</button><button type="button" data-hq="" data-goal="hero_budget">от 4 млн</button>
-      </div>
-      <p class="hq-note">Ещё 2 вопроса — и менеджер пришлёт подходящие машины с итоговой ценой. <b>Бесплатно и без обязательств.</b></p>
-    </div>
+    <button type="button" class="btn hero-cta-main" data-lead-open data-goal="hero_cta">Получить полный расчёт <span aria-hidden="true">→</span></button>
+    <p class="hero-cta-note">Менеджер посчитает цену под ключ в вашем городе. Бесплатно.</p>
     {% if company_max %}<a class="best-pick mini" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">
       <img class="best-pick-ico" src="/static/brand/max.webp" alt="" width="28" height="28">
       <span><b>Свежие машины и выдачи каждый день — в нашем MAX</b></span>
@@ -298,7 +289,6 @@
   </form>
 </dialog>
 
-{% if company_max %}<a class="max-float" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="28" height="28"><span>Подборка в MAX</span></a>{% endif %}
 <div class="cta-bar dock">
   <nav class="dock-ico" aria-label="Связаться">
     {% if company_hotline or company_phone %}<a class="di di-call" href="tel:{{ (company_hotline or company_phone)|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call"><span class="di-i"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></span><small>Звонок</small></a>{% endif %}
