@@ -900,10 +900,10 @@
         ${price}${breakdown}
         <p class="pb-hint">Нажмите — расклад цены и расчёт</p>
         <div class="pb-acts">
-          <button class="btn" type="button" data-act="want">Точный расчёт</button>
-          ${d.path ? `<a class="pb-ic" href="${esc(d.path)}" data-act="more" aria-label="Подробнее о машине" title="Подробнее о машине"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>` : ''}
-          <button type="button" class="pb-ic${cmpHas(d) ? ' on' : ''}" data-act="cmp" aria-pressed="${cmpHas(d)}" aria-label="Добавить к сравнению" title="Сравнить с другими">${ICO_CMP}</button>
-          <button type="button" class="pb-ic" data-act="share" aria-label="Поделиться расчётом" title="Поделиться расчётом">${ICO_SHARE}</button>
+          <button class="btn" type="button" data-act="want">Получить точный расчёт</button>
+          ${d.path ? `<a class="pb-ic" href="${esc(d.path)}" data-act="more" title="Фото, характеристики и проверка"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v12H4zM8 10h8M8 14h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Подробнее</span></a>` : ''}
+          <button type="button" class="pb-ic${cmpHas(d) ? ' on' : ''}" data-act="cmp" aria-pressed="${cmpHas(d)}" title="Сравнить с другими машинами">${ICO_CMP}<span>${cmpHas(d) ? 'В сравнении' : 'Сравнить'}</span></button>
+          <button type="button" class="pb-ic" data-act="share" title="Отправить расчёт в мессенджер">${ICO_SHARE}<span>Поделиться</span></button>
         </div>
       </div>`;
     popEl.querySelector('[data-act="close"]').addEventListener('click', () => { cam.follow = null; hidePop(); });
@@ -918,6 +918,7 @@
       const on = cmpToggle(d);
       e.currentTarget.classList.toggle('on', on);
       e.currentTarget.setAttribute('aria-pressed', String(on));
+      e.currentTarget.querySelector('span').textContent = on ? 'В сравнении' : 'Сравнить';
     });
     popEl.querySelector('[data-act="more"]')?.addEventListener('click', e => {
       if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return;  // в новой вкладке — как обычная ссылка
@@ -1204,7 +1205,8 @@
     tray.querySelector('.cmp-go').addEventListener('click', () => cmpOpen());
     tray.querySelector('.cmp-x').addEventListener('click', () => {
       cmp = []; cmpSave(); cmpTray(); goal('cmp_clear');
-      popEl.querySelector('[data-act="cmp"]')?.classList.remove('on');
+      const cb = popEl.querySelector('[data-act="cmp"]');
+      if (cb) { cb.classList.remove('on'); cb.querySelector('span').textContent = 'Сравнить'; }
     });
   }
   // лучшее в строке — зелёным: дешевле, новее, меньше пробег

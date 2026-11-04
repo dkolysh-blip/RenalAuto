@@ -125,8 +125,6 @@
       </video>
       <button type="button" class="reel-sound" data-reel-sound aria-pressed="false">Включить звук</button>
     </figure>
-    {% set shots = [('vydacha-2', 'Передача ключей', 'кадр из видео'), ('2gis-1', 'Фото клиента', 'из отзыва в 2ГИС'), ('2gis-2', 'Фото клиента', 'из отзыва в 2ГИС')] %}
-    <ul class="rv-shots" aria-label="Фото с выдач">{% for f, t, src in shots %}<li><button type="button" data-shot="/static/media/vydachi/{{ f }}.webp" data-shot-cap="{{ t }} · {{ src }}"><img src="/static/media/vydachi/{{ f }}.webp" alt="{{ t }}, {{ src }}" loading="lazy" width="300" height="300"></button></li>{% endfor %}</ul>
     </div>
     <div class="rv-side">
       {% if reviews %}

@@ -1447,7 +1447,8 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 .rv2-head .rv-nav { margin: 0 0 0 auto; }
 .rv2-head .rv-btn { border-color: var(--line); color: var(--text); background: #fff; }
 .rv2-head .rv-count { color: var(--muted); }
-.reviews2 .rv { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.reviews2 .rv { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+.reviews2 .rv-side, .reviews2 .rv-carousel, .reviews2 .rv-track { height: 100%; }
 .reviews2 .reel { aspect-ratio: 4 / 5; border-radius: 18px; overflow: hidden; background: #111; margin: 0; }
 .reviews2 .reel video { width: 100%; height: 100%; object-fit: cover; display: block; }
 .reviews2 .rv-track { align-items: stretch; }
@@ -1465,3 +1466,9 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
   .reviews2 .reel { aspect-ratio: 16 / 11; }
   .rv2-head .rv-nav { margin: 0; }
 }
+
+/* карточка машины на сцене: главная кнопка на всю ширину, под ней подписанные действия */
+.pb-acts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.pb-acts .btn { grid-column: 1 / -1; }
+.pb-ic { width: auto; height: 40px; display: flex; gap: 6px; align-items: center; justify-content: center; font: 600 13px/1 Onest, system-ui, sans-serif; padding: 0 8px; }
+.pb-ic svg { width: 17px; height: 17px; flex: none; }
