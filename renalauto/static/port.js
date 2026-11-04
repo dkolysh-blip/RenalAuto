@@ -587,7 +587,7 @@
     enter(d, slot);
   }
   // ценник под ключ на асфальте у места: как табло цен
-  const short = n => (n / 1e6).toFixed(2).replace('.', ',');
+  const short = n => (n / 1e6).toFixed(1).replace('.', ',');
   function chipOn(car) {
     chipOff(car);
     const [x, y] = L.slots[car.slot].chip, t = car.d.turnkey;
@@ -800,7 +800,7 @@
     gBoard.innerHTML = L.zones.map(z => {
       const here = [...cars.values()].filter(c => c.state !== 'out' && (c.d.country === 'CN' ? 'CN' : 'KR') === z.zone);
       const prices = here.map(c => c.d.turnkey).filter(Boolean);
-      const stats = `${here.length} ${word(here.length)}${prices.length ? ' · от ' + mln(Math.min(...prices)) : ''}`;
+      const stats = `${here.length} ${word(here.length)}${prices.length ? ' · цены под ключ от ' + mln(Math.min(...prices)) : ''}`;
       let scale = '';
       const r = range[z.zone];
       if (z.scale && r) {
@@ -813,8 +813,18 @@
       return `<text class="t-zone-sub t-stats" x="${z.stats[0]}" y="${z.stats[1]}" text-anchor="end">${stats}</text>${scale}`;
     }).join('');
   }
+  function lotHud() {
+    const el = root.querySelector('[data-hud="lot"]');
+    if (!el) return;
+    const list = [...cars.values()].filter(c => c.state !== 'out');
+    const makes = new Set(list.map(c => c.d.make).filter(Boolean));
+    el.textContent = typeof filterActive === 'function' && filterActive()
+      ? `Показано: ${lotName()}`
+      : `Все марки${makes.size ? ' · ' + makes.size + ' ' + (makes.size % 10 === 1 && makes.size % 100 !== 11 ? 'марка' : [2, 3, 4].includes(makes.size % 10) && ![12, 13, 14].includes(makes.size % 100) ? 'марки' : 'марок') : ''} · цифры — цена под ключ, млн ₽`;
+  }
   function hud() {
     board();
+    try { lotHud(); } catch (e) { /* фильтр ещё не готов */ }
     const list = [...cars.values()].filter(c => c.state !== 'out');
     const kr = list.filter(c => c.d.country !== 'CN').length;
     // на десктопе — курс, по которому посчитаны цены под ключ (сводка по зонам — на табло)
@@ -1419,6 +1429,7 @@
       filterOut.append(' ', b);
     }
     switchLot(r.found, lotName());
+    lotHud();
     if (!r.found.length && filterActive()) suggestNear(my);
   }
 
@@ -1445,7 +1456,8 @@
   if (budgetRange) syncQuick();
   function lotName() {
     const f = filterForm.elements, parts = [];
-    if (f.q.value.trim()) parts.push(f.q.value.trim());
+    if (f.make.value) parts.push(f.make.value + (f.model.value ? ' ' + f.model.value : ''));
+    else if (f.q.value.trim()) parts.push(f.q.value.trim());
     if (f.year_from.selectedIndex) parts.push(f.year_from.selectedOptions[0].text + ' г.');
     if (f.country.selectedIndex) parts.push(f.country.selectedOptions[0].text);
     if (f.budget.value) parts.push(budgetText(+f.budget.value));
@@ -1479,6 +1491,24 @@
       setTimeout(() => { if (my === switching) sign.classList.add('show'); }, 60);
       setTimeout(() => { if (my === switching) sign.classList.remove('show'); }, 1800);
     }, 320);
+  }
+  const makeSel = filterForm?.querySelector('#pf-make'), modelSel = filterForm?.querySelector('#pf-model');
+  let catalog = [];
+  const opt = (v, text) => { const o = document.createElement('option'); o.value = v; o.textContent = text; return o; };
+  function fillModels() {
+    const m = catalog.find(x => x.make === makeSel.value);
+    modelSel.replaceChildren(opt('', 'Все модели'), ...(m ? m.models.map(x => opt(x.model, `${x.model} · ${x.count}`)) : []));
+    modelSel.disabled = !m;
+  }
+  if (makeSel) {
+    fetch('/api/port/models').then(r => r.json()).then(d => {
+      catalog = d.makes || [];
+      makeSel.replaceChildren(opt('', 'Все марки'), ...catalog.map(m => opt(m.make, `${m.make} · ${m.count}`)));
+      const u = new URLSearchParams(location.search);
+      if (u.get('make')) { makeSel.value = u.get('make'); fillModels(); if (u.get('model')) modelSel.value = u.get('model'); }
+    }).catch(() => {});
+    makeSel.addEventListener('change', () => { filterForm.elements.q.value = ''; fillModels(); });
+    modelSel.addEventListener('change', () => { filterForm.elements.q.value = ''; });
   }
   filterForm?.addEventListener('input', () => { clearTimeout(applyFilter.t); applyFilter.t = setTimeout(applyFilter, 350); });
   filterForm?.addEventListener('submit', e => e.preventDefault());
@@ -1575,7 +1605,7 @@
       const u = new URLSearchParams(location.search), f = filterForm.elements;
       if (u.get('budget')) { budgetRange.value = u.get('budget'); budgetRange.dispatchEvent(new Event('input')); }
       for (const k of ['country', 'year_from', 'q']) if (u.get(k) && f[k]) f[k].value = u.get(k);
-      if (['budget', 'country', 'year_from', 'q'].some(k => u.get(k)) || f.q.value) { filterForm.classList.add('open'); applyFilter(); }
+      if (['budget', 'country', 'year_from', 'q', 'make', 'model'].some(k => u.get(k)) || f.q.value) { filterForm.classList.add('open'); applyFilter(); }
     }
     let wide = !matchMedia('(max-width: 640px)').matches;
     addEventListener('resize', () => {

@@ -562,7 +562,7 @@ body.pop-sheet .cta-bar { display: none; }
 .legal p, .legal li { line-height: 1.6; }
 .consent a { color: var(--link); }
 /* пульт подбора над терминалом */
-.port-filter { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(0, 1.3fr); gap: 8px; margin-bottom: 10px; }
+.port-filter { display: grid; grid-template-columns: minmax(0, 1.3fr) repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
 .port-filter .pf-field label { font-size: 12px; margin-bottom: 3px; }
 .port-filter select, .port-filter input { padding: 8px 10px; background: var(--card); }
 .pf-result { grid-column: 1 / -1; margin: 0; font-size: 13.5px; color: var(--muted); min-height: 1em; }
@@ -1402,3 +1402,5 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 .hero-cta-main { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; margin-top: 18px; padding: 18px 24px; font-size: 18px; font-weight: 700; border-radius: 14px; }
 .hero-cta-note { margin: 10px 0 16px; color: var(--muted); font-size: 14px; text-align: center; }
 .port-hero h1 { font-size: clamp(34px, 4.2vw, 60px); }
+.terminal-hud .hud-lot { margin: 0 auto; background: rgba(255,255,255,.94); color: #101828; font-weight: 700; }
+@media (max-width: 640px) { .terminal-hud .hud-lot { display: none; } }
