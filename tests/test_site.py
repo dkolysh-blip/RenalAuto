@@ -381,3 +381,23 @@ def test_port_filter_total_not_capped(settings, monkeypatch):
         assert r["more"] is True
     finally:
         client.__exit__(None, None, None)
+
+
+def test_port_filter_searches_whole_base(settings, monkeypatch):
+    """Марки и модели фильтра — по всей базе, а не по последним объявлениям ленты."""
+    import renalauto.api as api
+    monkeypatch.setattr(api, "PORT_SCAN", 3)
+    k5 = [kb(external_id=f"k{i}", title="기아 K5 1.6 터보", make="기아", model="K5",
+             extra={"displacement": "1,598cc"}) for i in range(4)]
+    fresh = [kb(external_id=f"a{i}", title="현대 아반떼 1.6", make="현대", model="아반떼",
+                extra={"displacement": "1,598cc"}) for i in range(5)]
+    client, app = make_client(settings, k5 + fresh)  # K5 старше: в 3 свежих не попадают
+    try:
+        makes = client.get("/api/port/makes").json()["makes"]
+        kia = next(m for m in makes if m["make"] == "Kia")
+        assert kia["count"] == 4 and kia["models"][0] == {"model": "K5", "count": 4}
+        r = client.get("/api/port/cars", params={"make": "Kia", "model": "K5"}).json()
+        assert r["cars"] and all("K5" in c["title"] for c in r["cars"])
+        assert r["total"] == 4
+    finally:
+        client.__exit__(None, None, None)

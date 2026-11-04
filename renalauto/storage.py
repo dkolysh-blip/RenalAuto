@@ -255,6 +255,44 @@ class Storage:
             where.append("year >= ?"); params.append(year_from)
         return self._conn.execute("SELECT COUNT(*) FROM listings WHERE " + " AND ".join(where), params).fetchone()[0]
 
+    def make_model_counts(self) -> list[tuple[str | None, str | None, str | None, int]]:
+        """(страна, марка, модель, сколько) по всем проходным объявлениям — справочник фильтра."""
+        where, params = ["passable != 0"], []
+        if self.only_sources:
+            where.append("source IN (" + ",".join("?" for _ in self.only_sources) + ")")
+            params.extend(self.only_sources)
+        rows = self._conn.execute(
+            "SELECT country, make, model, COUNT(*) AS n FROM listings WHERE " + " AND ".join(where)
+            + " GROUP BY country, make, model", params).fetchall()
+        return [(r["country"], r["make"], r["model"], r["n"]) for r in rows]
+
+    def _pairs_where(self, pairs, country, year_from):
+        where, params = ["passable != 0"], []
+        if self.only_sources:
+            where.append("source IN (" + ",".join("?" for _ in self.only_sources) + ")")
+            params.extend(self.only_sources)
+        if pairs:
+            ors = []
+            for mk, md in pairs:
+                ors.append("(make IS ? AND model IS ?)")
+                params.extend([mk, md])
+            where.append("(" + " OR ".join(ors) + ")")
+        if country:
+            where.append("country = ?"); params.append(country)
+        if year_from:
+            where.append("year >= ?"); params.append(year_from)
+        return " AND ".join(where), params
+
+    def search_pairs(self, pairs, country=None, year_from=None, limit=600) -> list[Listing]:
+        """Свежие проходные объявления по точным исходным парам (марка, модель)."""
+        w, p = self._pairs_where(pairs, country, year_from)
+        rows = self._conn.execute(f"SELECT data FROM listings WHERE {w} ORDER BY {self.SORTS['new']} LIMIT ?", (*p, limit)).fetchall()
+        return [Listing.model_validate_json(r["data"]) for r in rows]
+
+    def count_pairs(self, pairs, country=None, year_from=None) -> int:
+        w, p = self._pairs_where(pairs, country, year_from)
+        return self._conn.execute(f"SELECT COUNT(*) FROM listings WHERE {w}", p).fetchone()[0]
+
     SORTS = {
         "new": "first_seen DESC, rowid DESC",
         "price_asc": "price_usd IS NULL, price_usd ASC",

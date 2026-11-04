@@ -501,7 +501,16 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         model: str | None = Query(None, max_length=60),
     ) -> dict[str, Any]:
         """Пульт терминала: машины под бюджет под ключ, страну, год, кузов, марку/модель (до 20 в зоне)."""
-        rows = storage_of(request).search(country=country, year_from=year_from, passable_only=True, limit=PORT_SCAN)
+        storage = storage_of(request)
+        pairs = None
+        if make:  # марка/модель из справочника — ищем по всей базе по исходным написаниям
+            pairs = [(mk, md) for (mk_ru, md_ru), raws in make_index(storage).items()
+                     if mk_ru == make and (not model or md_ru == model) for mk, md in raws]
+            if not pairs:
+                return {"cars": [], "total": 0, "more": False}
+            rows = storage.search_pairs(pairs, country=country, year_from=year_from, limit=PORT_SCAN)
+        else:
+            rows = storage.search(country=country, year_from=year_from, passable_only=True, limit=PORT_SCAN)
         # «Kia K5»: каждое слово ищем в исходном названии (기아, 起亚…) и в русском
         words = [[a.lower() for a in i18n.search_aliases(w)] for w in (_clean(q) or "").split()]
         found = []
@@ -521,13 +530,42 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         shown = [c for c in found if c["country"] == "KR"][:PORT_PER_ZONE] + [c for c in found if c["country"] == "CN"][:PORT_PER_ZONE]
         total, more = len(found), False
         if len(rows) >= PORT_SCAN:  # перебрали не всё: без бюджета и марки считаем по базе, иначе — «больше N»
-            if not (budget or body or q or make or model):
-                total = storage_of(request).count_passable(country=country, year_from=year_from)
+            if pairs and not (budget or body or q):
+                total = storage.count_pairs(pairs, country=country, year_from=year_from)
+            elif not (budget or body or q or make or model):
+                total = storage.count_passable(country=country, year_from=year_from)
             else:
                 more = True
         return {"cars": shown, "total": total, "more": more}
 
     catalog_cache: dict[str, Any] = {"at": 0.0, "data": None}
+    makes_cache: dict[str, Any] = {"at": 0.0, "index": None, "data": None}
+
+    def make_index(storage) -> dict[tuple[str, str | None], set[tuple[str | None, str | None]]]:
+        """(марка, модель) на сайте → исходные написания в базе; считается по всем объявлениям раз в 10 минут."""
+        if makes_cache["index"] is not None and time.monotonic() - makes_cache["at"] < 600:
+            return makes_cache["index"]
+        index: dict[tuple[str, str | None], set] = defaultdict(set)
+        counts: dict[str, dict[str | None, int]] = defaultdict(lambda: defaultdict(int))
+        for _country, mk, md, n in storage.make_model_counts():
+            mk_ru = i18n.make(mk)
+            if not mk_ru or i18n.has_foreign(mk_ru):
+                continue
+            md_ru = i18n.model(md)
+            index[(mk_ru, md_ru)].add((mk, md))
+            counts[mk_ru][md_ru] += n
+        makes_cache["data"] = {"makes": [
+            {"make": mk, "count": sum(ms.values()),
+             "models": [{"model": md, "count": n} for md, n in sorted(ms.items(), key=lambda kv: (-kv[1], kv[0] or "")) if md]}
+            for mk, ms in sorted(counts.items(), key=lambda kv: (-sum(kv[1].values()), kv[0]))]}
+        makes_cache["index"], makes_cache["at"] = index, time.monotonic()
+        return index
+
+    @app.get("/api/port/makes", include_in_schema=False)
+    async def port_makes(request: Request) -> dict[str, Any]:
+        """Фильтр порта: все марки и модели из базы с числом объявлений."""
+        make_index(storage_of(request))
+        return makes_cache["data"]
 
     @app.get("/api/port/models", include_in_schema=False)
     async def port_models(request: Request) -> dict[str, Any]:

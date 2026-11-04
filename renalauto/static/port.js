@@ -1503,7 +1503,7 @@
     modelSel.disabled = !m;
   }
   if (makeSel) {
-    fetch('/api/port/models').then(r => r.json()).then(d => {
+    fetch('/api/port/makes').then(r => r.json()).then(d => {
       catalog = d.makes || [];
       makeSel.replaceChildren(opt('', 'Все марки'), ...catalog.map(m => opt(m.make, `${m.make} · ${m.count}`)));
       const u = new URLSearchParams(location.search);
