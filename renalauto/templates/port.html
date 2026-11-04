@@ -11,24 +11,24 @@
 <section class="port-hero band band-dark">
   <div class="port-offer">
     <div class="offer-main">
-    <div class="eyebrow"><span class="dot on"></span> Объявления в реальном времени</div>
-    <h1>{% if matched %}Привезём <em>{{ matched }}</em> из Кореи и Китая{% else %}Привезём автомобиль из <em>Кореи</em> и <em>Китая</em>{% endif %}</h1>
-    <p class="hero-sub">Подберём машину под ваш бюджет и до оплаты проверим её историю и допуск к ввозу в РФ. Работаем по агентскому договору, наше вознаграждение — до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽.</p>
+    <div class="eyebrow"><span class="dot on"></span> Обновляется каждую минуту</div>
+    <h1>{% if matched %}Привезём <em>{{ matched }}</em> из Кореи и Китая{% else %}Авто из <em>Кореи</em> и <em>Китая</em>, которые в продаже сейчас{% endif %}</h1>
+    <p class="hero-sub">Не устаревшая база, а живые объявления с корейских и китайских площадок. Проверим историю и допуск к ввозу до оплаты, цена — сразу с растаможкой. Наша комиссия фиксирована: до {{ fmt(deal.fee)|replace(' ', ' ') }} ₽.</p>
     </div>
     <div class="offer-side">
-    <p class="live-lead"><b>Ниже — живая лента</b> объявлений с Encar и Dongchedi. Показываем только машины, которые можно ввезти в РФ, и сразу считаем ориентировочную цену с растаможкой.</p>
+    <p class="live-lead"><b>Каждая машина ниже есть в продаже сейчас.</b> Проданные исчезают со стоянки, новые появляются в течение минуты. Показываем только те, что можно ввезти в РФ.</p>
     {# главное действие для рекламного трафика: первый вопрос квиза прямо на первом экране #}
     <div class="hero-quiz" id="podbor">
-      <p class="hq-title">На какой бюджет рассчитываете?</p>
+      <p class="hq-title">Какой у вас бюджет?</p>
       <div class="hq-opts">
         <button type="button" data-hq="1500000" data-goal="hero_budget">до 1,5 млн</button><button type="button" data-hq="2500000" data-goal="hero_budget">до 2,5 млн</button>
         <button type="button" data-hq="4000000" data-goal="hero_budget">до 4 млн</button><button type="button" data-hq="" data-goal="hero_budget">от 4 млн</button>
       </div>
-      <p class="hq-note">Выберите бюджет, ответьте ещё на два вопроса — и менеджер пришлёт подходящие машины с расчётом цены. Бесплатно.</p>
+      <p class="hq-note">Ещё 2 вопроса — и менеджер пришлёт машины, которые продаются сегодня, с итоговой ценой. <b>Бесплатно и без обязательств.</b></p>
     </div>
     {% if company_max %}<a class="best-pick mini" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max">
       <img class="best-pick-ico" src="/static/brand/max.webp" alt="" width="28" height="28">
-      <span><b>Наш канал в MAX: подборки и выдачи</b></span>
+      <span><b>Свежие машины и выдачи каждый день — в нашем MAX</b></span>
       <span class="best-pick-go" aria-hidden="true">→</span>
     </a>{% endif %}
     </div>
