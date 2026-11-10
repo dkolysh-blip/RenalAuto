@@ -4,7 +4,7 @@
 с корейским домашним/офисным интернетом (мини-ПК, Raspberry Pi, ноутбук) или с PROXY_KR.
 Входящие порты не нужны — сборщик сам ходит на сервер.
 
-    COLLECTOR_SERVER=https://renal-auto.asia:8443 INGEST_TOKEN=... python -m renalauto.collector
+    COLLECTOR_SERVER=https://renal-auto.asia INGEST_TOKEN=... python -m renalauto.collector
 
 Работает бережно: по каждому НОВОМУ объявлению — карточка и страховая история, с паузой между
 запросами; уже известные объявления повторно не открываются.

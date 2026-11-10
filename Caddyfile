@@ -7,7 +7,7 @@
 	https_port {$HTTPS_PORT:443}
 }
 
-{$DOMAIN:renal-auto.asia}, www.{$DOMAIN:renal-auto.asia} {
+{$DOMAIN:renal-auto.asia} {
 	# Проверку TLS-ALPN Let's Encrypt делает только на порт 443, а он может быть занят
 	# (нода Marzban/Xray) — оставляем только HTTP-01 через порт 80.
 	tls {
@@ -20,6 +20,16 @@
 		# поток /api/stream (SSE) отдаём без буферизации
 		flush_interval -1
 	}
+}
+
+# www — на основной адрес, чтобы у сайта был один адрес для поисковиков.
+www.{$DOMAIN:renal-auto.asia} {
+	tls {
+		issuer acme {
+			disable_tlsalpn_challenge
+		}
+	}
+	redir https://{$DOMAIN:renal-auto.asia}{uri} permanent
 }
 
 # Дополнительные домены (например, реналавто.рф в punycode) — постоянный редирект на основной.
