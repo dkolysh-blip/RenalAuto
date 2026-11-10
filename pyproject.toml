@@ -23,7 +23,7 @@ build-backend = "setuptools.build_meta"
 include = ["renalauto*"]
 
 [tool.setuptools.package-data]
-renalauto = ["static/*", "templates/*", "fonts/*"]
+renalauto = ["static/*", "static/**/*", "templates/*", "fonts/*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "strict"

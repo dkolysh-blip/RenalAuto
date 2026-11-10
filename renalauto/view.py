@@ -92,6 +92,10 @@ def car_view(listing: Listing, rates: Rates) -> CarView:
         listing = listing.model_copy(update={"vin": None})
     extra = listing.extra
     title = i18n.title(listing.title) or listing.external_id
+    brand = i18n.make(listing.make)
+    if brand and brand.isascii() and brand.lower() not in title.lower():
+        # китайские площадки пишут в названии только модель: «Qashqai 2012 г.» -> «Nissan Qashqai 2012 г.»
+        title = f"{brand} {title}"
     photos = list(extra.get("photos") or [])
     if listing.photo and listing.photo not in photos:
         photos.insert(0, listing.photo)

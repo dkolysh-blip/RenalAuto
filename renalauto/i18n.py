@@ -69,7 +69,7 @@ MODELS: dict[str, str] = {
     "缤瑞": "Binrui", "博瑞": "Borui", "豪越": "Haoyue", "嘉际": "Jiaji", "银河": "Galaxy", "几何": "Geometry",
     "逸动": "Eado", "欧尚": "Oshan", "枭龙": "Xiaolong", "海狮": "Sealion", "驱逐舰": "Destroyer",
     "护卫舰": "Frigate", "欧蓝德": "Outlander", "劲炫": "ASX", "森林人": "Forester", "傲虎": "Outback",
-    "揽胜": "Range Rover", "发现": "Discovery", "卫士": "Defender", "卡宴": "Cayenne", "帕拉梅拉": "Panamera",
+    "揽胜极光": "Range Rover Evoque", "揽胜星脉": "Range Rover Velar", "揽胜运动版": "Range Rover Sport", "揽胜": "Range Rover", "发现": "Discovery", "卫士": "Defender", "卡宴": "Cayenne", "帕拉梅拉": "Panamera",
     "宏光": "Hongguang", "指南者": "Compass", "自由光": "Cherokee", "大切诺基": "Grand Cherokee", "牧马人": "Wrangler",
     "自由侠": "Renegade", "途锐": "Touareg", "雅阁混动": "Accord Hybrid", "缤果": "Bingo", "风云": "Fengyun", "星纪元": "Sterra",
 }
@@ -150,6 +150,7 @@ def _lookup(table: dict[str, str], value: str | None) -> str | None:
 # серии и приставки поколений, которые пишут слитно с цифрой или буквой: «1시리즈», «GLC-클래스», «더 뉴»
 _PATTERNS = [
     (re.compile(r"(\w+?)\s*시리즈"), r"\1 Series"),
+    (re.compile(r"(\d)\s*系"), r" \1 Series "), (re.compile(r"([A-Z]{1,3})\s*级"), r" \1-Class "),
     (re.compile(r"([A-Z]{1,3})\s*-?\s*클래스"), r"\1-Class"),
     (re.compile(r"디\s*올\s*뉴"), "The All New"), (re.compile(r"올\s*뉴"), "All New"),
     (re.compile(r"더\s*뉴"), "The New"), (re.compile(r"뉴\s"), "New "),

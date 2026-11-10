@@ -223,7 +223,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             response.headers["Cache-Control"] = "no-cache"
         elif request.url.path.startswith("/static/") and response.status_code == 200:
             # файл с ?v= меняет адрес вместе с содержимым — браузер может хранить его год и не перепроверять
-            versioned = request.query_params.get("v") == assets_v
+            versioned = request.query_params.get("v") == assets_v or request.url.path.startswith("/static/fonts/")
             response.headers["Cache-Control"] = (
                 "public, max-age=31536000, immutable" if versioned else "public, max-age=86400")
         return response
@@ -353,6 +353,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                         logistics_rub=settings.deal_logistics_kr_rub if l.country == "KR" else settings.deal_logistics_cn_rub)
             car["turnkey"] = q.total_rub
             car["turnkey_from"] = q.total_is_from or guessed
+            car["cc_guessed"] = guessed
             car["calc"] = {"country": l.country, "engine": engine, "age": age, "cc": cc or 0, "price": round(v.price_rub)}
             # расклад для карточки: машина, пошлина, сборы (утильсбор + таможенный), комиссия; без суммы — «посчитает менеджер»
             by = {ln.title: ln for ln in q.lines}
