@@ -13,8 +13,13 @@
     <h3>{{ v.title }}</h3>
     <div class="sub">{{ v.subtitle }}</div>
     {{ pill(v.eligibility) }}
-    <div class="price">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% else %}Цена по запросу{% endif %}</div>
-    <div class="orig">{% if v.listing.price %}{{ fmt(v.listing.price) }} {{ v.listing.currency }} на площадке{% endif %}</div>
+    {% if v.turnkey %}
+    <div class="price">≈ {{ fmt(v.turnkey|round(-4)) }} ₽ <small>с растаможкой</small></div>
+    <div class="orig">≈ {{ fmt(v.price_rub) }} ₽ на площадке · {{ fmt(v.listing.price) }} {{ v.listing.currency }}</div>
+    {% else %}
+    <div class="price">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽ <small>на площадке</small>{% else %}Цена по запросу{% endif %}</div>
+    <div class="orig">{% if v.listing.price %}{{ fmt(v.listing.price) }} {{ v.listing.currency }} · растаможку посчитает менеджер{% endif %}</div>
+    {% endif %}
   </div>
 </a>
 {%- endmacro %}

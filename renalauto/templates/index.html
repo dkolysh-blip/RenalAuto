@@ -6,7 +6,7 @@
 <div class="crumbs"><a href="/">Главная</a> › Каталог</div>
 <section class="catalog-head">
   <h1>{{ f.make or 'Авто' }} {% if f.country == 'KR' %}из Кореи{% elif f.country == 'CN' %}из Китая{% else %}из Кореи и Китая{% endif %}: все машины, которые можно ввезти в РФ</h1>
-  <p class="muted">Объявления Encar и Dongchedi в реальном времени, цены в рублях. Итоговую цену с доставкой и растаможкой посчитает менеджер — бесплатно. Не хотите выбирать сами? <a href="/#podbor">Подберём под бюджет</a>.</p>
+  <p class="muted">Объявления Encar и Dongchedi в реальном времени. Цена — ориентировочно с растаможкой; доставку и точный итог в вашем городе посчитает менеджер — бесплатно. Не хотите выбирать сами? <a href="/#podbor">Подберём под бюджет</a>.</p>
 </section>
 
 <form class="filters" id="cars" method="get" action="/cars">
@@ -20,13 +20,14 @@
   <div><label>Модель</label><input name="model" value="{{ f.model or '' }}" placeholder="Palisade, K5…"></div>
   <div><label>Год от</label><input name="year_from" type="number" min="1990" max="2030" value="{{ f.year_from or '' }}"></div>
   <div><label>Пробег до, км</label><input name="mileage_max" type="number" min="0" step="10000" value="{{ f.mileage_max or '' }}"></div>
-  <div><label>Цена до, ₽</label><input name="price_max" type="number" min="0" step="100000" value="{{ f.price_max or '' }}"></div>
+  <div><label>Цена на площадке до, ₽</label><input name="price_max" type="number" min="0" step="100000" value="{{ f.price_max or '' }}"></div>
   <div><label>Топливо</label>
     <select name="fuel"><option value="">Любое</option>
       {% for key, label in fuels %}<option value="{{ key }}" {{ 'selected' if f.fuel == key }}>{{ label }}</option>{% endfor %}</select></div>
   <div><label>Сортировка</label>
     <select name="sort">
       {% for key, label in sorts %}<option value="{{ key }}" {{ 'selected' if f.sort == key }}>{{ label }}</option>{% endfor %}</select></div>
+  <button class="btn ghost filters-more" type="button" hidden>Ещё фильтры</button>
   <button class="btn" type="submit">Показать</button>
 </form>
 

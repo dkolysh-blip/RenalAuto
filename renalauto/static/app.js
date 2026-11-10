@@ -75,6 +75,18 @@
     }
   } catch (err) { /* приватный режим */ }
 
+  // --- фильтры каталога на телефоне: страна и марка сразу, остальное — по кнопке ---
+  const filters = document.querySelector('form.filters'), more = filters && filters.querySelector('.filters-more');
+  if (more) {
+    const extra = [...filters.querySelectorAll(':scope > div')].slice(2).flatMap(d => [...d.querySelectorAll('input, select')]);
+    const used = extra.filter(el => el.value && !(el.name === 'sort' && el.value === 'new')).length;
+    more.hidden = false;
+    if (!used) filters.classList.add('folded');
+    const label = () => { more.textContent = filters.classList.contains('folded') ? 'Ещё фильтры' : 'Свернуть фильтры'; };
+    more.addEventListener('click', () => { filters.classList.toggle('folded'); label(); });
+    label();
+  }
+
   // --- галерея -------------------------------------------------------------
   const main = document.getElementById('main-photo');
   document.querySelectorAll('[data-photo]').forEach(btn => btn.addEventListener('click', () => {

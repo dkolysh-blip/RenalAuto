@@ -47,6 +47,9 @@ class CarView:
     country_name: str
     flag: str
     specs: list[tuple[str, str]] = field(default_factory=list)
+    # ориентировочная цена с растаможкой и её расклад — заполняет витрина (api.priced)
+    turnkey: int | None = None
+    quote: dict[str, Any] | None = None
 
     @property
     def path(self) -> str:

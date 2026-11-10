@@ -1474,3 +1474,18 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 .pb-ic svg { width: 17px; height: 17px; flex: none; }
 .pf-how { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13px; color: var(--muted); }
 .port-filter:has(.pf-result:not(:empty)) .pf-how { display: none; }
+
+/* цена с растаможкой в каталоге и на странице машины */
+.card .price small, .cta-bar b small { font-size: 12px; font-weight: 500; color: var(--muted); }
+.price-lines { margin: 10px 0 8px; }
+.price-lines .k-car > i { background: #0b5c8f; } .price-lines .k-duty > i { background: #dd1f1f; }
+.price-lines .k-fees > i { background: #f2a531; } .price-lines .k-fee > i { background: #16191d; }
+.price-box .btn { margin-top: 4px; }
+/* каталог на телефоне: сначала страна и марка, остальные фильтры — по кнопке */
+@media (max-width: 640px) {
+  .filters.folded > div:nth-of-type(n+3) { display: none; }
+  .filters .filters-more:not([hidden]) { display: inline-flex; grid-column: 1 / -1; }
+}
+@media (min-width: 641px) { .filters .filters-more { display: none; } }
+.filters .filters-more[hidden] { display: none; }
+#price, #lead { scroll-margin-top: 84px; }

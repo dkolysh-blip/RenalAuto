@@ -88,6 +88,16 @@ def test_pages_render_and_filter(settings):
         assert "Sitemap:" in client.get("/robots.txt").text
         assert client.get("/vin").status_code == 200
         assert client.get("/partials/card/kbchachacha/2").text.startswith('<a class="card fresh"')
+
+        # проходная машина: в каталоге и на странице — та же цена с растаможкой, что на сцене, и её расклад
+        ok_page = client.get("/car/kbchachacha/2").text
+        assert "Ориентировочно с растаможкой" in ok_page and "Таможенная пошлина" in ok_page
+        assert "с растаможкой" in client.get("/cars").text
+        assert "Ориентировочно с растаможкой" not in car.text  # непроходной — без льготного расчёта
+
+        css = client.get(f"/static/app.css?v={app.state.assets_v}")
+        assert "immutable" in css.headers["cache-control"]
+        assert client.get("/static/app.css").headers["cache-control"] == "public, max-age=86400"
     finally:
         client.__exit__(None, None, None)
 

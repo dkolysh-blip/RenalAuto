@@ -211,6 +211,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         lifespan=lifespan,
     )
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
+    assets_v = _asset_version()
+    app.state.assets_v = assets_v
 
     @app.middleware("http")
     async def no_stale_pages(request: Request, call_next):
@@ -219,6 +221,11 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         response = await call_next(request)
         if response.headers.get("content-type", "").startswith("text/html"):
             response.headers["Cache-Control"] = "no-cache"
+        elif request.url.path.startswith("/static/") and response.status_code == 200:
+            # файл с ?v= меняет адрес вместе с содержимым — браузер может хранить его год и не перепроверять
+            versioned = request.query_params.get("v") == assets_v
+            response.headers["Cache-Control"] = (
+                "public, max-age=31536000, immutable" if versioned else "public, max-age=86400")
         return response
     templates = Jinja2Templates(directory=HERE / "templates")
     templates.env.globals.update(
@@ -249,7 +256,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         site_url=settings.site_url,
         rules_as_of=RULES_AS_OF,
         fmt=fmt_int,
-        asset_version=_asset_version(),
+        asset_version=assets_v,
     )
 
     def header_rates() -> list[dict[str, Any]]:
@@ -312,7 +319,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             limit=limit + 1,
             offset=offset,
         )
-        return [car_view(l, rates) for l in rows[:limit]], len(rows) > limit
+        return [priced(car_view(l, rates)) for l in rows[:limit]], len(rows) > limit
 
     cc_seen: dict[tuple[str, str], list[int]] = defaultdict(list)  # объёмы по модели — из объявлений, где он указан
 
@@ -360,6 +367,15 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             car["age_note"] = {"new": "машина до 3 лет", "mid": "машина 3–5 лет", "old": "машина старше 5 лет"}[age]
         return car
 
+    def priced(v):
+        """Та же ориентировочная цена с растаможкой, что на сцене порта, — для каталога и страницы машины."""
+        if v.eligibility.verdict == "bad":  # непроходной машине льготный расчёт не показываем
+            return v
+        q = quote_car(v)
+        if q.get("turnkey"):
+            v.turnkey, v.quote = q["turnkey"], q
+        return v
+
     def stream_query(f: PageFilters) -> str:
         params = {"country": f.country, "make": f.make, "model": f.model, "year_from": f.year_from,
                   "mileage_max": f.mileage_max}
@@ -387,7 +403,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         listing = storage_of(request).get(source, external_id)
         if listing is None:
             return Response(status_code=204)
-        v = car_view(listing, rates)
+        v = priced(car_view(listing, rates))
         if v.eligibility.verdict == "bad":
             return Response(status_code=204)
         macros = templates.env.get_template("_macros.html").module
@@ -667,9 +683,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             return render(request, "index.html", status_code=404, f=PageFilters(), cars=[], next_url=None,
                           makes=POPULAR_MAKES, fuels=[(k, v[0]) for k, v in FUELS.items()], sorts=SORTS,
                           stream_query="")
-        v = car_view(listing, rates)
+        v = priced(car_view(listing, rates))
         similar = [
-            car_view(l, rates)
+            priced(car_view(l, rates))
             for l in storage.search(make=listing.make, model=listing.model, passable_only=True, limit=5)
             if l.key != listing.key
         ][:4]
@@ -685,11 +701,15 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         }
         if listing.mileage_km is not None:
             jsonld["mileageFromOdometer"] = {"@type": "QuantitativeValue", "value": listing.mileage_km, "unitCode": "KMT"}
+        history = []
+        for row in storage.history(source, external_id):  # повторные наблюдения без изменений не показываем
+            if not history or (row["price"], row["mileage_km"]) != (history[-1]["price"], history[-1]["mileage_km"]):
+                history.append(row)
         if v.price_rub:
             jsonld["offers"] = {"@type": "Offer", "price": v.price_rub, "priceCurrency": "RUB",
                                 "availability": "https://schema.org/InStock", "url": settings.site_url + v.path}
         return render(
-            request, "car.html", v=v, similar=similar, desc=describe(v, settings.company_name), history=storage.history(source, external_id),
+            request, "car.html", v=v, similar=similar, desc=describe(v, settings.company_name), history=history,
             share=share_meta(v),
             jsonld=json.dumps(jsonld, ensure_ascii=False).replace("</", "<\\/"),
         )
@@ -710,7 +730,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     @app.get("/vin/{query}", response_class=HTMLResponse, include_in_schema=False)
     async def vin_report_page(request: Request, query: str) -> HTMLResponse:
         report = await check_any(request, query)
-        cars = [car_view(l, rates) for l in report.listings[:8]]
+        cars = [priced(car_view(l, rates)) for l in report.listings[:8]]
         return render(request, "vin_report.html", report=report, cars=cars, car=cars[0] if cars else None)
 
     @app.get("/admin", response_class=HTMLResponse, include_in_schema=False)

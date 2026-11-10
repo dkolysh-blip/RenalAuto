@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% from "_macros.html" import card, consent, lead_form, pill %}
 {% set l = v.listing %}
-{% block title %}{{ v.seo_title }}{% if v.price_rub %} — ≈ {{ fmt(v.price_rub) }} ₽{% endif %} | {{ company }}{% endblock %}
+{% block title %}{{ v.seo_title }}{% if v.turnkey %} — ≈ {{ fmt(v.turnkey|round(-4)) }} ₽ с растаможкой{% elif v.price_rub %} — ≈ {{ fmt(v.price_rub) }} ₽{% endif %} | {{ company }}{% endblock %}
 {% block description %}{{ desc.meta }}{% endblock %}
 {% block og_text %}<meta property="og:title" content="{{ share.title }}"><meta property="og:description" content="{{ share.desc or desc.meta }}">{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}{{ v.path }}">{% endblock %}
@@ -22,8 +22,13 @@
   <div class="muted">{{ v.subtitle }}</div>
   {% if desc.highlights %}<div class="chips">{% for h in desc.highlights %}<span>{{ h }}</span>{% endfor %}</div>{% endif %}
   <div class="mobile-only mobile-price">
+    {% if v.turnkey %}
+    <span class="big">≈ {{ fmt(v.turnkey|round(-4)) }} ₽</span>
+    <span class="muted small"> с растаможкой · <a href="#price">из чего складывается</a></span>
+    {% else %}
     <span class="big">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% else %}Цена по запросу{% endif %}</span>
     <span class="muted small"> в {{ 'Корее' if l.country == 'KR' else 'Китае' }}, без доставки и растаможки</span>
+    {% endif %}
     <div style="margin-top:6px">{{ pill(v.eligibility) }}</div>
   </div>
 </div>
@@ -107,12 +112,30 @@
   </div>
 
   <aside class="sticky">
-    <div class="panel price-box">
+    <div class="panel price-box" id="price">
+      {% if v.turnkey %}
+      {% set q = v.quote %}
+      {% set names = {'car': 'Машина на площадке', 'duty': 'Таможенная пошлина', 'fees': 'Утильсбор и таможенный сбор', 'fee': 'Наше вознаграждение'} %}
+      <div class="muted small">Ориентировочно с растаможкой</div>
+      <div class="big">≈ {{ fmt(v.turnkey|round(-4)) }} ₽</div>
+      <ul class="pb-lines price-lines">
+        {% for ln in q.lines %}
+        <li class="k-{{ ln.k }}"><i></i><span>{{ names[ln.k] }}<small>
+          {%- if ln.k == 'car' %}{{ fmt(l.price) }} {{ l.currency }} · {{ 'курс ЦБ РФ' if rates_source == 'ЦБ РФ' else 'курс ориентировочный' }}
+          {%- elif ln.k == 'duty' %}{{ q.age_note }}{% if q.calc.cc %}, {{ fmt(q.calc.cc) }} см³{% endif %}
+          {%- elif ln.k == 'fee' %}не больше этой суммы{% endif %}</small></span>
+          <b>{% if ln.rub %}{{ fmt(ln.rub) }} ₽{% else %}<em>посчитает менеджер</em>{% endif %}</b></li>
+        {% endfor %}
+        <li class="q"><i></i><span>Доставка, СБКТС, ЭПТС</span><b><em>посчитает менеджер</em></b></li>
+      </ul>
+      <p class="small muted">Расчёт при мощности до 160 л.с.{% if q.turnkey_from %}; объём двигателя в объявлении не указан — взят типичный для модели{% endif %}. Точную цену в вашем городе назовёт менеджер.</p>
+      {% else %}
       <div class="muted small">Цена в {{ 'Корее' if l.country == 'KR' else 'Китае' }}</div>
       <div class="big">{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% else %}по запросу{% endif %}</div>
       {% if l.price %}<div class="muted small">{{ fmt(l.price) }} {{ l.currency }}{% if l.price_usd %} · ≈ ${{ fmt(l.price_usd) }}{% endif %} · {{ 'курс ЦБ РФ' if rates_source == 'ЦБ РФ' else 'курс ориентировочный' }}</div>{% endif %}
       <p class="small muted">Без доставки, растаможки и утильсбора.</p>
-      <a class="btn block" href="#lead">Рассчитать итоговую цену</a>
+      {% endif %}
+      <a class="btn block" href="#lead">{{ 'Получить точный расчёт' if v.turnkey else 'Рассчитать итоговую цену' }}</a>
     </div>
 
     <div class="panel">
@@ -128,7 +151,7 @@
   </aside>
 </div>
 
-<div class="cta-bar"><div><b>{% if v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% endif %}</b></div><span class="cta-acts">{% if company_hotline or company_phone %}<a class="btn ghost call-btn" href="tel:{{ (company_hotline or company_phone)|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call" aria-label="Позвонить {{ company_hotline or company_phone }}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg><span>Звонок</span></a>{% endif %}<a class="btn" href="#lead">Рассчитать цену</a></span></div>
+<div class="cta-bar"><div><b>{% if v.turnkey %}≈ {{ fmt(v.turnkey|round(-4)) }} ₽{% elif v.price_rub %}≈ {{ fmt(v.price_rub) }} ₽{% endif %}</b></div><span class="cta-acts">{% if company_hotline or company_phone %}<a class="btn ghost call-btn" href="tel:{{ (company_hotline or company_phone)|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call" aria-label="Позвонить {{ company_hotline or company_phone }}"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg><span>Звонок</span></a>{% endif %}<a class="btn" href="#lead">Рассчитать цену</a></span></div>
 
 {% if similar %}
 <h2>Похожие предложения</h2>
