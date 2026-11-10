@@ -153,3 +153,15 @@ K Car, Bobaedream (Корея); Che168 / 二手车之家, Guazi / 瓜子 (Кит
 pip install -e ".[dev]"
 pytest
 ```
+
+## Автодеплой
+
+Сервер сам забирает новые коммиты из GitHub и пересобирает сайт. Включается один раз на сервере:
+
+```bash
+cd /root/RenalAuto && bash deploy/install.sh
+```
+
+Раз в 2 минуты `deploy/autodeploy.sh` проверяет ветку, которая выложена на сервере. Если сборка упала, старая версия
+продолжает работать; новый `Caddyfile` применяется только после проверки. Журнал: `journalctl -u renalauto-deploy -n 50`.
+Отключить: `systemctl disable --now renalauto-deploy.timer`.
