@@ -117,7 +117,7 @@ def test_telegram_link_from_settings_is_never_a_placeholder(monkeypatch):
     monkeypatch.delenv("COMPANY_TELEGRAM")
     assert Settings().company_telegram == default
     monkeypatch.setenv("COMPANY_TELEGRAM_CHANNEL", "@ваш_канал")
-    assert Settings().company_telegram_channel is None
+    assert Settings().company_telegram_channel == "https://t.me/RenalautoChina"  # заглушка — берём канал компании
 
 
 def test_calculator_page_explains_the_same_rates_it_uses(settings):

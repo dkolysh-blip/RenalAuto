@@ -127,7 +127,7 @@ class Settings:
     # Telegram: личный чат, куда клиент пишет сам («Написать в Telegram»), и канал или группа компании. Пусто — без кнопки
     company_telegram: str | None = field(
         default_factory=lambda: _telegram_link(os.getenv("COMPANY_TELEGRAM"), "https://t.me/+79140668808"))
-    company_telegram_channel: str | None = field(default_factory=lambda: _telegram_link(os.getenv("COMPANY_TELEGRAM_CHANNEL"), None))
+    company_telegram_channel: str | None = field(default_factory=lambda: _telegram_link(os.getenv("COMPANY_TELEGRAM_CHANNEL"), "https://t.me/RenalautoChina"))
     # Instagram — только как контакт, без рекламы; рядом ставится обязательная пометка про Meta. Пусто — без значка
     company_instagram: str | None = field(
         default_factory=lambda: (os.getenv("COMPANY_INSTAGRAM") or "").strip()
