@@ -69,6 +69,8 @@ class Settings:
     telegram_manager_chat_id: str | None = field(
         default_factory=lambda: os.getenv("TELEGRAM_MANAGER_CHAT_ID") or None
     )
+    # Отдельный бот для покупателей: подбор машин кнопками и заявка менеджеру. Пусто — бот выключен
+    telegram_catalog_bot_token: str | None = field(default_factory=lambda: _secret("TELEGRAM_CATALOG_BOT_TOKEN"))
     # Токен для служебных функций: заявки, фильтры, ручной опрос. Без него они открыты всем!
     admin_token: str | None = field(default_factory=lambda: _secret("ADMIN_TOKEN"))
     # Токен удалённых сборщиков (Encar с корейского IP). Пусто — приём данных выключен

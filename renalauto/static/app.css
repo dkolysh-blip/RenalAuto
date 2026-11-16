@@ -1513,3 +1513,4 @@ button.link { background: none; border: 0; padding: 0; color: var(--link); curso
 .foot-offices .fc-row { align-items: flex-start; }
 .foot-offices .addr strong { color: var(--text); font-weight: 700; }
 .foot-offices .addr small { display: block; }
+.foot-contacts .fi-tg { background: linear-gradient(160deg, #37bbfe, #007dbb); }

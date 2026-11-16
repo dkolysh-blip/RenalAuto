@@ -37,6 +37,7 @@ from .notify import TelegramNotifier
 from .og import money, render_car
 from .poller import Poller
 from .rates import Rates
+from .shopbot import ShopBot
 from .sources import REGISTRY, Source, build_sources
 from .storage import Storage
 from .describe import describe
@@ -50,6 +51,7 @@ SSE_KEEPALIVE = 15
 PAGE_SIZE = 24
 POLICY_DATE = "20 октября 2026 г."  # дата редакции /privacy — менять вместе с текстом
 PORT_PER_ZONE = 56  # мест в зоне терминала (Корея / Китай): 4 ряда × 14
+SHOP_LIMIT = 30  # сколько машин бот для покупателей даёт пролистать за один подбор
 PORT_SCAN = 600  # сколько свежих объявлений перебирает пульт подбора
 RATES_REFRESH = 6 * 3600
 
@@ -203,6 +205,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if settings.poller_enabled:
             poller.start()
         notifier.start()  # бот слушает /start из ссылки в админке — так подключаются чаты для заявок
+        shop = app.state.shop = ShopBot(settings.telegram_catalog_bot_token, find_cars=shop_cars, top_makes=shop_makes,
+                                        create_lead=shop_lead, site_url=settings.site_url, company=settings.company_name)
+        shop.start()
         rates_task = asyncio.create_task(refresh_rates_forever()) if settings.rates_live else None
         if not settings.admin_token:
             log.warning("ADMIN_TOKEN не задан: заявки и служебные функции недоступны")
@@ -214,6 +219,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                 with suppress(asyncio.CancelledError):
                     await rates_task
             await poller.stop()
+            await shop.aclose()
             await notifier.aclose()
             for source in srcs.values():
                 await source.aclose()
@@ -308,6 +314,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
 
     def render(request: Request, name: str, status_code: int = 200, **context: Any) -> HTMLResponse:
         context.update(year=date.today().year, rates_source=rates.source, header_rates=header_rates(), rates_date=rates_date())
+        shop = getattr(request.app.state, "shop", None)  # ссылка на бота появляется, когда он ответил Telegram
+        context.setdefault("catalog_bot", shop.username if shop else None)
         return templates.TemplateResponse(request, name, context, status_code=status_code)
 
     def storage_of(request: Request) -> Storage:
@@ -421,6 +429,62 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if q.get("turnkey"):
             v.turnkey, v.quote = q["turnkey"], q
         return v
+
+    # --- бот для покупателей (renalauto/shopbot.py): те же машины и цены, что на сайте ---
+
+    def shop_cars(country: str | None, budget: int | None, make: str | None) -> list[dict[str, Any]]:
+        """До SHOP_LIMIT самых свежих проходных машин под страну, бюджет с растаможкой и марку."""
+        storage: Storage = app.state.storage
+        if make:
+            pairs = [(mk, md) for (mk_ru, _md), raws in make_index(storage).items() if mk_ru == make for mk, md in raws]
+            rows = storage.search_pairs(pairs, country=country, limit=PORT_SCAN) if pairs else []
+        else:
+            rows = storage.search(country=country, passable_only=True, limit=PORT_SCAN)
+        found: list[dict[str, Any]] = []
+        for l in rows:
+            v = priced(car_view(l, rates))
+            if v.eligibility.verdict == "bad" or (make and v.make != make):
+                continue
+            if budget and not (v.turnkey and v.turnkey <= budget):
+                continue
+            if len(found) >= SHOP_LIMIT:
+                for car in found:
+                    car["more"] = True
+                break
+            found.append({"source": l.source, "external_id": l.external_id, "path": v.path,
+                          "title": v.title + (f", {l.year}" if l.year else ""), "year": l.year, "mileage_km": l.mileage_km,
+                          "fuel": v.fuel, "city": v.city, "photo": v.photos[0] if v.photos else None,
+                          "turnkey": v.turnkey, "price_rub": v.price_rub})
+        return found
+
+    def shop_makes(country: str | None) -> list[str]:
+        """Марки для кнопок бота — по числу объявлений в выбранной стране."""
+        counts: dict[str, int] = defaultdict(int)
+        for c, mk, _md, n in app.state.storage.make_model_counts():
+            name = i18n.make(mk)
+            if name and not i18n.has_foreign(name) and (country is None or c == country):
+                counts[name] += n
+        return [m for m, _ in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))]
+
+    async def shop_lead(*, name: str, phone: str, username: str | None, source: str | None, external_id: str | None,
+                        budget: int | None, country: str | None, make: str | None) -> int | None:
+        """Заявка из бота — такая же, как с сайта: в базу, в админку и менеджерам в Telegram."""
+        storage: Storage = app.state.storage
+        listing = storage.get(source, external_id) if source and external_id else None
+        asked = ", ".join(x for x in [{"KR": "Корея", "CN": "Китай"}.get(country or ""), make] if x)
+        comment = "Из Telegram-бота" + (f", @{username}" if username else "") + (f". Искал: {asked}" if asked and not listing else "")
+        try:
+            lead = LeadIn(name=name, phone=phone, comment=comment, budget_rub=budget if not listing else None,
+                          source=source if listing else None, external_id=external_id if listing else None,
+                          page="telegram-bot", kind="calc" if listing else "pick")
+        except ValueError:
+            return None
+        saved = storage.add_lead(lead, listing)
+        if listing:
+            saved.listing_title = car_view(listing, rates).title + (f", {listing.year}" if listing.year else "")
+        if not await app.state.notifier.send_lead(saved, settings.site_url):
+            log.warning("lead #%s from the catalog bot saved but not delivered to Telegram", saved.id)
+        return saved.id
 
     def stream_query(f: PageFilters) -> str:
         params = {"country": f.country, "make": f.make, "model": f.model, "year_from": f.year_from,
@@ -844,6 +908,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             "admin_token_set": bool(settings.admin_token),
             # куда уходят заявки: есть ли бот, сколько чатов подключено, когда ушла последняя и последняя ошибка
             "lead_notify": request.app.state.notifier.status(),
+            "catalog_bot": request.app.state.shop.status(),
         }
 
     @app.get("/api/listings", response_model=list[Listing])
