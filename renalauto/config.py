@@ -96,10 +96,12 @@ class Settings:
     )
     company_address: str | None = field(
         default_factory=lambda: os.getenv(
-            "COMPANY_ADDRESS", "690078, Приморский край, г. Владивосток, ул. Мыс Чумака, д. 1а, стр. 3"
+            "COMPANY_ADDRESS", "690078, Приморский край, г. Владивосток, ул. Мыс Чумака, д. 1а, стр. 3, офис 408"
         )
         or None
     )
+    # Номер свидетельства на товарный знак RENAL-AUTO (Роспатент) — строка в подвале со ссылкой на реестр. Пусто — без неё
+    company_trademark: str | None = field(default_factory=lambda: os.getenv("COMPANY_TRADEMARK", "1249093") or None)
     # Мессенджер MAX: ссылка на профиль или канал компании (https://max.ru/…). Пусто — кнопки MAX не показываются
     company_max: str | None = field(default_factory=lambda: os.getenv("COMPANY_MAX", "https://max.ru/channel_renalauto") or None)
     # Яндекс Метрика: номер счётчика. Пусто — счётчик на сайт не ставится

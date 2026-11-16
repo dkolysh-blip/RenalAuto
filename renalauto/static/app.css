@@ -1508,7 +1508,10 @@ button.link { background: none; border: 0; padding: 0; color: var(--link); curso
 .admin-login { max-width: 420px; margin: 48px auto; } .admin-login h1 { font-size: 22px; margin: 0 0 8px; }
 
 /* подвал: офисы по городам */
-.foot-offices { display: grid; gap: 8px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+.foot-offices { display: grid; gap: 10px; margin-top: 20px; scroll-margin-top: 90px; }
+.foot-offices .fc-row { font-size: 14px; gap: 10px; }
+.foot-offices .fi { width: 24px; height: 24px; border-radius: 7px; margin-top: 1px; }
+.foot-offices .fi svg { width: 14px; height: 14px; }
 .foot-offices .fo-head { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .foot-offices .fc-row { align-items: flex-start; }
 .foot-offices .addr strong { color: var(--text); font-weight: 700; }

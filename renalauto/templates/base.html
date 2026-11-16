@@ -66,6 +66,15 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     <div class="foot-brand">
       <a class="logo" href="/"><img class="logo-mark on-dark" src="/static/brand/renal-auto-mark-white.svg" alt="" width="124" height="49"><img class="logo-mark on-light" src="/static/brand/renal-auto-mark.svg" alt="" width="124" height="49"><span class="logo-word"><span>{{ company|upper }}</span><small>Корея · Китай</small></span></a>
       <p>Авто из Кореи и Китая под заказ: подбор, проверка, выкуп и доставка до вашего города.</p>
+      {% if offices %}
+      <div class="foot-offices foot-contacts" id="offices">
+        <div class="fo-head">Офисы</div>
+        {% for o in offices %}
+        {% if o.url %}<a class="fc-row" href="{{ o.url }}" target="_blank" rel="noopener" data-goal="2gis"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr"><strong>{{ o.city }}</strong>{% if o.address %}, {{ o.address }}{% endif %}{% if o.note %}<small>{{ o.note }}</small>{% endif %}</span></a>
+        {% else %}<div class="fc-row"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr"><strong>{{ o.city }}</strong>{% if o.address %}, {{ o.address }}{% else %}<small>адрес и время приёма подскажет менеджер</small>{% endif %}</span></div>{% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
     </div>
     {% block footer_mid %}{% endblock %}
     <div class="foot-contacts">
@@ -77,19 +86,12 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       {% if company_vk %}<a class="fc-row" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img class="fi" src="/static/brand/vk.webp" alt="" width="30" height="30"><span>ВКонтакте</span></a>{% endif %}
       {% if company_avito %}<a class="fc-row" href="{{ company_avito }}" target="_blank" rel="noopener" data-goal="avito"><img class="fi" src="/static/brand/avito.webp" alt="" width="30" height="30"><span>Мы на Авито</span></a>{% endif %}
       {% if company_2gis %}<a class="fc-row" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img class="fi" src="/static/brand/2gis.webp" alt="" width="30" height="30"><span>Мы в 2ГИС{% if company_2gis_rating %} · ★ {{ company_2gis_rating }}{% endif %}</span></a>{% endif %}
-      {% if offices %}
-      <div class="foot-offices" id="offices">
-        <div class="fo-head">Офисы</div>
-        {% for o in offices %}
-        {% if o.url %}<a class="fc-row" href="{{ o.url }}" target="_blank" rel="noopener" data-goal="2gis"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr"><strong>{{ o.city }}</strong>{% if o.address %}, {{ o.address }}{% endif %}{% if o.note %}<small>{{ o.note }}</small>{% endif %}</span></a>
-        {% else %}<div class="fc-row"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr"><strong>{{ o.city }}</strong>{% if o.address %}, {{ o.address }}{% else %}<small>адрес и время приёма подскажет менеджер</small>{% endif %}</span></div>{% endif %}
-        {% endfor %}
-      </div>
-      {% elif company_address %}<a class="fc-row" href="{{ company_2gis or '#' }}" target="_blank" rel="noopener"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr">{{ company_address }}</span></a>{% endif %}
+      {% if not offices and company_address %}<a class="fc-row" href="{{ company_2gis or '#' }}" target="_blank" rel="noopener"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr">{{ company_address }}</span></a>{% endif %}
     </div>
   </div>
   <div class="wrap foot-legal">
     <p>© {{ year }} {{ company_legal_name or company }}{% if company_requisites %} · {{ company_requisites }}{% endif %} · <a href="/privacy">Политика конфиденциальности</a></p>
+    {% if company_trademark %}<p>RENAL-AUTO — зарегистрированный товарный знак: <a href="https://new.fips.ru/registers-doc-view/fips_servlet?DB=RUTM&amp;DocNumber={{ company_trademark }}" target="_blank" rel="noopener">свидетельство Роспатента № {{ company_trademark }}</a>.</p>{% endif %}
     <p>Объявления собираются с открытых площадок (Encar в Корее, Dongchedi в Китае) и обновляются в реальном времени.
     Цены ориентировочные, {{ 'по курсу ЦБ РФ' if rates_source == 'ЦБ РФ' else 'по ориентировочному курсу' }}. Точную стоимость под ключ считает менеджер.
     Правила ввоза: {{ rules_as_of }}.</p>

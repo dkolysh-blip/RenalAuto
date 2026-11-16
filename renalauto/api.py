@@ -278,6 +278,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         company_ogrn=(re.search(r"ОГРН\s*(\d{13,15})", settings.company_requisites or "") or [None, None])[1],
         company_address=settings.company_address,
         offices=offices,
+        company_trademark=settings.company_trademark,
         org_jsonld=org_jsonld,
         company_vk=settings.company_vk,
         ym_id=settings.ym_id,
