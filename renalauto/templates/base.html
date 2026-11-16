@@ -39,22 +39,23 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       <img class="logo-mark on-light" src="/static/brand/renal-auto-mark.svg" alt="" width="124" height="49">
       <span class="logo-word"><span>{{ company|upper }}</span><small>Корея · Китай</small></span>
     </a>
-    <nav>
-      <a href="/cars">Каталог</a>
-      <a href="/vin">Проверка VIN</a>
+    {% set path = request.url.path %}
+    <nav aria-label="Разделы сайта">
+      <a href="/"{{ ' class="on"'|safe if path == '/' }}>Стоянка</a>
+      <a href="/cars"{{ ' class="on"'|safe if path.startswith('/cars') or path.startswith('/car/') }}>Каталог</a>
+      <a href="/vin"{{ ' class="on"'|safe if path.startswith('/vin') }}>Проверка VIN</a>
       <a href="/#vydachi">Отзывы</a>
-      <a href="/#faq">Вопросы</a>
     </nav>
-    {% if header_rates %}{% set rates_label = ('Курс ЦБ' ~ (' на ' ~ rates_date if rates_date else '')) if rates_source == 'ЦБ РФ' else 'Курс' %}
-    <div class="top-rates" title="Цены в рублях на сайте посчитаны по этому курсу"><span class="sr-only">{{ rates_label }}: {% for r in header_rates %}{{ r.name }} — {{ r.value }} ₽{{ ', ' if not loop.last }}{% endfor %}</span>
-      <div class="tr-track" aria-hidden="true">{% for _ in range(2) %}<span class="tr-run">{% for _ in range(3) %}<span class="tr-set"><i>{{ rates_label }}, ₽</i>{% for r in header_rates %}<b class="tr-{{ r.code|lower }}"><span class="tr-code">{{ r.code }}{% if r.per > 1 %}<sup>×{{ r.per }}</sup>{% endif %}</span>{{ r.value }}</b>{% endfor %}</span>{% endfor %}</span>{% endfor %}</div>
-    </div>{% endif %}
     <div class="contacts">
-      {% if company_hotline %}<a class="phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call">{{ company_hotline }}</a>{% elif company_phone %}<a class="phone" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}">{{ company_phone }}</a>{% endif %}
-      {% if company_max %}<a class="btn ghost max-btn" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img src="/static/brand/max.webp" alt="" width="20" height="20">MAX</a>{% endif %}
-      {% if company_vk %}<a class="btn ghost max-btn" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img src="/static/brand/vk.webp" alt="" width="20" height="20">ВК</a>{% endif %}
-      {% if company_2gis %}<a class="btn ghost max-btn" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.webp" alt="" width="20" height="20">2ГИС</a>{% endif %}
-      {% if company_avito %}<a class="btn ghost max-btn" href="{{ company_avito }}" target="_blank" rel="noopener" data-goal="avito"><img src="/static/brand/avito.webp" alt="" width="20" height="20">Авито</a>{% endif %}
+      {% if company_hotline or company_phone %}<a class="top-phone" href="tel:{{ (company_hotline or company_phone or '')|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call"><b>{{ company_hotline or company_phone }}</b>{% if company_hotline %}<small>бесплатно по России</small>{% endif %}</a>{% endif %}
+      <span class="top-social">
+        {% if company_telegram %}<a class="ts ts-tg" href="{{ company_telegram }}" target="_blank" rel="noopener" data-goal="telegram" aria-label="Написать в Telegram" title="Написать в Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.6 4.3 3.9 10.8c-1 .4-1 1.1-.2 1.4l4.2 1.3 1.6 5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.1-2 4.2 3.1c.8.4 1.3.2 1.5-.7L21.9 5.5c.3-1.1-.4-1.6-1.3-1.2zM9.6 13.3l8-5c.4-.2.7-.1.4.2l-6.6 6-.3 2.9-1.5-4.1z"/></svg></a>{% endif %}
+        {% if company_max %}<a class="ts" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max" aria-label="Канал в MAX" title="Канал в MAX"><img src="/static/brand/max.webp" alt="" width="36" height="36"></a>{% endif %}
+        {% if company_instagram %}<a class="ts ts-ig" href="{{ company_instagram }}" target="_blank" rel="noopener" data-goal="instagram" aria-label="Instagram" title="Instagram*"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" rx="4.5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16.6" cy="7.4" r="1.2" fill="#fff"/></svg></a>{% endif %}
+      </span>
+      {% if company_hotline or company_phone %}<a class="ts ts-call top-call" href="tel:{{ (company_hotline or company_phone or '')|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call" aria-label="Позвонить {{ company_hotline or company_phone }}"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></a>{% endif %}
+      <button type="button" class="btn top-cta" data-contact-open data-goal="contact_open">Связаться</button>
+      <button type="button" class="top-menu" data-contact-open aria-label="Меню и контакты"><i></i><i></i><i></i></button>
     </div>
   </div>
 </header>
@@ -81,9 +82,12 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       {% if company_hotline %}<a class="fc-row phone" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call"><i class="fi fi-call"><svg viewBox="0 0 24 24"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></i><span><b>{{ company_hotline }}</b><small>бесплатно по России</small></span></a>{% endif %}
       {% if company_phone %}<a class="fc-row" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call"><i class="fi fi-call"><svg viewBox="0 0 24 24"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></i><span>{{ company_phone }}</span></a>{% endif %}
       {% if company_email %}<a class="fc-row" href="mailto:{{ company_email }}" data-goal="email"><i class="fi fi-mail"><svg viewBox="0 0 24 24"><path d="M16 12a4 4 0 1 1-1.2-2.85V12a2 2 0 0 0 4 0v-.5A7 7 0 1 0 15 17.7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></i><span>{{ company_email }}</span></a>{% endif %}
+      {% if company_telegram %}<a class="fc-row" href="{{ company_telegram }}" target="_blank" rel="noopener" data-goal="telegram"><i class="fi fi-tg"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.6 4.3 3.9 10.8c-1 .4-1 1.1-.2 1.4l4.2 1.3 1.6 5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.1-2 4.2 3.1c.8.4 1.3.2 1.5-.7L21.9 5.5c.3-1.1-.4-1.6-1.3-1.2zM9.6 13.3l8-5c.4-.2.7-.1.4.2l-6.6 6-.3 2.9-1.5-4.1z"/></svg></i><span>Написать в Telegram</span></a>{% endif %}
+      {% if company_telegram_channel %}<a class="fc-row" href="{{ company_telegram_channel }}" target="_blank" rel="noopener" data-goal="telegram_channel"><i class="fi fi-tg"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.6 4.3 3.9 10.8c-1 .4-1 1.1-.2 1.4l4.2 1.3 1.6 5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.1-2 4.2 3.1c.8.4 1.3.2 1.5-.7L21.9 5.5c.3-1.1-.4-1.6-1.3-1.2zM9.6 13.3l8-5c.4-.2.7-.1.4.2l-6.6 6-.3 2.9-1.5-4.1z"/></svg></i><span>Telegram-канал</span></a>{% endif %}
       {% if company_max %}<a class="fc-row" href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><img class="fi" src="/static/brand/max.webp" alt="" width="30" height="30"><span>Канал в MAX</span></a>{% endif %}
       {% if catalog_bot %}<a class="fc-row" href="https://t.me/{{ catalog_bot }}" target="_blank" rel="noopener" data-goal="telegram"><i class="fi fi-tg"><svg viewBox="0 0 24 24"><path fill="#fff" d="M20.6 4.3 3.9 10.8c-1 .4-1 1.1-.2 1.4l4.2 1.3 1.6 5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.1-2 4.2 3.1c.8.4 1.3.2 1.5-.7L21.9 5.5c.3-1.1-.4-1.6-1.3-1.2zM9.6 13.3l8-5c.4-.2.7-.1.4.2l-6.6 6-.3 2.9-1.5-4.1z"/></svg></i><span>Подбор машин в Telegram-боте</span></a>{% endif %}
       {% if company_vk %}<a class="fc-row" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><img class="fi" src="/static/brand/vk.webp" alt="" width="30" height="30"><span>ВКонтакте</span></a>{% endif %}
+      {% if company_instagram %}<a class="fc-row" href="{{ company_instagram }}" target="_blank" rel="noopener" data-goal="instagram"><i class="fi fi-ig"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" rx="4.5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16.6" cy="7.4" r="1.2" fill="#fff"/></svg></i><span>Instagram*</span></a>{% endif %}
       {% if company_avito %}<a class="fc-row" href="{{ company_avito }}" target="_blank" rel="noopener" data-goal="avito"><img class="fi" src="/static/brand/avito.webp" alt="" width="30" height="30"><span>Мы на Авито</span></a>{% endif %}
       {% if company_2gis %}<a class="fc-row" href="{{ company_2gis }}" target="_blank" rel="noopener" data-goal="2gis"><img class="fi" src="/static/brand/2gis.webp" alt="" width="30" height="30"><span>Мы в 2ГИС{% if company_2gis_rating %} · ★ {{ company_2gis_rating }}{% endif %}</span></a>{% endif %}
       {% if not offices and company_address %}<a class="fc-row" href="{{ company_2gis or '#' }}" target="_blank" rel="noopener"><i class="fi fi-pin"><svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.8c-3.6 0-6.4 2.8-6.4 6.3 0 4.6 5.4 9.6 6 10.1.2.2.6.2.8 0 .6-.5 6-5.5 6-10.1 0-3.5-2.8-6.3-6.4-6.3zm0 8.6a2.4 2.4 0 1 1 0-4.8 2.4 2.4 0 0 1 0 4.8z"/></svg></i><span class="addr">{{ company_address }}</span></a>{% endif %}
@@ -91,6 +95,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
   </div>
   <div class="wrap foot-legal">
     <p>© {{ year }} {{ company_legal_name or company }}{% if company_requisites %} · {{ company_requisites }}{% endif %} · <a href="/privacy">Политика конфиденциальности</a></p>
+    {% if company_instagram %}<p>* Instagram принадлежит компании Meta, которая признана в России экстремистской организацией и запрещена.</p>{% endif %}
     {% if company_trademark %}<p>RENAL-AUTO — зарегистрированный товарный знак: <a href="https://new.fips.ru/registers-doc-view/fips_servlet?DB=RUTM&amp;DocNumber={{ company_trademark }}" target="_blank" rel="noopener">свидетельство Роспатента № {{ company_trademark }}</a>.</p>{% endif %}
     <p>Объявления собираются с открытых площадок (Encar в Корее, Dongchedi в Китае) и обновляются в реальном времени.
     Цены ориентировочные, {{ 'по курсу ЦБ РФ' if rates_source == 'ЦБ РФ' else 'по ориентировочному курсу' }}. Точную стоимость под ключ считает менеджер.
@@ -98,6 +103,51 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     <p>Сайт использует cookie и Яндекс Метрику — подробнее в <a href="/privacy">политике конфиденциальности</a>.{% if model_credits %} <a href="/credits">Авторы 3D-моделей и фото</a>.{% endif %}</p>
   </div>
 </footer>
+<dialog class="contact-dlg" id="contact-dlg" aria-labelledby="contact-title">
+  <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
+  <nav class="cdlg-nav" aria-label="Разделы сайта"><a href="/">Стоянка</a><a href="/cars">Каталог</a><a href="/vin">Проверка VIN</a><a href="/#vydachi">Отзывы</a><a href="#offices">Офисы</a></nav>
+  <div class="cdlg-grid">
+    <section class="cdlg-self">
+      <h2 id="contact-title">Напишите или позвоните</h2>
+      <p class="muted small">Нажмите — и сразу окажетесь в чате или наберёте номер.</p>
+      <div class="cdlg-list">
+        {% if company_telegram %}<a class="cl" href="{{ company_telegram }}" target="_blank" rel="noopener" data-goal="telegram"><i class="ts ts-tg"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.6 4.3 3.9 10.8c-1 .4-1 1.1-.2 1.4l4.2 1.3 1.6 5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.1-2 4.2 3.1c.8.4 1.3.2 1.5-.7L21.9 5.5c.3-1.1-.4-1.6-1.3-1.2zM9.6 13.3l8-5c.4-.2.7-.1.4.2l-6.6 6-.3 2.9-1.5-4.1z"/></svg></i><span><b>Написать в Telegram</b><small>личный чат с менеджером</small></span></a>{% endif %}
+        {% if company_hotline %}<a class="cl" href="tel:{{ company_hotline|replace(' ', '')|replace('-', '') }}" data-goal="call"><i class="ts ts-call"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></i><span><b>{{ company_hotline }}</b><small>звонок бесплатный по России</small></span></a>{% endif %}
+        {% if company_phone %}<a class="cl" href="tel:{{ company_phone|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call"><i class="ts ts-call"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg></i><span><b>{{ company_phone }}</b><small>мобильный — звонок и SMS</small></span></a>{% endif %}
+        {% if company_vk %}<a class="cl" href="{{ company_vk }}" target="_blank" rel="noopener" data-goal="vk"><i class="ts"><img src="/static/brand/vk.webp" alt="" width="36" height="36"></i><span><b>ВКонтакте</b><small>сообщения группы</small></span></a>{% endif %}
+        {% if company_email %}<a class="cl" href="mailto:{{ company_email }}" data-goal="email"><i class="ts ts-mail"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 12a4 4 0 1 1-1.2-2.85V12a2 2 0 0 0 4 0v-.5A7 7 0 1 0 15 17.7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg></i><span><b>{{ company_email }}</b><small>почта</small></span></a>{% endif %}
+      </div>
+      {% if company_telegram_channel or company_max or company_instagram or catalog_bot %}
+      <p class="cdlg-sub">Где посмотреть машины и выдачи</p>
+      <div class="cdlg-chips">
+        {% if catalog_bot %}<a href="https://t.me/{{ catalog_bot }}" target="_blank" rel="noopener" data-goal="telegram_bot"><i class="ts ts-tg"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.6 4.3 3.9 10.8c-1 .4-1 1.1-.2 1.4l4.2 1.3 1.6 5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.1-2 4.2 3.1c.8.4 1.3.2 1.5-.7L21.9 5.5c.3-1.1-.4-1.6-1.3-1.2zM9.6 13.3l8-5c.4-.2.7-.1.4.2l-6.6 6-.3 2.9-1.5-4.1z"/></svg></i>Бот подбора</a>{% endif %}
+        {% if company_telegram_channel %}<a href="{{ company_telegram_channel }}" target="_blank" rel="noopener" data-goal="telegram_channel"><i class="ts ts-tg"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.6 4.3 3.9 10.8c-1 .4-1 1.1-.2 1.4l4.2 1.3 1.6 5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.1-2 4.2 3.1c.8.4 1.3.2 1.5-.7L21.9 5.5c.3-1.1-.4-1.6-1.3-1.2zM9.6 13.3l8-5c.4-.2.7-.1.4.2l-6.6 6-.3 2.9-1.5-4.1z"/></svg></i>Telegram-канал</a>{% endif %}
+        {% if company_max %}<a href="{{ company_max }}" target="_blank" rel="noopener" data-goal="max"><i class="ts"><img src="/static/brand/max.webp" alt="" width="36" height="36"></i>Канал в MAX</a>{% endif %}
+        {% if company_instagram %}<a href="{{ company_instagram }}" target="_blank" rel="noopener" data-goal="instagram"><i class="ts ts-ig"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="15" rx="4.5" fill="none" stroke="#fff" stroke-width="2"/><circle cx="12" cy="12" r="3.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="16.6" cy="7.4" r="1.2" fill="#fff"/></svg></i>Instagram*</a>{% endif %}
+      </div>
+      {% endif %}
+    </section>
+    <section class="cdlg-back">
+      <form class="lead-form" data-lead>
+        <h2>Или оставьте контакты — свяжемся сами</h2>
+        <input type="hidden" name="kind" value="callback">
+        <div class="field"><label for="cb-name">Имя</label><input id="cb-name" name="name" required maxlength="100" autocomplete="name"></div>
+        <div class="field"><label for="cb-phone">Телефон</label><input id="cb-phone" name="phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="+7"></div>
+        <fieldset class="cb-via"><legend>Как с вами связаться</legend>
+          <label><input type="radio" name="contact_via" value="звонок" checked><span>Позвонить</span></label>
+          <label><input type="radio" name="contact_via" value="Telegram"><span>Telegram</span></label>
+          <label><input type="radio" name="contact_via" value="MAX"><span>MAX</span></label>
+        </fieldset>
+        <div class="field"><label for="cb-comment">Вопрос или машина, которая интересует <span class="muted">— необязательно</span></label><textarea id="cb-comment" name="comment" maxlength="2000" rows="2"></textarea></div>
+        <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
+        <label class="consent"><input type="checkbox" name="consent" required> <span>Согласен на обработку персональных данных по <a href="/privacy" target="_blank">политике конфиденциальности</a></span></label>
+        <button class="btn block" type="submit">Жду связи</button>
+        <div class="form-msg"></div>
+      </form>
+    </section>
+  </div>
+  {% if company_instagram %}<p class="cdlg-foot">* Instagram принадлежит компании Meta, которая признана в России экстремистской организацией и запрещена.</p>{% endif %}
+</dialog>
 <script src="/static/app.js?v={{ asset_version }}" defer></script>
 <script src="/static/city.js?v={{ asset_version }}" defer></script>
 {% block scripts %}{% endblock %}

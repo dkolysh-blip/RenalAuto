@@ -92,8 +92,9 @@ class ListingEvent(BaseModel):
 
 LeadStatus = Literal["new", "in_work", "deal", "lost"]
 # calc — расчёт под ключ конкретной машины, pick — подбор под бюджет, history — отчёт об истории (CarHistory)
-LeadKind = Literal["calc", "pick", "history"]
-LEAD_KIND_LABELS = {"calc": "Расчёт стоимости", "pick": "Подбор под бюджет", "history": "Отчёт об истории"}
+LeadKind = Literal["calc", "pick", "history", "callback"]
+LEAD_KIND_LABELS = {"calc": "Расчёт стоимости", "pick": "Подбор под бюджет", "history": "Отчёт об истории",
+                    "callback": "Просьба связаться"}
 
 
 class LeadIn(BaseModel):

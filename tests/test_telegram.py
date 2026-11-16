@@ -71,3 +71,35 @@ def test_offices_in_footer_trust_row_and_markup(settings):
         assert 'id="offices"' in client.get("/cars").text
     finally:
         client.__exit__(None, None, None)
+
+
+def test_header_contact_window_and_callback_lead(settings):
+    settings.company_instagram = "https://instagram.com/renal_auto"
+    settings.company_telegram_channel = "https://t.me/renal_auto_channel"
+    client, _ = make_client(settings, [kb()])
+    try:
+        for url in ("/", "/cars", "/vin", "/car/kbchachacha/1"):
+            page = client.get(url).text
+            assert 'id="contact-dlg"' in page and "data-contact-open" in page, url
+            assert "Написать в Telegram" in page and "https://t.me/+79140668808" in page
+            assert "instagram.com/renal_auto" in page and "признана в России экстремистской" in page
+            assert "t.me/renal_auto_channel" in page
+        assert '<a href="/cars" class="on">Каталог</a>' in client.get("/cars").text
+        assert '<a href="/" class="on">Стоянка</a>' in client.get("/").text
+
+        r = client.post("/api/leads", json={"name": "Олег", "phone": "+79990000001", "kind": "callback",
+                                             "comment": "Ответить: Telegram"})
+        assert r.status_code == 201
+        lead = client.get("/api/leads", headers=ADMIN).json()[0]
+        assert lead["kind"] == "callback" and "Telegram" in lead["comment"]
+        assert "Просьба связаться" in client.get("/admin", headers=ADMIN).text
+    finally:
+        client.__exit__(None, None, None)
+
+
+def test_instagram_note_only_when_instagram_is_set(settings):
+    client, _ = make_client(settings, [])
+    try:
+        assert "экстремистской" not in client.get("/cars").text
+    finally:
+        client.__exit__(None, None, None)

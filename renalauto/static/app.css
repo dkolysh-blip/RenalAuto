@@ -1536,3 +1536,75 @@ button.link { background: none; border: 0; padding: 0; color: var(--link); curso
   .cat-filter:not(.open) .pf-result { display: none; }
 }
 @media (max-width: 640px) { .catalog-head h1 { font-size: 23px; line-height: 1.2; margin-bottom: 6px; } .catalog-head p { font-size: 14px; } }
+
+/* ---- шапка: разделы с подсветкой текущего, телефон с подписью, значки каналов, кнопка «Связаться» ---- */
+.site .top .wrap { gap: 14px; }
+.site .top nav { display: flex; gap: 2px; margin-left: 6px; }
+.site .top nav a { padding: 9px 11px; border-radius: 10px; font-weight: 600; color: #344054; }
+.site .top nav a:hover { background: #f4f6f9; color: #0f172a; text-decoration: none; }
+.site .top nav a.on { background: #eef1f5; color: #0f172a; }
+.site .top .contacts { display: flex; align-items: center; gap: 10px; margin-left: auto; flex: 0 0 auto; }
+.top-phone { display: grid; gap: 4px; text-align: right; white-space: nowrap; color: var(--text); }
+.top-phone:hover { text-decoration: none; }
+.top-phone b { font: 600 18px/1 Unbounded, Onest, sans-serif; letter-spacing: .04em; }
+.top-phone small { font: 500 11.5px/1 Onest, system-ui, sans-serif; color: var(--muted); }
+.top-social { display: flex; gap: 6px; }
+.ts { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; flex: 0 0 auto; overflow: hidden; }
+.ts img { width: 100%; height: 100%; display: block; }
+.ts svg { width: 20px; height: 20px; }
+.ts-tg { background: linear-gradient(160deg, #37bbfe, #007dbb); }
+.ts-ig { background: linear-gradient(45deg, #f9a13b, #e1306c 55%, #7b3fd1); }
+.ts-call { background: linear-gradient(160deg, #3ddc6f, #0f9d4a); }
+.ts-mail { background: linear-gradient(160deg, #3b9cff, #1f5fd6); }
+a.ts { transition: transform .12s ease; } a.ts:hover { transform: translateY(-2px); }
+.top-cta { padding: 12px 20px; border-radius: 12px; font-weight: 700; white-space: nowrap; }
+.top-call, .top-menu { display: none; }
+.top-menu { width: 40px; height: 40px; border: 1px solid var(--line); border-radius: 11px; background: #fff; cursor: pointer; padding: 0;
+  place-items: center; align-content: center; gap: 4px; }
+.top-menu i { display: block; width: 18px; height: 2px; border-radius: 2px; background: #0f172a; }
+@media (max-width: 1240px) { .top-social { display: none; } }
+@media (max-width: 1120px) { .site .top nav { display: none; } .top-menu { display: grid; } }
+@media (max-width: 860px) { .top-phone { display: none; } .top-call { display: grid; width: 40px; height: 40px; border-radius: 11px; } }
+@media (max-width: 560px) { .top-cta { display: none; } .site .top .contacts { gap: 8px; } }
+.foot-contacts .fi-ig { background: linear-gradient(45deg, #f9a13b, #e1306c 55%, #7b3fd1); }
+
+/* ---- окно «Связаться»: слева написать самому, справа оставить контакты ---- */
+.contact-dlg { border: 0; padding: 0; border-radius: 22px; width: min(860px, calc(100vw - 24px)); max-height: calc(100dvh - 24px);
+  background: #fff; color: var(--text); box-shadow: 0 40px 90px rgba(11,40,70,.4); }
+.contact-dlg::backdrop { background: rgba(15,16,18,.55); }
+.contact-dlg .dialog-close { top: 12px; right: 12px; width: 34px; height: 34px; border-radius: 50%; background: #f1f4f8; display: grid; place-items: center; font-size: 22px; z-index: 1; }
+.cdlg-nav { display: none; }
+.cdlg-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.cdlg-grid > section { padding: 26px; min-width: 0; }
+.cdlg-back { background: #f6f8fb; border-left: 1px solid var(--line); }
+.contact-dlg h2 { font: 700 19px/1.2 Unbounded, Onest, sans-serif; margin: 0 0 6px; padding-right: 34px; }
+.cdlg-back h2 { padding-right: 34px; margin-bottom: 14px; }
+.cdlg-list { display: grid; gap: 8px; margin-top: 14px; }
+.cl { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 14px; color: var(--text); background: #fff; }
+.cl:hover { border-color: #b9c4d0; background: #f8fafc; text-decoration: none; }
+.cl span { display: grid; gap: 2px; min-width: 0; } .cl b { font-size: 15px; } .cl small { font-size: 12.5px; color: var(--muted); }
+.cdlg-sub { margin: 18px 0 8px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.cdlg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.cdlg-chips a { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); font-weight: 600; font-size: 14px; }
+.cdlg-chips a:hover { border-color: #b9c4d0; text-decoration: none; }
+.cdlg-chips .ts { width: 26px; height: 26px; border-radius: 50%; } .cdlg-chips .ts svg { width: 15px; height: 15px; }
+.cdlg-back input, .cdlg-back textarea { background: #fff; }
+.cb-via { border: 0; padding: 0; margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.cb-via legend { font-size: 13px; color: var(--muted); margin-bottom: 6px; padding: 0; }
+.cb-via label { margin: 0; cursor: pointer; }
+.cb-via input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.cb-via span { display: block; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--text); font-weight: 600; font-size: 14px; }
+.cb-via input:checked + span { background: #0f172a; border-color: #0f172a; color: #fff; }
+.cb-via input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.cdlg-foot { margin: 0; padding: 10px 26px 14px; font-size: 11.5px; color: var(--muted); border-top: 1px solid var(--line); }
+@media (max-width: 1120px) {
+  .cdlg-nav { display: flex; flex-wrap: wrap; gap: 6px; padding: 16px 56px 14px 16px; border-bottom: 1px solid var(--line); }
+  .cdlg-nav a { padding: 8px 12px; border-radius: 10px; background: #f1f4f8; color: #0f172a; font-weight: 600; font-size: 14px; }
+}
+@media (max-width: 720px) {
+  .contact-dlg { width: 100vw; max-width: 100vw; max-height: 92dvh; margin: auto 0 0; border-radius: 22px 22px 0 0; }
+  .cdlg-grid { grid-template-columns: minmax(0, 1fr); }
+  .cdlg-grid > section { padding: 18px 16px; }
+  .cdlg-back { border-left: 0; border-top: 1px solid var(--line); }
+  .contact-dlg h2 { font-size: 17px; }
+}

@@ -102,6 +102,11 @@ class Settings:
     )
     # Номер свидетельства на товарный знак RENAL-AUTO (Роспатент) — строка в подвале со ссылкой на реестр. Пусто — без неё
     company_trademark: str | None = field(default_factory=lambda: os.getenv("COMPANY_TRADEMARK", "1249093") or None)
+    # Telegram: личный чат, куда клиент пишет сам («Написать в Telegram»), и канал или группа компании. Пусто — без кнопки
+    company_telegram: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM", "https://t.me/+79140668808") or None)
+    company_telegram_channel: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM_CHANNEL") or None)
+    # Instagram — только как контакт, без рекламы; рядом ставится обязательная пометка про Meta. Пусто — без значка
+    company_instagram: str | None = field(default_factory=lambda: os.getenv("COMPANY_INSTAGRAM") or None)
     # Мессенджер MAX: ссылка на профиль или канал компании (https://max.ru/…). Пусто — кнопки MAX не показываются
     company_max: str | None = field(default_factory=lambda: os.getenv("COMPANY_MAX", "https://max.ru/channel_renalauto") or None)
     # Яндекс Метрика: номер счётчика. Пусто — счётчик на сайт не ставится

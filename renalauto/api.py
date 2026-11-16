@@ -281,6 +281,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         company_sms=("sms:" + re.sub(r"[^\d+]", "", settings.company_phone) + "?&body=" + quote("Здравствуйте! Хочу подобрать автомобиль"))
         if settings.company_phone else None,
         company_max=settings.company_max,
+        company_telegram=settings.company_telegram,
+        company_telegram_channel=settings.company_telegram_channel,
+        company_instagram=settings.company_instagram,
         company_email=settings.company_email,
         company_legal_name=settings.company_legal_name,
         company_requisites=settings.company_requisites,

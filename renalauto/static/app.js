@@ -18,6 +18,17 @@
     setTimeout(() => note.remove(), 3500);
   });
 
+  // --- окно «Связаться»: открывается из шапки на любой странице ----------------------
+  const contactDlg = document.getElementById('contact-dlg');
+  if (contactDlg && contactDlg.showModal) {
+    document.addEventListener('click', e => {
+      if (e.target.closest('[data-contact-open]')) { contactDlg.showModal(); return; }
+      if (!contactDlg.open) return;
+      // закрываем по крестику, по клику мимо окна и по переходу к разделу сайта
+      if (e.target === contactDlg || e.target.closest('#contact-dlg [data-close], #contact-dlg .cdlg-nav a')) contactDlg.close();
+    });
+  }
+
   // --- заявки --------------------------------------------------------------
   document.querySelectorAll('form[data-lead]').forEach(form => {
     // «Куда прислать расчёт: Почта» — показать поле для адреса
@@ -56,7 +67,7 @@
         const body = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(body.detail && typeof body.detail === 'string' ? body.detail : 'Не удалось отправить');
         form.innerHTML = '<div class="thanks"><span class="thanks-ico" aria-hidden="true">✓</span><b>Заявка принята</b>' +
-          '<span>Менеджер посчитает стоимость и свяжется с вами в ближайшее время.</span>' +
+          `<span>${data.kind === 'callback' ? 'Менеджер свяжется с вами в ближайшее время.' : 'Менеджер посчитает стоимость и свяжется с вами в ближайшее время.'}</span>` +
           (maxUrl ? `<a class="thanks-max" href="${esc(maxUrl)}" target="_blank" rel="noopener">Пока ждёте — выдачи и подборки в канале MAX →</a>` : '') + '</div>';
         form.dispatchEvent(new CustomEvent('lead:sent', {bubbles: true}));
         if (window.ym && window.YM_ID) window.ym(window.YM_ID, 'reachGoal', 'lead');

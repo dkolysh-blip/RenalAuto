@@ -82,7 +82,7 @@ def test_customer_bot_picks_a_car_and_leaves_a_lead(settings):
         press("n:1")
         assert "Откуда смотреть" in last("sendMessage")["text"]
         # ссылка на бота в подвале сайта — только когда бот подключён
-        assert "t.me/" not in client.get("/cars").text.split("<footer>")[-1]
+        assert "t.me/renalauto_bot" not in client.get("/cars").text
         app.state.shop.username = "renalauto_bot"
         assert "https://t.me/renalauto_bot" in client.get("/cars").text
         app.state.shop.username = None
