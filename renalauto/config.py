@@ -13,6 +13,12 @@ def _bool(name: str, default: bool) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
 
 
+def _secret(name: str) -> str | None:
+    """Пароль из .env без случайного мусора вокруг: пробелов, кавычек, перевода строки Windows."""
+    value = (os.getenv(name) or "").strip().strip("\"'").strip()
+    return value or None
+
+
 def _list(name: str, default: str) -> list[str]:
     return [item.strip() for item in os.getenv(name, default).split(",") if item.strip()]
 
@@ -64,7 +70,7 @@ class Settings:
         default_factory=lambda: os.getenv("TELEGRAM_MANAGER_CHAT_ID") or None
     )
     # Токен для служебных функций: заявки, фильтры, ручной опрос. Без него они открыты всем!
-    admin_token: str | None = field(default_factory=lambda: os.getenv("ADMIN_TOKEN") or None)
+    admin_token: str | None = field(default_factory=lambda: _secret("ADMIN_TOKEN"))
     # Токен удалённых сборщиков (Encar с корейского IP). Пусто — приём данных выключен
     ingest_token: str | None = field(default_factory=lambda: os.getenv("INGEST_TOKEN") or None)
     # Публичный адрес сайта — для ссылок в Telegram и sitemap.xml

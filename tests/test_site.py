@@ -144,6 +144,8 @@ def test_leads_flow(settings):
         closed = client.get("/admin")
         assert closed.status_code == 403 and "Вход для сотрудников" in closed.text and "secret" not in closed.text
         assert "Пароль не подошёл" in client.get("/admin", params={"token": "nope"}).text
+        assert client.get("/admin", params={"token": " secret\n"}).status_code == 200  # скопировали с пробелом
+        client.cookies.clear()
         assert client.get("/api/leads").status_code == 403
 
         for _ in range(10):
@@ -419,3 +421,12 @@ def test_port_filter_searches_whole_base(settings, monkeypatch):
         assert r["total"] == 4
     finally:
         client.__exit__(None, None, None)
+
+
+def test_admin_password_from_env_is_cleaned(monkeypatch):
+    from renalauto.config import Settings
+
+    monkeypatch.setenv("ADMIN_TOKEN", ' "s3cret" \r')
+    assert Settings().admin_token == "s3cret"
+    monkeypatch.setenv("ADMIN_TOKEN", "  ")
+    assert Settings().admin_token is None

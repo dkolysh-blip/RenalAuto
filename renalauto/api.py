@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import hmac
 import json
 import logging
 import re
@@ -296,13 +297,13 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if not settings.admin_token:
             raise HTTPException(403, "ADMIN_TOKEN не задан в .env — служебные функции отключены")
         token = (request.headers.get("X-Admin-Token") or request.query_params.get("token")
-                 or request.cookies.get(ADMIN_COOKIE))
-        if token != settings.admin_token:
+                 or request.cookies.get(ADMIN_COOKIE) or "").strip()
+        if not hmac.compare_digest(token.encode(), settings.admin_token.encode()):
             raise HTTPException(403, "Нужен токен администратора")
 
     def admin_gate(request: Request) -> Response | None:
         """Вход в админку для людей: без пароля — форма входа; пароль из формы запоминается в браузере на 30 дней."""
-        typed = request.query_params.get("token")
+        typed = (request.query_params.get("token") or "").strip()
         try:
             require_admin(request)
         except HTTPException as exc:
