@@ -103,3 +103,18 @@ def test_instagram_note_only_when_instagram_is_set(settings):
         assert "экстремистской" not in client.get("/cars").text
     finally:
         client.__exit__(None, None, None)
+
+
+def test_telegram_link_from_settings_is_never_a_placeholder(monkeypatch):
+    from renalauto.config import Settings
+
+    default = "https://t.me/+79140668808"
+    for raw, want in [("@ваш_аккаунт", default), ("@renal_auto", "https://t.me/renal_auto"), ("renal_auto", "https://t.me/renal_auto"),
+                      ("+7 (914) 066-88-08", default), ("https://t.me/renal_auto", "https://t.me/renal_auto"),
+                      ("javascript:alert(1)", default), ("", None)]:
+        monkeypatch.setenv("COMPANY_TELEGRAM", raw)
+        assert Settings().company_telegram == want, raw
+    monkeypatch.delenv("COMPANY_TELEGRAM")
+    assert Settings().company_telegram == default
+    monkeypatch.setenv("COMPANY_TELEGRAM_CHANNEL", "@ваш_канал")
+    assert Settings().company_telegram_channel is None

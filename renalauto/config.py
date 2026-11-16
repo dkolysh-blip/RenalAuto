@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass, field
 
 
@@ -17,6 +18,27 @@ def _secret(name: str) -> str | None:
     """Пароль из .env без случайного мусора вокруг: пробелов, кавычек, перевода строки Windows."""
     value = (os.getenv(name) or "").strip().strip("\"'").strip()
     return value or None
+
+
+def _telegram_link(value: str | None, default: str | None) -> str | None:
+    """Ссылка на Telegram из настроек: принимает https://t.me/…, @имя и номер телефона.
+
+    Заглушка вроде «@ваш_аккаунт» из примера настроек ссылкой не становится — берётся значение по умолчанию.
+    Пустая строка — кнопку не показывать.
+    """
+    if value is None:
+        return default
+    value = value.strip()
+    if not value:
+        return None
+    if re.fullmatch(r"https://(t\.me|telegram\.me)/[\w+/?=&%.-]+", value, re.ASCII):
+        return value
+    if re.fullmatch(r"@?[A-Za-z][A-Za-z0-9_]{3,31}", value):
+        return "https://t.me/" + value.lstrip("@")
+    digits = re.sub(r"[\s()\-]", "", value)
+    if re.fullmatch(r"\+?\d{10,15}", digits):
+        return "https://t.me/+" + digits.lstrip("+")
+    return default
 
 
 def _list(name: str, default: str) -> list[str]:
@@ -103,10 +125,13 @@ class Settings:
     # Номер свидетельства на товарный знак RENAL-AUTO (Роспатент) — строка в подвале со ссылкой на реестр. Пусто — без неё
     company_trademark: str | None = field(default_factory=lambda: os.getenv("COMPANY_TRADEMARK", "1249093") or None)
     # Telegram: личный чат, куда клиент пишет сам («Написать в Telegram»), и канал или группа компании. Пусто — без кнопки
-    company_telegram: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM", "https://t.me/+79140668808") or None)
-    company_telegram_channel: str | None = field(default_factory=lambda: os.getenv("COMPANY_TELEGRAM_CHANNEL") or None)
+    company_telegram: str | None = field(
+        default_factory=lambda: _telegram_link(os.getenv("COMPANY_TELEGRAM"), "https://t.me/+79140668808"))
+    company_telegram_channel: str | None = field(default_factory=lambda: _telegram_link(os.getenv("COMPANY_TELEGRAM_CHANNEL"), None))
     # Instagram — только как контакт, без рекламы; рядом ставится обязательная пометка про Meta. Пусто — без значка
-    company_instagram: str | None = field(default_factory=lambda: os.getenv("COMPANY_INSTAGRAM") or None)
+    company_instagram: str | None = field(
+        default_factory=lambda: (os.getenv("COMPANY_INSTAGRAM") or "").strip()
+        if (os.getenv("COMPANY_INSTAGRAM") or "").strip().startswith("https://") else None)
     # Мессенджер MAX: ссылка на профиль или канал компании (https://max.ru/…). Пусто — кнопки MAX не показываются
     company_max: str | None = field(default_factory=lambda: os.getenv("COMPANY_MAX", "https://max.ru/channel_renalauto") or None)
     # Яндекс Метрика: номер счётчика. Пусто — счётчик на сайт не ставится
