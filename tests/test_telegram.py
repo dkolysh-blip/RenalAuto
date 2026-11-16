@@ -57,3 +57,17 @@ def test_telegram_chat_links_from_admin_and_receives_leads(settings):
     finally:
         app.state.notifier = old
         client.__exit__(None, None, None)
+
+
+def test_offices_in_footer_trust_row_and_markup(settings):
+    client, _ = make_client(settings, [kb()])
+    try:
+        home = client.get("/").text
+        assert "Офисы в 3 городах" in home and 'id="offices"' in home
+        assert "ул. Параллельная, д. 10" in home and "Благовещенск" in home
+        org = json.loads(home.split('<script type="application/ld+json">')[1].split("</script>")[0])
+        # в разметку для поисковиков попадают только офисы с известным адресом
+        assert [d["address"]["addressLocality"] for d in org["department"]] == ["Владивосток", "Калуга"]
+        assert 'id="offices"' in client.get("/cars").text
+    finally:
+        client.__exit__(None, None, None)

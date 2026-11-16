@@ -129,6 +129,18 @@ def page_filters(request: Request) -> PageFilters:
     )
 
 
+def load_offices() -> list[dict[str, Any]]:
+    """Офисы компании для подвала, блока доверия и разметки для поисковиков: renalauto/offices.json.
+
+    Каждый: {"city": "Калуга", "in": "в Калуге", "address": "ул. …" или null, "postal", "region", "note", "url" (2ГИС)}.
+    """
+    try:
+        items = json.loads((HERE / "offices.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    return [o for o in items if isinstance(o, dict) and o.get("city")]
+
+
 def load_reviews() -> list[dict[str, Any]]:
     """Отзывы из 2ГИС для лендинга: renalauto/reviews.json, переносятся вручную — только настоящие.
 
@@ -231,6 +243,18 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
                 "public, max-age=31536000, immutable" if versioned else "public, max-age=86400")
         return response
     templates = Jinja2Templates(directory=HERE / "templates")
+    offices = load_offices()
+    # разметка организации для поисковиков: одно юрлицо, офисы — отдельными адресами
+    org = {"@context": "https://schema.org", "@type": "AutoDealer", "name": settings.company_name, "url": settings.site_url,
+           "telephone": settings.company_hotline or settings.company_phone, "email": settings.company_email,
+           "legalName": settings.company_legal_name, "areaServed": "RU",
+           "department": [{"@type": "AutoDealer", "name": f"{settings.company_name} — {o['city']}",
+                           "telephone": settings.company_hotline or settings.company_phone,
+                           "address": {"@type": "PostalAddress", "addressCountry": "RU", "addressRegion": o.get("region"),
+                                       "addressLocality": o["city"], "streetAddress": o["address"],
+                                       "postalCode": o.get("postal")}, **({"hasMap": o["url"]} if o.get("url") else {})}
+                          for o in offices if o.get("address")]}
+    org_jsonld = json.dumps({k: v for k, v in org.items() if v}, ensure_ascii=False).replace("</", "<\\/")
     templates.env.globals.update(
         lead_kinds=LEAD_KIND_LABELS,
         company=settings.company_name,
@@ -247,6 +271,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         company_inn=(re.search(r"ИНН\s*(\d{10,12})", settings.company_requisites or "") or [None, None])[1],
         company_ogrn=(re.search(r"ОГРН\s*(\d{13,15})", settings.company_requisites or "") or [None, None])[1],
         company_address=settings.company_address,
+        offices=offices,
+        org_jsonld=org_jsonld,
         company_vk=settings.company_vk,
         ym_id=settings.ym_id,
         company_2gis_rating=settings.company_2gis_rating,

@@ -4,6 +4,7 @@
 {% block description %}Подберём автомобиль в Корее или Китае под ваш бюджет, проверим историю и допуск к ввозу в РФ, посчитаем цену с растаможкой и привезём. Работаем по агентскому договору, вознаграждение — до 50 000 ₽.{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/">{% endblock %}
 {% block html_attrs %} data-theme="light"{% endblock %}
+{% block head %}<script type="application/ld+json">{{ org_jsonld|safe }}</script>{% endblock %}
 {% block body_class %}has-cta port-page{% endblock %}
 
 {% block content %}
@@ -153,7 +154,9 @@
     {# как нас проверить: офис, юрлицо, договор и канал с выдачами — одной строкой под отзывами #}
       {% set inn = (company_requisites or '').split('ИНН ')[1].split(' ')[0] if 'ИНН ' in (company_requisites or '') else '' %}
     <ul class="trust-row">
-      {% if company_address %}<li><a href="{{ company_2gis or '#' }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.webp" alt="" width="36" height="36">
+      {% if offices|length > 1 %}<li><a href="#offices" data-goal="offices"><img src="/static/brand/2gis.webp" alt="" width="36" height="36">
+        <span><b>Офисы в {{ offices|length }} городах</b><small>{{ offices|map(attribute='city')|join(' · ') }}</small></span></a></li>
+      {% elif company_address %}<li><a href="{{ company_2gis or '#' }}" target="_blank" rel="noopener" data-goal="2gis"><img src="/static/brand/2gis.webp" alt="" width="36" height="36">
         <span><b>Офис во Владивостоке</b><small>{{ company_address.split('Владивосток, ')[-1] }}</small></span></a></li>{% endif %}
       {% if company_legal_name %}<li><a href="https://egrul.nalog.ru/" target="_blank" rel="noopener" data-goal="egrul"{% if inn %} data-copy="{{ inn }}" data-copy-note="ИНН {{ inn }} скопирован — вставьте его в поиск на сайте ФНС"{% endif %}><i class="rvc-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21V9l8-5 8 5v12M9 21v-6h6v6M3 21h18" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/></svg></i>
         <span><b>{{ company_legal_name }}</b><small>{% if inn %}ИНН {{ inn }} · проверить в ФНС{% else %}юридическое лицо{% endif %}</small></span></a></li>{% endif %}
