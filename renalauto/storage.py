@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
+import time
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -93,6 +94,7 @@ class Storage:
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.executescript(SCHEMA)
         self._lock = threading.Lock()
+        self._counts: dict[tuple, tuple[float, int]] = {}
         # площадки, объявления которых показываем на сайте; None — все. Старые записи других площадок остаются в базе
         self.only_sources: list[str] | None = None
         self._migrate()
@@ -103,6 +105,8 @@ class Storage:
             # 1 — можно привезти в РФ (или нужно уточнить), 0 — не проходит; такие на сайте не показываем
             self._conn.execute("ALTER TABLE listings ADD COLUMN passable INTEGER")
         self._conn.execute("CREATE INDEX IF NOT EXISTS ix_listings_passable ON listings (passable, first_seen)")
+        # подбор по марке и модели из справочника — по индексу, а не перебором всей базы
+        self._conn.execute("CREATE INDEX IF NOT EXISTS ix_listings_make_model ON listings (make, model, first_seen)")
         rows = self._conn.execute(
             "SELECT source, external_id, data FROM listings WHERE passable IS NULL"
         ).fetchall()
@@ -249,17 +253,21 @@ class Storage:
             row = self._conn.execute("SELECT COUNT(*) FROM listings").fetchone()
         return row[0]
 
+    def _count(self, where: str, params: list) -> int:
+        """COUNT по большой базе — дорогой; число на странице может отставать на минуту."""
+        key, now = (where, tuple(params)), time.monotonic()
+        hit = self._counts.get(key)
+        if hit and now - hit[0] < 60:
+            return hit[1]
+        n = self._conn.execute(f"SELECT COUNT(*) FROM listings WHERE {where}", params).fetchone()[0]
+        if len(self._counts) > 500:
+            self._counts.clear()
+        self._counts[key] = (now, n)
+        return n
+
     def count_passable(self, country: str | None = None, year_from: int | None = None) -> int:
         """Сколько проходных объявлений на сайте (с учётом площадок из SOURCES) — для «под ваш запрос N машин»."""
-        where, params = ["passable != 0"], []
-        if self.only_sources:
-            where.append("source IN (" + ",".join("?" for _ in self.only_sources) + ")")
-            params.extend(self.only_sources)
-        if country:
-            where.append("country = ?"); params.append(country)
-        if year_from:
-            where.append("year >= ?"); params.append(year_from)
-        return self._conn.execute("SELECT COUNT(*) FROM listings WHERE " + " AND ".join(where), params).fetchone()[0]
+        return self._count(*self._pairs_where(None, country, year_from))
 
     def make_model_counts(self) -> list[tuple[str | None, str | None, str | None, int]]:
         """(страна, марка, модель, сколько) по всем проходным объявлениям — справочник фильтра."""
@@ -273,9 +281,11 @@ class Storage:
         return [(r["country"], r["make"], r["model"], r["n"]) for r in rows]
 
     def _pairs_where(self, pairs, country, year_from):
-        where, params = ["passable != 0"], []
+        # Унарный плюс запрещает SQLite строить план от этого условия: иначе он идёт по площадке и сортирует всю базу
+        # ради 25 строк, вместо того чтобы пройти по индексу времени (или марки и модели) и остановиться.
+        where, params = ["+passable != 0"], []
         if self.only_sources:
-            where.append("source IN (" + ",".join("?" for _ in self.only_sources) + ")")
+            where.append("+source IN (" + ",".join("?" for _ in self.only_sources) + ")")
             params.extend(self.only_sources)
         if pairs:
             ors = []
@@ -284,9 +294,9 @@ class Storage:
                 params.extend([mk, md])
             where.append("(" + " OR ".join(ors) + ")")
         if country:
-            where.append("country = ?"); params.append(country)
+            where.append("+country = ?"); params.append(country)
         if year_from:
-            where.append("year >= ?"); params.append(year_from)
+            where.append("+year >= ?"); params.append(year_from)
         return " AND ".join(where), params
 
     def search_pairs(self, pairs, country=None, year_from=None, limit=600, sort="new", offset=0) -> list[Listing]:
@@ -297,8 +307,7 @@ class Storage:
         return [Listing.model_validate_json(r["data"]) for r in rows]
 
     def count_pairs(self, pairs, country=None, year_from=None) -> int:
-        w, p = self._pairs_where(pairs, country, year_from)
-        return self._conn.execute(f"SELECT COUNT(*) FROM listings WHERE {w}", p).fetchone()[0]
+        return self._count(*self._pairs_where(pairs, country, year_from))
 
     SORTS = {
         "new": "first_seen DESC, rowid DESC",
@@ -329,10 +338,10 @@ class Storage:
         offset: int = 0,
     ) -> list[Listing]:
         where, params = [], []
-        if self.only_sources and not source:
-            where.append("source IN (" + ",".join("?" for _ in self.only_sources) + ")")
+        if self.only_sources and not source:  # «+» — см. _pairs_where: план строится от сортировки, а не от площадки
+            where.append("+source IN (" + ",".join("?" for _ in self.only_sources) + ")")
             params.extend(self.only_sources)
-        for column, value in (("source", source), ("country", country), ("vin", vin)):
+        for column, value in (("source", source), ("+country", country), ("vin", vin)):
             if value:
                 where.append(f"{column} = ?")
                 params.append(value)
@@ -343,7 +352,7 @@ class Storage:
                 where.append("(" + " OR ".join(f"{column} LIKE ?" for _ in aliases) + ")")
                 params.extend(f"%{a}%" for a in aliases)
         if passable_only:
-            where.append("passable != 0")
+            where.append("+passable != 0")
         if plate:
             where.append("REPLACE(json_extract(data, '$.plate'), ' ', '') = ?")
             params.append(plate.replace(" ", ""))
@@ -355,10 +364,10 @@ class Storage:
             where.append("(" + " OR ".join("json_extract(data, '$.fuel') LIKE ?" for _ in fuels) + ")")
             params.extend(f"%{f}%" for f in fuels)
         for clause, value in (
-            ("year >= ?", year_from),
-            ("year <= ?", year_to),
-            ("mileage_km <= ?", mileage_max),
-            ("price_usd <= ?", price_usd_max),
+            ("+year >= ?", year_from),
+            ("+year <= ?", year_to),
+            ("+mileage_km <= ?", mileage_max),
+            ("+price_usd <= ?", price_usd_max),
         ):
             if value is not None:
                 where.append(clause)

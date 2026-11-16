@@ -32,7 +32,7 @@
     <select id="pf-sort" name="sort">{% for key, label in sorts %}<option value="{{ key }}" {{ 'selected' if f.sort == key }}>{{ label|replace('Сначала ', '')|replace('С меньшим', 'с меньшим')|capitalize }}</option>{% endfor %}</select></div>
   {% if f.q %}<input type="hidden" name="q" value="{{ f.q }}">{% endif %}
   <noscript><button class="btn" type="submit">Показать</button></noscript>
-  <p class="pf-result">{% if total is not none and f.query() %}{% if total %}Под ваш запрос — <b>{{ 'больше ' if total_more }}{{ fmt(total) }} {{ 'машина' if total % 10 == 1 and total % 100 != 11 else 'машины' if total % 10 in [2, 3, 4] and total % 100 not in [12, 13, 14] else 'машин' }}</b>.{% else %}Под этот запрос машин сейчас нет — попробуйте поднять бюджет или взять год постарше.{% endif %} <a class="pf-reset" href="/cars">Сбросить ×</a>{% elif total %}Сейчас в каталоге <b>{{ fmt(total) }}</b> машин, которые можно ввезти в Россию.{% endif %}</p>
+  <p class="pf-result">{% if total is not none and f.query() %}{% if total %}Под ваш запрос — <b>{{ 'больше ' if total_more }}{{ fmt(total) }} {{ 'машин' if total_more else 'машина' if total % 10 == 1 and total % 100 != 11 else 'машины' if total % 10 in [2, 3, 4] and total % 100 not in [12, 13, 14] else 'машин' }}</b>.{% else %}Под этот запрос машин сейчас нет — попробуйте поднять бюджет или взять год постарше.{% endif %} <a class="pf-reset" href="/cars">Сбросить ×</a>{% elif total %}Сейчас в каталоге <b>{{ fmt(total) }}</b> машин, которые можно ввезти в Россию.{% endif %}</p>
 </form>
 
 {% if stream_query is not none %}<div class="live"><span class="dot" id="live-dot"></span><span id="live-text">Подключаемся к потоку новых объявлений…</span></div>{% endif %}
