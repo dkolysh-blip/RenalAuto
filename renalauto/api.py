@@ -74,6 +74,7 @@ POPULAR_MAKES = [
 ]
 
 LEADS_PER_WINDOW = 5
+ADMIN_COOKIE = "admin_token"
 LEADS_WINDOW = 600
 
 
@@ -294,9 +295,25 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     def require_admin(request: Request) -> None:
         if not settings.admin_token:
             raise HTTPException(403, "ADMIN_TOKEN не задан в .env — служебные функции отключены")
-        token = request.headers.get("X-Admin-Token") or request.query_params.get("token")
+        token = (request.headers.get("X-Admin-Token") or request.query_params.get("token")
+                 or request.cookies.get(ADMIN_COOKIE))
         if token != settings.admin_token:
             raise HTTPException(403, "Нужен токен администратора")
+
+    def admin_gate(request: Request) -> Response | None:
+        """Вход в админку для людей: без пароля — форма входа; пароль из формы запоминается в браузере на 30 дней."""
+        typed = request.query_params.get("token")
+        try:
+            require_admin(request)
+        except HTTPException as exc:
+            return render(request, "admin_login.html", status_code=403, wrong=bool(typed),
+                          disabled=not settings.admin_token, detail=exc.detail)
+        if typed:  # убираем пароль из адресной строки: дальше браузер предъявляет его сам
+            response = RedirectResponse(request.url.path, status_code=303)
+            response.set_cookie(ADMIN_COOKIE, typed, max_age=30 * 86400, httponly=True, samesite="strict",
+                                secure=request.url.scheme == "https" or request.headers.get("x-forwarded-proto") == "https")
+            return response
+        return None
 
     def client_ip(request: Request) -> str:
         forwarded = request.headers.get("X-Forwarded-For")
@@ -736,8 +753,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         return render(request, "vin_report.html", report=report, cars=cars, car=cars[0] if cars else None)
 
     @app.get("/admin", response_class=HTMLResponse, include_in_schema=False)
-    async def admin_page(request: Request, status: str | None = None) -> HTMLResponse:
-        require_admin(request)
+    async def admin_page(request: Request, status: str | None = None) -> Response:
+        if (gate := admin_gate(request)) is not None:
+            return gate
         storage = storage_of(request)
         notifier = request.app.state.notifier
         return render(request, "admin.html", leads=storage.list_leads(status), stats=storage.lead_stats(),
@@ -963,8 +981,9 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         return Response((stock_dir / name).read_bytes(), media_type="image/webp", headers={"Cache-Control": "public, max-age=2592000, immutable"})
 
     @app.get("/admin/stock", response_class=HTMLResponse, include_in_schema=False)
-    async def admin_stock(request: Request) -> HTMLResponse:
-        require_admin(request)
+    async def admin_stock(request: Request) -> Response:
+        if (gate := admin_gate(request)) is not None:
+            return gate
         return render(request, "admin_stock.html", stock=storage_of(request).list_stock(include_sold=True), labels=STOCK_STATUS_LABELS)
 
     @app.post("/api/stock", response_model=StockCar, status_code=201, dependencies=[Depends(require_admin)])

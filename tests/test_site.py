@@ -135,8 +135,16 @@ def test_leads_flow(settings):
         lead_id = leads[-1]["id"]
         assert client.patch(f"/api/leads/{lead_id}", json={"status": "deal"}, headers=ADMIN).json()["status"] == "deal"
         assert client.get("/api/leads/stats", headers=ADMIN).json()["deal"] == 1
-        assert client.get("/admin", params={"token": "secret"}).status_code == 200
-        assert client.get("/admin").status_code == 403
+        # вход в админку: пароль из формы запоминается в браузере и уходит из адресной строки
+        entered = client.get("/admin", params={"token": "secret"})
+        assert entered.status_code == 200 and "token=" not in str(entered.url)
+        assert client.get("/admin").status_code == 200 and client.get("/admin/stock").status_code == 200
+        assert client.get("/api/leads").status_code == 200  # кнопки админки работают без пароля в адресе
+        client.cookies.clear()
+        closed = client.get("/admin")
+        assert closed.status_code == 403 and "Вход для сотрудников" in closed.text and "secret" not in closed.text
+        assert "Пароль не подошёл" in client.get("/admin", params={"token": "nope"}).text
+        assert client.get("/api/leads").status_code == 403
 
         for _ in range(10):
             last = client.post("/api/leads", json={"name": "Спам", "phone": "+7"})

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Вход для сотрудников | {{ company }}{% endblock %}
+{% block head %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="panel admin-login">
+  <h1>Вход для сотрудников</h1>
+  {% if disabled %}
+  <p class="bad-text">Админка выключена: на сервере не задан пароль (<code>ADMIN_TOKEN</code> в файле <code>.env</code>).</p>
+  {% else %}
+  <p class="muted">Заявки и машины в наличии. Пароль — значение <code>ADMIN_TOKEN</code> из файла <code>.env</code> на сервере.</p>
+  <form method="get" action="{{ request.url.path }}">
+    <div class="field"><label for="admin-token">Пароль</label>
+      <input id="admin-token" name="token" type="password" required autofocus autocomplete="current-password"></div>
+    {% if wrong %}<p class="error">Пароль не подошёл. Проверьте, что скопировали его целиком, без пробелов.</p>{% endif %}
+    <button class="btn block" type="submit">Войти</button>
+  </form>
+  <p class="muted small">Браузер запомнит вход на 30 дней.</p>
+  {% endif %}
+</div>
+{% endblock %}
