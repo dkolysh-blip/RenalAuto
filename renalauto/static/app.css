@@ -1762,3 +1762,17 @@ button.vlad-card:hover { transform: translateY(-2px); box-shadow: 0 .8cqw 2cqw r
 .cdlg-list .cl { transition: border-color .15s, box-shadow .15s, transform .15s; }
 .cdlg-list .cl:hover { border-color: #b9c4d0; box-shadow: 0 6px 18px rgba(15,23,42,.08); transform: translateY(-1px); text-decoration: none; }
 @media (max-width: 360px) { .via[style*="5"] span { font-size: 10.5px; letter-spacing: -.01em; } }
+
+/* --- шапка без телефона: «Напишите нам» с мессенджерами и кнопка «Связаться» --- */
+.top-write { display: flex; align-items: center; gap: 6px; padding: 5px 6px 5px 14px; border: 1px solid var(--line); border-radius: 14px; background: #f6f8fb; white-space: nowrap; }
+.tw-l { font: 600 13.5px/1 Onest, system-ui, sans-serif; color: #475467; margin-right: 4px; }
+.tw { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 4px; border-radius: 10px; background: #fff; border: 1px solid #e3e8ee; color: #0f172a; font: 600 14px/1 Onest, system-ui, sans-serif; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.tw:hover { text-decoration: none; border-color: #b9c4d0; box-shadow: 0 4px 12px rgba(15,23,42,.1); transform: translateY(-1px); }
+.tw .ts { width: 28px; height: 28px; border-radius: 8px; } .tw .ts svg { width: 16px; height: 16px; }
+.tw b { font-weight: 600; }
+.tw.tw-ico { padding: 4px; }
+@media (max-width: 1300px) { .tw-l { display: none; } .top-write { padding-left: 6px; } }
+@media (max-width: 1180px) { .tw b { display: none; } .tw { padding: 4px; } }
+@media (max-width: 1120px) { .tw b { display: inline; } .tw { padding: 4px 12px 4px 4px; } .tw.tw-ico { padding: 4px; } }
+@media (max-width: 700px) { .tw b { display: none; } .tw { padding: 4px; } .top-write { padding: 4px; border-radius: 12px; } }
+@media (max-width: 370px) { .top-write .tw:nth-of-type(n+2) { display: none; } }
