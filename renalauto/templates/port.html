@@ -59,6 +59,53 @@
     </div>
     <div class="port-pop" id="port-pop" hidden></div>
     <ul class="sr-only">{% for v in cars[:12] %}<li><a href="{{ v.path }}">{{ v.title }}</a></li>{% endfor %}</ul>
+    {# под схемой — настоящие машины с фото: сначала уже выкупленные (их заводит менеджер), затем объявления со стоянки #}
+    {% if stock %}
+    <section class="lot-rail stock" id="nalichie" aria-labelledby="stock-title">
+      <div class="lr-head">
+        <div><span class="lr-eb own">Уже выкуплены</span>
+          <h2 id="stock-title">В наличии и в пути — можно забронировать</h2></div>
+        <p>Эти машины мы уже купили. Цена — во Владивостоке, с растаможкой.</p>
+      </div>
+      <div class="st-track" data-stock>
+        {% for c in stock %}
+        <article class="st-card" id="stock-{{ c.id }}">
+          <div class="st-ph">
+            {% if c.photos %}<div class="st-gal">{% for p in c.photos %}<img src="/media/stock/{{ p }}" alt="{{ c.title }}" loading="lazy" decoding="async" width="1600" height="1067">{% endfor %}</div>
+            {% if c.photos|length > 1 %}<span class="st-count">{{ c.photos|length }} фото</span>{% endif %}{% endif %}
+            <span class="st-status {{ c.status }}">{{ stock_labels[c.status] }}</span>
+          </div>
+          <div class="st-body">
+            <b>{{ c.title }}{% if c.year %}, {{ c.year }}{% endif %}</b>
+            <small>{{ 'Из Кореи' if c.country == 'KR' else 'Из Китая' }}{% if c.mileage_km is not none %} · {{ fmt(c.mileage_km) }} км{% endif %}{% if c.engine %} · {{ c.engine }}{% endif %}</small>
+            {% if c.note %}<p>{{ c.note }}</p>{% endif %}
+            <div class="st-price">{% if c.price_rub %}{{ fmt(c.price_rub) }} ₽ <span>во Владивостоке, с растаможкой</span>{% else %}<span>цену назовёт менеджер</span>{% endif %}</div>
+            <button type="button" class="btn st-go" data-stock-lead="{{ c.title }}{% if c.year %} {{ c.year }}{% endif %}{% if c.price_rub %} · {{ fmt(c.price_rub) }} ₽{% endif %}" data-goal="stock_lead">Забронировать</button>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+    {% if rail %}
+    <section class="lot-rail" id="lenta" aria-labelledby="rail-title">
+      <div class="lr-head">
+        <div><span class="lr-eb">Сейчас на стоянке</span>
+          <h2 id="rail-title">Объявления из Кореи и Китая</h2></div>
+        <a class="lr-all" href="/cars" data-goal="rail_all">Все машины в каталоге →</a>
+      </div>
+      <div class="lr-track" data-rail>
+        {% for c in rail %}
+        <a class="lr-card" href="{{ c.path }}" data-key="{{ c.key }}" data-goal="rail_click">
+          <span class="lr-ph"><img src="{{ c.photo }}" alt="{{ c.title }}{% if c.year %} {{ c.year }}{% endif %}" loading="lazy" decoding="async"><i>{{ 'Корея' if c.country == 'KR' else 'Китай' }}</i></span>
+          <b>{{ c.title }}{% if c.year %} {{ c.year }}{% endif %}</b>
+          <small>{% if c.mileage %}{{ c.mileage }} км{% endif %}{% if c.mileage and c.fuel %} · {% endif %}{{ c.fuel or '' }}</small>
+          <span class="lr-price">{% if c.turnkey %}≈ {{ fmt(c.turnkey|round(-4)) }} ₽ <em>с растаможкой</em>{% elif c.price %}≈ {{ c.price }} ₽ <em>на площадке</em>{% else %}<em>цену посчитает менеджер</em>{% endif %}</span>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
     {# путь машины: вода из порта продолжается здесь — судно уходит из терминала в эту полосу, из Китая едет автовоз #}
     <section class="track route2" id="route" data-route data-mode="kr" aria-labelledby="track-title">
       {% set route = {
@@ -171,35 +218,6 @@
 </section>
 
 
-{% if stock %}
-<section class="port-section stock" id="nalichie" aria-labelledby="stock-title">
-  <div class="wrap">
-    <div class="st-head">
-      <span class="st-eyebrow">В наличии и в пути</span>
-      <h2 id="stock-title">Уже выкуплены — можно забронировать</h2>
-      <p>Эти машины мы уже купили: часть в пути, часть стоит во Владивостоке. Цена указана с растаможкой — ждать подбора не нужно.</p>
-    </div>
-    <div class="st-track" data-stock>
-      {% for c in stock %}
-      <article class="st-card">
-        <div class="st-ph">
-          {% if c.photos %}<div class="st-gal">{% for p in c.photos %}<img src="/media/stock/{{ p }}" alt="{{ c.title }}" loading="lazy" decoding="async" width="1600" height="1067">{% endfor %}</div>
-          {% if c.photos|length > 1 %}<span class="st-count">{{ c.photos|length }} фото</span>{% endif %}{% endif %}
-          <span class="st-status {{ c.status }}">{{ stock_labels[c.status] }}</span>
-        </div>
-        <div class="st-body">
-          <b>{{ c.title }}{% if c.year %}, {{ c.year }}{% endif %}</b>
-          <small>{{ 'Из Кореи' if c.country == 'KR' else 'Из Китая' }}{% if c.mileage_km is not none %} · {{ fmt(c.mileage_km) }} км{% endif %}{% if c.engine %} · {{ c.engine }}{% endif %}</small>
-          {% if c.note %}<p>{{ c.note }}</p>{% endif %}
-          <div class="st-price">{% if c.price_rub %}{{ fmt(c.price_rub) }} ₽ <span>во Владивостоке, с растаможкой</span>{% else %}<span>цену назовёт менеджер</span>{% endif %}</div>
-          <button type="button" class="btn st-go" data-stock-lead="{{ c.title }}{% if c.year %} {{ c.year }}{% endif %}{% if c.price_rub %} · {{ fmt(c.price_rub) }} ₽{% endif %}" data-goal="stock_lead">Забронировать</button>
-        </div>
-      </article>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
 <section class="port-section final-cta" aria-labelledby="final-title">
   <div class="wrap fc">
     <div class="fc-text">

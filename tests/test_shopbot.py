@@ -121,3 +121,24 @@ def test_catalog_uses_the_scene_filters_and_view_switch(settings):
         assert 'data-view-link="/cars"' in client.get("/").text
     finally:
         client.__exit__(None, None, None)
+
+
+def test_photo_rail_and_bought_cars_sit_under_the_scene(settings):
+    k5 = kb(external_id="2", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"})
+    client, _ = make_client(settings, [k5])
+    try:
+        home = client.get("/").text
+        # объявления с фото — лентой сразу под схемой, со ссылкой на машину и ценой с растаможкой
+        assert 'data-rail' in home and 'class="lr-card" href="/car/kbchachacha/2"' in home
+        assert home.index('data-rail') < home.index('id="route"')
+        assert 'id="nalichie"' not in home  # выкупленных машин нет — блока нет
+
+        r = client.post("/api/stock", headers=ADMIN, json={"title": "Kia Sorento", "year": 2022, "status": "transit", "price_rub": 3_450_000})
+        sold = client.post("/api/stock", headers=ADMIN, json={"title": "Kia Ray", "status": "sold"}).json()
+        home = client.get("/").text
+        assert f'id="stock-{r.json()["id"]}"' in home and f'id="stock-{sold["id"]}"' not in home
+        assert home.index('id="nalichie"') < home.index('data-rail')  # свои машины — первыми
+        scene = json.loads(home.split('id="port-data">')[1].split("</script>")[0])
+        assert scene["stock"] == [{"id": r.json()["id"], "title": "Kia Sorento 2022", "status": "transit", "price": 3_450_000, "photo": None}]
+    finally:
+        client.__exit__(None, None, None)

@@ -459,8 +459,41 @@
         </g>
       </g>
     </g>`;
+    paintOwn(deck, k);
     gShip.querySelector('.ship-body').style.transform = `translateX(${ship.x}px)`;
     gShip.querySelectorAll('.deck-car').forEach((el, i) => { if (i < ship.loaded) el.setAttribute('opacity', '1'); });
+  }
+
+  // Уже выкупленные машины «в пути» (их заводит менеджер) стоят на палубе: кружок с фото и подпись над судном.
+  // Нажатие ведёт к карточке под схемой.
+  const OWN = (DATA.stock || []).filter(c => c.status === 'transit');
+  function toStock(id) {
+    goal('stock_pin');
+    const card = document.getElementById(id ? `stock-${id}` : 'nalichie');
+    if (!card) return;
+    card.scrollIntoView({behavior: reduce.matches ? 'auto' : 'smooth', block: 'center', inline: 'center'});
+    if (id) { card.classList.remove('flash'); void card.offsetWidth; card.classList.add('flash'); }
+  }
+  function paintOwn(deck, k) {
+    if (!OWN.length) return;
+    const s = L.ship, bob = gShip.querySelector('.ship-bob'), wide = L.W > 1000;
+    const r = wide ? 21 : 11, show = OWN.slice(0, wide ? 6 : 4);
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'own');
+    g.innerHTML = show.map((c, i) => {
+      const [x, y] = deck[i * 3 + 1];  // средний ряд палубы, по одной на колонку
+      return `<g class="own-pin" data-own="${c.id}"><title>${esc(c.title)} — уже выкуплена, в пути</title>
+        <clipPath id="own-c${i}"><circle cx="${x}" cy="${y}" r="${r}"/></clipPath>
+        <circle cx="${x}" cy="${y}" r="${r + 2.5}" class="own-ring"/>
+        ${c.photo ? `<image href="${esc(c.photo)}" x="${x - r * 1.5}" y="${y - r}" width="${r * 3}" height="${r * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#own-c${i})"/>`
+          : `<circle cx="${x}" cy="${y}" r="${r}" fill="#0b5c8f"/>`}</g>`;
+    }).join('');
+    const n = OWN.length, text = `В пути: ${n} ${n === 1 ? 'наша машина' : n < 5 ? 'наши машины' : 'наших машин'} →`;
+    const fs = wide ? 15 : 11, w = text.length * fs * 0.6 + 22, h = fs + 14, lx = s.x + 86 * k, ly = s.y - h - (wide ? 2 : 0);
+    g.insertAdjacentHTML('beforeend', `<g class="own-label" data-own=""><rect x="${lx}" y="${ly}" width="${w}" height="${h}" rx="${h / 2}"/>
+      <text x="${lx + w / 2}" y="${ly + h / 2 + fs * 0.35}" text-anchor="middle" font-size="${fs}">${text}</text></g>`);
+    g.addEventListener('click', e => { const t = e.target.closest('[data-own]'); if (t) toStock(t.dataset.own); });
+    bob.appendChild(g);
   }
 
   // --- машины --------------------------------------------------------------------
@@ -857,6 +890,7 @@
     if (pop.car && pop.car !== car) pop.car.g.classList.remove('hover');
     pop.car = car;
     pop.pinned = pinned || pop.pinned;
+    if (pop.pinned) railMark(car.d.key);
     // по нажатию карточка не висит над машиной: на компьютере — у правого края сцены, на телефоне — снизу экрана
     const wide = matchMedia('(min-width: 900px)').matches;
     popEl.classList.toggle('docked', pop.pinned && wide);
@@ -960,6 +994,7 @@
   function hidePop() {
     clearTimeout(pop.t);
     pop.car?.g.classList.remove('hover');
+    if (pop.pinned) railMark(null);
     pop.car = null; pop.pinned = false;
     popEl.hidden = true;
     root.classList.remove('pop-docked');
@@ -1345,7 +1380,37 @@
     }
     if (feedQ.length) feedTimer = setTimeout(feedPump, FEED_GAP);
   }
+  // --- лента с фото под схемой: наведение на карточку подсвечивает машину на схеме и наоборот; новые встают первыми
+  const rail = document.querySelector('[data-rail]');
+  const RAIL_MAX = 16;
+  const railCard = key => rail && [...rail.children].find(a => a.dataset.key === key);
+  function railMark(key) {
+    if (!rail) return;
+    rail.querySelector('.on')?.classList.remove('on');
+    const a = key && railCard(key);
+    if (!a) return;
+    a.classList.add('on');
+    rail.scrollTo({left: a.offsetLeft - rail.offsetLeft - 12, behavior: reduce.matches ? 'auto' : 'smooth'});
+  }
+  function railAdd(d) {
+    if (!rail || !d.photo || !d.path || railCard(d.key)) return;
+    const a = document.createElement('a');
+    a.className = 'lr-card new'; a.href = d.path; a.dataset.key = d.key; a.dataset.goal = 'rail_click';
+    a.innerHTML = `<span class="lr-ph"><img src="${esc(d.photo)}" alt="${esc(label(d))}" loading="lazy" decoding="async"><i class="fresh">Только что</i></span>
+      <b>${esc(label(d))}</b><small>${[d.mileage && `${esc(d.mileage)} км`, esc(d.fuel || '')].filter(Boolean).join(' · ')}</small>
+      <span class="lr-price">${d.turnkey ? `≈ ${rub(Math.round(d.turnkey / 1e4) * 1e4)} ₽ <em>с растаможкой</em>` : d.price ? `≈ ${esc(d.price)} ₽ <em>на площадке</em>` : '<em>цену посчитает менеджер</em>'}</span>`;
+    rail.prepend(a);
+    while (rail.children.length > RAIL_MAX) rail.lastElementChild.remove();
+    if (rail.scrollLeft < 40) rail.scrollTo({left: 0});
+  }
+  if (rail) {
+    const over = e => { const a = e.target.closest('.lr-card'); return a && cars.get(a.dataset.key); };
+    rail.addEventListener('pointerover', e => { const c = over(e); if (c && c.state === 'parked' && e.pointerType === 'mouse') c.g.classList.add('hover'); });
+    rail.addEventListener('pointerout', e => { const c = over(e); if (c && c !== pop.car) c.g.classList.remove('hover'); });
+  }
+
   function chatAdd(d, {at = Date.now(), fresh = false} = {}) {
+    if (fresh) railAdd(d);
     if (!feedBox || /^\d/.test(label(d)) || feedHist.some(h => h.d.key === d.key)) return;  // без марки в названии — не в ленту
     const item = {d, at, fresh};
     feedHist.unshift(item); feedHist.length = Math.min(feedHist.length, FEED_HISTORY);

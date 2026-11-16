@@ -53,6 +53,7 @@ PAGE_SIZE = 24
 POLICY_DATE = "20 октября 2026 г."  # дата редакции /privacy — менять вместе с текстом
 PORT_PER_ZONE = 56  # мест в зоне терминала (Корея / Китай): 4 ряда × 14
 SHOP_LIMIT = 30  # сколько машин бот для покупателей даёт пролистать за один подбор
+RAIL_CARS = 14  # карточек с фото в ленте под схемой стоянки
 CATALOG_SCAN = 1500  # сколько объявлений перебирает каталог, когда фильтр считается по цене с растаможкой
 PORT_SCAN = 600  # сколько свежих объявлений перебирает пульт подбора
 RATES_REFRESH = 6 * 3600
@@ -611,6 +612,10 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             recent.append({**quote_car(c), "seen": seen.get((c.listing.source, c.listing.external_id))})
         scene = {"cars": [quote_car(c) for c in cars], "demo": q.get("demo") == "1", "match": matched, "recent": recent,
                  "rates": {k: v for k, v in cur.items() if v}, "rates_source": rates.source}
+        # уже выкупленные машины: на схеме те, что в пути, стоят на судне, а нажатие ведёт к их карточке под схемой
+        stock = storage.list_stock()
+        scene["stock"] = [{"id": c.id, "title": c.title + (f" {c.year}" if c.year else ""), "status": c.status,
+                           "price": c.price_rub, "photo": f"/media/stock/{c.photos[0]}" if c.photos else None} for c in stock]
         # заголовок для превью ссылки в мессенджере, если ей поделились подборкой: «Авто из Кореи до 2,5 млн ₽ от 2020 г.»
         share_bits = []
         budget, year_from, country_q = _int(q.get("budget")), _int(q.get("year_from")), q.get("country")
@@ -633,7 +638,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             share_title = "Сравнение: " + ", ".join(compared)
         return render(
             request, "port.html", cars=cars, matched=matched, reviews=load_reviews(), share_title=share_title,
-            stock=storage.list_stock(), stock_labels=STOCK_STATUS_LABELS,
+            stock=stock, stock_labels=STOCK_STATUS_LABELS,
+            rail=[c for c in scene["cars"] if c.get("photo")][:RAIL_CARS],
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),
         )
 
