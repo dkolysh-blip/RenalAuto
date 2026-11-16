@@ -1731,3 +1731,34 @@ button.vlad-card:hover { transform: translateY(-2px); box-shadow: 0 .8cqw 2cqw r
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer .lw.on-dark { display: block; } :root:not([data-theme="light"]) footer .lw.on-light { display: none; } }
 @media (max-width: 860px) { .logo-word .lw { height: 15px; } .top .logo-word.tm small, .site .top .logo-word.tm small { font-size: 7.5px; letter-spacing: .5em; } }
 @media (max-width: 420px) { .logo-word .lw { height: 13px; } .top .logo-word.tm small, .site .top .logo-word.tm small { font-size: 6.5px; } }
+
+/* --- формы связи: общий выбор «как ответить» плитками и одинаковые поля в обоих окнах --- */
+.via { border: 0; padding: 0; margin: 0 0 14px; min-width: 0; display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 6px; }
+.via legend { padding: 0; margin-bottom: 6px; font-size: 13px; font-weight: 600; color: #344054; }
+.via label { position: relative; margin: 0; min-width: 0; cursor: pointer; }
+.via input { position: absolute; left: 0; top: 0; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none; }  /* иначе поле на всю ширину вылезает за окно и даёт прокрутку вбок */
+.via span { display: grid; justify-items: center; gap: 6px; padding: 10px 2px 8px; border-radius: 14px; border: 1.5px solid #e3e8ee; background: #fff; font: 600 12.5px/1 Onest, system-ui, sans-serif; color: #344054; white-space: nowrap; transition: border-color .15s, background .15s, box-shadow .15s; }
+.via label:hover span { border-color: #b9c4d0; }
+.via i { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; overflow: hidden; }
+.via i svg { width: 19px; height: 19px; } .via .v-sms i svg { width: 18px; height: 14px; }
+.via i img { width: 30px; height: 30px; max-width: none; display: block; }
+.via .v-call i { background: linear-gradient(160deg, #3ddc6f, #0f9d4a); }
+.via .v-tg i { background: linear-gradient(160deg, #37bbfe, #007dbb); }
+.via .v-sms i { background: linear-gradient(160deg, #ffb020, #f07c00); }
+.via .v-mail i { background: linear-gradient(160deg, #3b9cff, #1f5fd6); }
+.via input:checked + span { border-color: #0f1012; background: #f6f8fb; color: #0f1012; box-shadow: inset 0 0 0 1px #0f1012; }
+.via input:focus-visible + span { outline: 2px solid var(--sea); outline-offset: 2px; }
+.car-dialog, .contact-dlg { overflow-x: hidden; }
+@media (max-width: 420px) { .via { gap: 4px; } .via span { font-size: 11.5px; padding: 9px 0 7px; border-radius: 12px; } }
+.lead-form.cb .field { margin-bottom: 14px; }
+.lead-form.cb .field label { font-size: 13px; font-weight: 600; color: #344054; margin-bottom: 6px; }
+.lead-form.cb .field input, .lead-form.cb .field textarea { padding: 0 14px; border-radius: 12px; background: #fff; border: 1px solid #d5dde5; font-size: 16px; transition: border-color .15s, box-shadow .15s; }
+.lead-form.cb .field input { height: 48px; }
+.lead-form.cb .field textarea { padding: 11px 14px; min-height: 84px; resize: none; line-height: 1.4; }
+.lead-form.cb .field input:focus, .lead-form.cb .field textarea:focus { outline: none; border-color: var(--sea); box-shadow: 0 0 0 3px rgba(11,92,143,.15); }
+.lead-form.cb .consent { margin: 2px 0 12px; color: #667085; }
+.lead-form.cb .cd-submit { margin-top: 0; }
+.contact-dlg h2 { font-size: 20px; }
+.cdlg-list .cl { transition: border-color .15s, box-shadow .15s, transform .15s; }
+.cdlg-list .cl:hover { border-color: #b9c4d0; box-shadow: 0 6px 18px rgba(15,23,42,.08); transform: translateY(-1px); text-decoration: none; }
+@media (max-width: 360px) { .via[style*="5"] span { font-size: 10.5px; letter-spacing: -.01em; } }

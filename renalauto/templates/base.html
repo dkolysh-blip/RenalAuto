@@ -103,6 +103,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     <p>Сайт использует cookie и Яндекс Метрику — подробнее в <a href="/privacy">политике конфиденциальности</a>.{% if model_credits %} <a href="/credits">Авторы 3D-моделей и фото</a>.{% endif %}</p>
   </div>
 </footer>
+{% from "_macros.html" import via %}
 <dialog class="contact-dlg" id="contact-dlg" aria-labelledby="contact-title">
   <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
   <nav class="cdlg-nav" aria-label="Разделы сайта"><a href="/">Стоянка</a><a href="/cars">Каталог</a><a href="/calc">Калькулятор</a><a href="/vin">Проверка VIN</a><a href="/#vydachi">Отзывы</a><a href="#offices">Офисы</a></nav>
@@ -128,20 +129,16 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
       {% endif %}
     </section>
     <section class="cdlg-back">
-      <form class="lead-form" data-lead>
+      <form class="lead-form cb" data-lead>
         <h2>Или оставьте контакты — свяжемся сами</h2>
         <input type="hidden" name="kind" value="callback">
-        <div class="field"><label for="cb-name">Имя</label><input id="cb-name" name="name" required maxlength="100" autocomplete="name"></div>
-        <div class="field"><label for="cb-phone">Телефон</label><input id="cb-phone" name="phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="+7"></div>
-        <fieldset class="cb-via"><legend>Как с вами связаться</legend>
-          <label><input type="radio" name="contact_via" value="звонок" checked><span>Позвонить</span></label>
-          <label><input type="radio" name="contact_via" value="Telegram"><span>Telegram</span></label>
-          <label><input type="radio" name="contact_via" value="MAX"><span>MAX</span></label>
-        </fieldset>
-        <div class="field"><label for="cb-comment">Вопрос или машина, которая интересует <span class="muted">— необязательно</span></label><textarea id="cb-comment" name="comment" maxlength="2000" rows="2"></textarea></div>
+        <div class="field"><label for="cb-name">Как к вам обращаться</label><input id="cb-name" name="name" required maxlength="100" autocomplete="name" placeholder="Имя"></div>
+        <div class="field"><label for="cb-phone">Телефон</label><input id="cb-phone" name="phone" type="tel" required maxlength="40" autocomplete="tel" inputmode="tel" placeholder="+7 (___) ___-__-__"></div>
+        {{ via('Как с вами связаться', ['звонок', 'Telegram', 'MAX']) }}
+        <div class="field"><label for="cb-comment">Вопрос или машина, которая интересует <span class="muted">— необязательно</span></label><textarea id="cb-comment" name="comment" maxlength="2000" rows="3" placeholder="Например: кроссовер до 2,5 млн ₽"></textarea></div>
         <div class="hp"><label>Website</label><input name="website" tabindex="-1" autocomplete="off"></div>
         <label class="consent"><input type="checkbox" name="consent" required> <span>Согласен на обработку персональных данных по <a href="/privacy" target="_blank">политике конфиденциальности</a></span></label>
-        <button class="btn block" type="submit">Жду связи</button>
+        <button class="btn block cd-submit" type="submit">Жду связи</button>
         <div class="form-msg"></div>
       </form>
     </section>

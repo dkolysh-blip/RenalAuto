@@ -60,3 +60,19 @@
   <a href="/cars{{ '?' ~ query if query }}" data-view-link="/cars"{{ ' aria-current="page"'|safe if current == 'list' }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v6H4zM13 5h7v6h-7zM4 13h7v6H4zM13 13h7v6h-7z" fill="currentColor"/></svg>Список</a>
 </nav>
 {%- endmacro %}
+
+
+{% macro via(legend, options, max_link=True) -%}
+{# Как ответить человеку: одинаковые плитки со значками во всех формах. Значение уходит менеджеру в комментарий заявки. #}
+{% set ico = {
+  'звонок': ('v-call', 'Звонок', '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2z"/></svg>'),
+  'Telegram': ('v-tg', 'Telegram', '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M20.6 4.3 3.9 10.8c-1 .4-1 1.1-.2 1.4l4.2 1.3 1.6 5c.2.6.4.8.8.8.4 0 .6-.2.9-.5l2.1-2 4.2 3.1c.8.4 1.3.2 1.5-.7L21.9 5.5c.3-1.1-.4-1.6-1.3-1.2zM9.6 13.3l8-5c.4-.2.7-.1.4.2l-6.6 6-.3 2.9-1.5-4.1z"/></svg>'),
+  'MAX': ('v-max', 'MAX', '<img src="/static/brand/max.webp" alt="" width="30" height="30">'),
+  'SMS': ('v-sms', 'SMS', '<svg viewBox="3 5 18 14" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.6" fill="#fff"/><path d="M4.3 6.6 12 12.4l7.7-5.8" fill="none" stroke="#f07c00" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></svg>'),
+  'почта': ('v-mail', 'Почта', '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 12a4 4 0 1 1-1.2-2.85V12a2 2 0 0 0 4 0v-.5A7 7 0 1 0 15 17.7" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>'),
+} %}
+<fieldset class="via" style="--n: {{ options|length }}">
+  <legend>{{ legend }}</legend>
+  {% for v in options %}<label class="{{ ico[v][0] }}"><input type="radio" name="contact_via" value="{{ v }}"{{ ' checked' if loop.first }}><span><i>{{ ico[v][2]|safe }}</i>{{ ico[v][1] }}</span></label>{% endfor %}
+</fieldset>
+{%- endmacro %}
