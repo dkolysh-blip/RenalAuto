@@ -1722,3 +1722,12 @@ button.vlad-card:hover { transform: translateY(-2px); box-shadow: 0 .8cqw 2cqw r
   .h2-cta { margin-top: 14px; } .h2-cta .btn { flex: 1 1 100%; justify-content: center; height: 50px; font-size: 16px; }
   .h2-facts { gap: 8px; } .h2-facts li { padding: 11px 12px; border-radius: 13px; } .h2-facts b { font-size: 17px; } .h2-facts span { font-size: 12px; }
 }
+
+/* --- логотип: знак + надпись RENAL-AUTO из свидетельства на товарный знак --- */
+.logo-word.tm { gap: 6px; padding-top: 3px; }
+.logo-word .lw { height: 20px; width: auto; display: block; }
+.logo-word .lw.on-dark { display: none; }
+.logo-word.tm small { font-size: 10px; letter-spacing: .62em; margin-right: -.62em; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) footer .lw.on-dark { display: block; } :root:not([data-theme="light"]) footer .lw.on-light { display: none; } }
+@media (max-width: 860px) { .logo-word .lw { height: 15px; } .top .logo-word.tm small, .site .top .logo-word.tm small { font-size: 7.5px; letter-spacing: .5em; } }
+@media (max-width: 420px) { .logo-word .lw { height: 13px; } .top .logo-word.tm small, .site .top .logo-word.tm small { font-size: 6.5px; } }

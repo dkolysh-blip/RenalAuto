@@ -37,7 +37,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     <a class="logo" href="/" aria-label="{{ company }} — на главную">
       <img class="logo-mark on-dark" src="/static/brand/renal-auto-mark-white.svg" alt="" width="124" height="49">
       <img class="logo-mark on-light" src="/static/brand/renal-auto-mark.svg" alt="" width="124" height="49">
-      <span class="logo-word"><span>{{ company|upper }}</span><small>Корея · Китай</small></span>
+      <span class="logo-word tm"><img class="lw on-light" src="/static/brand/renal-auto-word.svg" alt="{{ company }}" width="203" height="20"><img class="lw on-dark" src="/static/brand/renal-auto-word-white.svg" alt="{{ company }}" width="203" height="20"><small>Корея · Китай</small></span>
     </a>
     {% set path = request.url.path %}
     <nav aria-label="Разделы сайта">
@@ -65,7 +65,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
 <footer>
   <div class="wrap foot">
     <div class="foot-brand">
-      <a class="logo" href="/"><img class="logo-mark on-dark" src="/static/brand/renal-auto-mark-white.svg" alt="" width="124" height="49"><img class="logo-mark on-light" src="/static/brand/renal-auto-mark.svg" alt="" width="124" height="49"><span class="logo-word"><span>{{ company|upper }}</span><small>Корея · Китай</small></span></a>
+      <a class="logo" href="/"><img class="logo-mark on-dark" src="/static/brand/renal-auto-mark-white.svg" alt="" width="124" height="49"><img class="logo-mark on-light" src="/static/brand/renal-auto-mark.svg" alt="" width="124" height="49"><span class="logo-word tm"><img class="lw on-light" src="/static/brand/renal-auto-word.svg" alt="{{ company }}" width="203" height="20"><img class="lw on-dark" src="/static/brand/renal-auto-word-white.svg" alt="{{ company }}" width="203" height="20"><small>Корея · Китай</small></span></a>
       <p>Авто из Кореи и Китая под заказ: подбор, проверка, выкуп и доставка до вашего города.</p>
       {% if offices %}
       <div class="foot-offices foot-contacts" id="offices">
