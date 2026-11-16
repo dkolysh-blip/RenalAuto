@@ -52,6 +52,7 @@ PAGE_SIZE = 24
 POLICY_DATE = "20 октября 2026 г."  # дата редакции /privacy — менять вместе с текстом
 PORT_PER_ZONE = 56  # мест в зоне терминала (Корея / Китай): 4 ряда × 14
 SHOP_LIMIT = 30  # сколько машин бот для покупателей даёт пролистать за один подбор
+CATALOG_SCAN = 1500  # сколько объявлений перебирает каталог, когда фильтр считается по цене с растаможкой
 PORT_SCAN = 600  # сколько свежих объявлений перебирает пульт подбора
 RATES_REFRESH = 6 * 3600
 
@@ -100,8 +101,16 @@ class PageFilters(BaseModel):
     mileage_max: int | None = None
     price_max: int | None = None
     fuel: str | None = None
+    budget: int | None = None  # цена с растаможкой, ₽ — как ползунок на стоянке
+    q: str | None = None
     sort: str = "new"
     page: int = 1
+
+    def query(self, **extra: Any) -> str:
+        """Тот же выбор фильтров в адресе — для переключателя «Стоянка / Список» и «Показать ещё»."""
+        params = {"budget": self.budget, "country": self.country, "year_from": self.year_from, "make": self.make,
+                  "model": self.model, "q": self.q, **extra}
+        return urlencode({k: v for k, v in params.items() if v})
 
 
 def _clean(value: str | None) -> str | None:
@@ -126,6 +135,8 @@ def page_filters(request: Request) -> PageFilters:
         mileage_max=_int(q.get("mileage_max")),
         price_max=_int(q.get("price_max")),
         fuel=q.get("fuel") if q.get("fuel") in FUELS else None,
+        budget=_int(q.get("budget")) or None,
+        q=_clean(q.get("q")),
         sort=q.get("sort") if q.get("sort") in dict(SORTS) else "new",
         page=max(1, _int(q.get("page")) or 1),
     )
@@ -357,23 +368,47 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             return forwarded.split(",")[0].strip()
         return request.client.host if request.client else "?"
 
-    def query_cars(f: PageFilters, limit: int, offset: int) -> tuple[list, bool]:
-        """Объявления для витрины. Непроходные в РФ (объём > 2 л из Кореи, > $50k, гибриды…) не показываем."""
+    def catalog_query(f: PageFilters, limit: int, offset: int) -> dict[str, Any]:
+        """Каталог с теми же фильтрами, что на стоянке: бюджет с растаможкой, страна, год, марка и модель из справочника.
+
+        Возвращает машины страницы, есть ли ещё, сколько всего нашлось (None — не считали) и «больше N» (перебрали не всё)."""
         storage: Storage = app.state.storage
-        rows = storage.search(
-            country=f.country,
-            make=f.make,
-            model=f.model,
-            year_from=f.year_from,
-            mileage_max=f.mileage_max,
-            price_usd_max=(f.price_max / rates.get("USD")) if f.price_max and rates.get("USD") else None,
-            fuels=FUELS[f.fuel][1] if f.fuel else None,
-            sort=f.sort,
-            passable_only=True,
-            limit=limit + 1,
-            offset=offset,
-        )
-        return [priced(car_view(l, rates)) for l in rows[:limit]], len(rows) > limit
+        index = make_index(storage)
+        pairs = None
+        if f.make and any(mk == f.make for mk, _ in index):  # марка из справочника — точные исходные написания
+            pairs = [(mk, md) for (mk_ru, md_ru), raws in index.items()
+                     if mk_ru == f.make and (not f.model or md_ru == f.model) for mk, md in raws]
+        legacy = bool(f.mileage_max or f.price_max or f.fuel) or bool(f.make and pairs is None) or bool(f.model and pairs is None)
+
+        def rows(n: int, skip: int) -> list:
+            if legacy:  # старые ссылки: марка текстом, пробег, топливо, цена на площадке
+                return storage.search(
+                    country=f.country, make=f.make, model=f.model, year_from=f.year_from, mileage_max=f.mileage_max,
+                    price_usd_max=(f.price_max / rates.get("USD")) if f.price_max and rates.get("USD") else None,
+                    fuels=FUELS[f.fuel][1] if f.fuel else None, sort=f.sort, passable_only=True, limit=n, offset=skip)
+            if pairs is not None and not pairs:
+                return []
+            return storage.search_pairs(pairs, country=f.country, year_from=f.year_from, limit=n, sort=f.sort, offset=skip)
+
+        if not (f.budget or f.q):
+            got = rows(limit + 1, offset)
+            total = None
+            if not legacy:
+                total = (storage.count_pairs(pairs, country=f.country, year_from=f.year_from) if pairs
+                         else 0 if pairs is not None else storage.count_passable(country=f.country, year_from=f.year_from))
+            return {"cars": [priced(car_view(l, rates)) for l in got[:limit]], "has_more": len(got) > limit,
+                    "total": total, "total_more": False}
+        words = [[a.lower() for a in i18n.search_aliases(w)] for w in (f.q or "").split()]
+        scanned, found = rows(CATALOG_SCAN, 0), []
+        for l in scanned:
+            v = priced(car_view(l, rates))
+            if f.budget and not (v.turnkey and v.turnkey <= f.budget):
+                continue
+            text = f"{l.title} {l.make or ''} {l.model or ''} {v.title}".lower()
+            if all(any(a in text for a in aliases) for aliases in words):
+                found.append(v)
+        return {"cars": found[offset:offset + limit], "has_more": len(found) > offset + limit,
+                "total": len(found), "total_more": len(scanned) >= CATALOG_SCAN}
 
     cc_seen: dict[tuple[str, str], list[int]] = defaultdict(list)  # объёмы по модели — из объявлений, где он указан
 
@@ -498,15 +533,18 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     async def catalog(request: Request) -> HTMLResponse:
         """Каталог: все проходные машины с фильтрами. Главная страница — порт (/)."""
         f = page_filters(request)
-        cars, has_more = query_cars(f, PAGE_SIZE, (f.page - 1) * PAGE_SIZE)
+        found = catalog_query(f, PAGE_SIZE, (f.page - 1) * PAGE_SIZE)
         next_url = None
-        if has_more:
+        if found["has_more"]:
             params = dict(request.query_params)
             params["page"] = str(f.page + 1)
             next_url = "/cars?" + urlencode(params)
+        make_index(storage_of(request))
+        catalog = makes_cache["data"]["makes"]
         return render(
-            request, "index.html", f=f, cars=cars, next_url=next_url, makes=POPULAR_MAKES,
-            fuels=[(k, v[0]) for k, v in FUELS.items()], sorts=SORTS, stream_query=stream_query(f),
+            request, "index.html", f=f, cars=found["cars"], total=found["total"], total_more=found["total_more"],
+            next_url=next_url, catalog=catalog, models=next((m["models"] for m in catalog if m["make"] == f.make), []),
+            sorts=SORTS, stream_query=None if (f.budget or f.q) else stream_query(f),  # под бюджет живая лента не фильтрует
         )
 
     @app.get("/partials/card/{source}/{external_id}", response_class=HTMLResponse, include_in_schema=False)
@@ -791,9 +829,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         storage = storage_of(request)
         listing = storage.get(source, external_id)
         if listing is None:
-            return render(request, "index.html", status_code=404, f=PageFilters(), cars=[], next_url=None,
-                          makes=POPULAR_MAKES, fuels=[(k, v[0]) for k, v in FUELS.items()], sorts=SORTS,
-                          stream_query="")
+            return render(request, "index.html", status_code=404, f=PageFilters(), cars=[], next_url=None, total=None,
+                          total_more=False, catalog=[], models=[], sorts=SORTS, stream_query="")
         v = priced(car_view(listing, rates))
         similar = [
             priced(car_view(l, rates))

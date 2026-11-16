@@ -289,10 +289,11 @@ class Storage:
             where.append("year >= ?"); params.append(year_from)
         return " AND ".join(where), params
 
-    def search_pairs(self, pairs, country=None, year_from=None, limit=600) -> list[Listing]:
-        """Свежие проходные объявления по точным исходным парам (марка, модель)."""
+    def search_pairs(self, pairs, country=None, year_from=None, limit=600, sort="new", offset=0) -> list[Listing]:
+        """Проходные объявления по точным исходным парам (марка, модель); pairs=None — любые марки."""
         w, p = self._pairs_where(pairs, country, year_from)
-        rows = self._conn.execute(f"SELECT data FROM listings WHERE {w} ORDER BY {self.SORTS['new']} LIMIT ?", (*p, limit)).fetchall()
+        rows = self._conn.execute(f"SELECT data FROM listings WHERE {w} ORDER BY {self.SORTS.get(sort, self.SORTS['new'])}"
+                                  " LIMIT ? OFFSET ?", (*p, limit, offset)).fetchall()
         return [Listing.model_validate_json(r["data"]) for r in rows]
 
     def count_pairs(self, pairs, country=None, year_from=None) -> int:

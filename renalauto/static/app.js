@@ -75,16 +75,43 @@
     }
   } catch (err) { /* приватный режим */ }
 
-  // --- фильтры каталога на телефоне: страна и марка сразу, остальное — по кнопке ---
-  const filters = document.querySelector('form.filters'), more = filters && filters.querySelector('.filters-more');
-  if (more) {
-    const extra = [...filters.querySelectorAll(':scope > div')].slice(2).flatMap(d => [...d.querySelectorAll('input, select')]);
-    const used = extra.filter(el => el.value && !(el.name === 'sort' && el.value === 'new')).length;
-    more.hidden = false;
-    if (!used) filters.classList.add('folded');
-    const label = () => { more.textContent = filters.classList.contains('folded') ? 'Ещё фильтры' : 'Свернуть фильтры'; };
-    more.addEventListener('click', () => { filters.classList.toggle('folded'); label(); });
-    label();
+  // --- переключатель «Стоянка / Список»: выбранные фильтры переезжают вместе с человеком ---
+  const VIEW_KEYS = ['budget', 'country', 'year_from', 'make', 'model', 'q'];
+  document.querySelectorAll('[data-view-link]').forEach(a => a.addEventListener('click', () => {
+    const now = new URLSearchParams(location.search), qs = new URLSearchParams();
+    for (const k of VIEW_KEYS) if (now.get(k)) qs.set(k, now.get(k));
+    a.href = a.dataset.viewLink + (qs.toString() ? '?' + qs : '') + (a.dataset.viewHash || '');
+  }));
+
+  // --- фильтр каталога: те же поля, что на стоянке; выбор сразу применяется ---
+  const cat = document.querySelector('form[data-cat-filter]');
+  if (cat) {
+    const range = cat.querySelector('[data-pf-budget]'), out = cat.querySelector('[data-pf-budget-out]');
+    const go = () => { clearTimeout(go.t); go.t = setTimeout(() => cat.requestSubmit ? cat.requestSubmit() : cat.submit(), 450); };
+    range.addEventListener('input', () => {
+      const any = +range.value >= +range.max;
+      cat.elements.budget.value = any ? '' : range.value;
+      out.textContent = any ? 'любой' : `до ${(range.value / 1e6).toLocaleString('ru-RU', {maximumFractionDigits: 2})} млн ₽`;
+      range.style.setProperty('--fill', `${(range.value - range.min) / (range.max - range.min) * 100}%`);
+      cat.querySelectorAll('[data-pf-quick]').forEach(b => b.classList.toggle('on', +b.dataset.pfQuick === +range.value));
+    });
+    range.addEventListener('change', go);
+    cat.querySelectorAll('[data-pf-quick]').forEach(b => b.addEventListener('click', () => {
+      range.value = b.dataset.pfQuick;
+      range.dispatchEvent(new Event('input'));
+      go();
+    }));
+    cat.querySelectorAll('select').forEach(sel => sel.addEventListener('change', () => {
+      if (sel.name === 'make') cat.elements.model.value = '';  // модели у каждой марки свои
+      go();
+    }));
+    cat.addEventListener('submit', () => {  // пустые поля в адрес не попадают — ссылка остаётся короткой
+      for (const el of cat.elements) if (el.name && (el.value === '' || (el.name === 'sort' && el.value === 'new'))) el.disabled = true;
+      cat.classList.add('busy');
+    });
+    cat.querySelector('[data-pf-toggle]')?.addEventListener('click', e => {
+      e.currentTarget.setAttribute('aria-expanded', String(cat.classList.toggle('open')));
+    });
   }
 
   // --- галерея -------------------------------------------------------------
@@ -131,7 +158,7 @@
 
   // --- живая лента -----------------------------------------------------------
   const grid = document.getElementById('grid');
-  if (grid && window.EventSource) {
+  if (grid && window.EventSource && grid.dataset.stream !== undefined) {
     const dot = document.getElementById('live-dot'), text = document.getElementById('live-text');
     const es = new EventSource('/api/stream?' + (grid.dataset.stream || ''));
     let added = 0;

@@ -51,3 +51,12 @@
   <div class="form-msg"></div>
 </form>
 {%- endmacro %}
+
+
+{% macro view_switch(current, query='') -%}
+{# Один и тот же подбор двумя способами: живая стоянка на главной и обычный список. Выбор фильтров переносится. #}
+<nav class="view-switch" aria-label="Как показывать машины">
+  <a href="/{{ '?' ~ query if query }}#terminal" data-view-link="/" data-view-hash="#terminal"{{ ' aria-current="page"'|safe if current == 'lot' }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V4h7.5a5 5 0 0 1 0 10H8v6z M8 8v2h3.5a1 1 0 0 0 0-2z" fill="currentColor" fill-rule="evenodd"/></svg>Стоянка</a>
+  <a href="/cars{{ '?' ~ query if query }}" data-view-link="/cars"{{ ' aria-current="page"'|safe if current == 'list' }}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h7v6H4zM13 5h7v6h-7zM4 13h7v6H4zM13 13h7v6h-7z" fill="currentColor"/></svg>Список</a>
+</nav>
+{%- endmacro %}

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import card, lead_form %}
+{% from "_macros.html" import card, lead_form, view_switch %}
 {% block title %}{% if f.make %}{{ f.make }} {% endif %}{% if f.country == 'KR' %}Авто из Кореи{% elif f.country == 'CN' %}Авто из Китая{% else %}Авто из Кореи и Китая{% endif %} — свежие объявления, цены в рублях | {{ company }}{% endblock %}
 {% block canonical %}<link rel="canonical" href="{{ site_url }}/cars{% if f.country %}?country={{ f.country }}{% endif %}">{% endblock %}
 {% block content %}
@@ -9,37 +9,41 @@
   <p class="muted">Объявления Encar и Dongchedi в реальном времени. Цена — ориентировочно с растаможкой; доставку и точный итог в вашем городе посчитает менеджер — бесплатно. Не хотите выбирать сами? <a href="/#podbor">Подберём под бюджет</a>.</p>
 </section>
 
-<form class="filters" id="cars" method="get" action="/cars">
-  <div><label>Страна</label>
-    <select name="country"><option value="">Корея и Китай</option>
-      <option value="KR" {{ 'selected' if f.country == 'KR' }}>🇰🇷 Корея</option>
-      <option value="CN" {{ 'selected' if f.country == 'CN' }}>🇨🇳 Китай</option></select></div>
-  <div><label>Марка</label>
-    <input name="make" list="makes" value="{{ f.make or '' }}" placeholder="Hyundai, Kia, BYD…">
-    <datalist id="makes">{% for m in makes %}<option value="{{ m }}">{% endfor %}</datalist></div>
-  <div><label>Модель</label><input name="model" value="{{ f.model or '' }}" placeholder="Palisade, K5…"></div>
-  <div><label>Год от</label><input name="year_from" type="number" min="1990" max="2030" value="{{ f.year_from or '' }}"></div>
-  <div><label>Пробег до, км</label><input name="mileage_max" type="number" min="0" step="10000" value="{{ f.mileage_max or '' }}"></div>
-  <div><label>Цена на площадке до, ₽</label><input name="price_max" type="number" min="0" step="100000" value="{{ f.price_max or '' }}"></div>
-  <div><label>Топливо</label>
-    <select name="fuel"><option value="">Любое</option>
-      {% for key, label in fuels %}<option value="{{ key }}" {{ 'selected' if f.fuel == key }}>{{ label }}</option>{% endfor %}</select></div>
-  <div><label>Сортировка</label>
-    <select name="sort">
-      {% for key, label in sorts %}<option value="{{ key }}" {{ 'selected' if f.sort == key }}>{{ label }}</option>{% endfor %}</select></div>
-  <button class="btn ghost filters-more" type="button" hidden>Ещё фильтры</button>
-  <button class="btn" type="submit">Показать</button>
+{{ view_switch('list', f.query()) }}
+<form class="port-filter cat-filter{{ ' open' if f.query() }}" id="cars" method="get" action="/cars" data-cat-filter aria-label="Подбор машин">
+  <button type="button" class="pf-toggle" data-pf-toggle aria-expanded="{{ 'true' if f.query() else 'false' }}"><span>Подобрать по бюджету, году и марке</span><i aria-hidden="true">▾</i></button>
+  {% set bmax = 6000000 %}{% set bval = f.budget if f.budget and f.budget < bmax else bmax %}
+  <div class="pf-field pf-budget"><label for="pf-budget">Бюджет <b data-pf-budget-out>{% if bval < bmax %}до {{ ('%.2f' % (bval / 1000000))|replace('.00', '')|replace('.', ',') }} млн ₽{% else %}любой{% endif %}</b></label>
+    <input id="pf-budget" type="range" min="1000000" max="{{ bmax }}" step="250000" value="{{ bval }}" data-pf-budget style="--fill: {{ ((bval - 1000000) / (bmax - 1000000) * 100)|round(1) }}%">
+    <input type="hidden" name="budget" value="{{ bval if bval < bmax else '' }}">
+    <div class="pf-quick" role="group" aria-label="Быстрый выбор бюджета">{% for v, t in [(1500000, '1,5'), (2000000, '2'), (3000000, '3'), (bmax, 'любой')] %}<button type="button" data-pf-quick="{{ v }}"{{ ' class="on"'|safe if v == bval }}>{{ t }}{% if v < bmax %}<span class="u"> млн</span>{% endif %}</button>{% endfor %}</div></div>
+  <div class="pf-field"><label for="pf-country">Откуда</label>
+    <select id="pf-country" name="country"><option value="">Корея и Китай</option><option value="KR" {{ 'selected' if f.country == 'KR' }}>Корея</option><option value="CN" {{ 'selected' if f.country == 'CN' }}>Китай</option></select></div>
+  <div class="pf-field"><label for="pf-year">Год</label>
+    <select id="pf-year" name="year_from"><option value="">Любой</option>{% for y in [2024, 2023, 2022, 2021, 2020, 2018, 2015] %}<option value="{{ y }}" {{ 'selected' if f.year_from == y }}>от {{ y }}</option>{% endfor %}
+      {% if f.year_from and f.year_from not in [2024, 2023, 2022, 2021, 2020, 2018, 2015] %}<option value="{{ f.year_from }}" selected>от {{ f.year_from }}</option>{% endif %}</select></div>
+  <div class="pf-field"><label for="pf-make">Марка</label>
+    <select id="pf-make" name="make"><option value="">Все марки</option>{% for m in catalog %}<option value="{{ m.make }}" {{ 'selected' if f.make == m.make }}>{{ m.make }} · {{ m.count }}</option>{% endfor %}
+      {% if f.make and f.make not in catalog|map(attribute='make') %}<option value="{{ f.make }}" selected>{{ f.make }}</option>{% endif %}</select></div>
+  <div class="pf-field"><label for="pf-model">Модель</label>
+    <select id="pf-model" name="model" {{ 'disabled' if not models and not f.model }}><option value="">Все модели</option>{% for m in models %}<option value="{{ m.model }}" {{ 'selected' if f.model == m.model }}>{{ m.model }} · {{ m.count }}</option>{% endfor %}
+      {% if f.model and f.model not in models|map(attribute='model') %}<option value="{{ f.model }}" selected>{{ f.model }}</option>{% endif %}</select></div>
+  <div class="pf-field"><label for="pf-sort">Сначала</label>
+    <select id="pf-sort" name="sort">{% for key, label in sorts %}<option value="{{ key }}" {{ 'selected' if f.sort == key }}>{{ label|replace('Сначала ', '')|replace('С меньшим', 'с меньшим')|capitalize }}</option>{% endfor %}</select></div>
+  {% if f.q %}<input type="hidden" name="q" value="{{ f.q }}">{% endif %}
+  <noscript><button class="btn" type="submit">Показать</button></noscript>
+  <p class="pf-result">{% if total is not none and f.query() %}{% if total %}Под ваш запрос — <b>{{ 'больше ' if total_more }}{{ fmt(total) }} {{ 'машина' if total % 10 == 1 and total % 100 != 11 else 'машины' if total % 10 in [2, 3, 4] and total % 100 not in [12, 13, 14] else 'машин' }}</b>.{% else %}Под этот запрос машин сейчас нет — попробуйте поднять бюджет или взять год постарше.{% endif %} <a class="pf-reset" href="/cars">Сбросить ×</a>{% elif total %}Сейчас в каталоге <b>{{ fmt(total) }}</b> машин, которые можно ввезти в Россию.{% endif %}</p>
 </form>
 
-<div class="live"><span class="dot" id="live-dot"></span><span id="live-text">Подключаемся к потоку новых объявлений…</span></div>
+{% if stream_query is not none %}<div class="live"><span class="dot" id="live-dot"></span><span id="live-text">Подключаемся к потоку новых объявлений…</span></div>{% endif %}
 
 {% if cars %}
-<div class="grid" id="grid" data-stream="{{ stream_query }}">
+<div class="grid" id="grid"{% if stream_query is not none %} data-stream="{{ stream_query }}"{% endif %}>
   {% for v in cars %}{{ card(v) }}{% endfor %}
 </div>
 {% if next_url %}<div class="more"><a class="btn ghost" href="{{ next_url }}">Показать ещё</a></div>{% endif %}
 {% else %}
-<div class="grid" id="grid" data-stream="{{ stream_query }}"></div>
+<div class="grid" id="grid"{% if stream_query is not none %} data-stream="{{ stream_query }}"{% endif %}></div>
 <div class="empty">По этим условиям пока ничего нет. Новые объявления появятся здесь автоматически — или оставьте заявку, и менеджер подберёт варианты.</div>
 {% endif %}
 

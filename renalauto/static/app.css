@@ -1490,13 +1490,7 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 .price-lines .k-car > i { background: #0b5c8f; } .price-lines .k-duty > i { background: #dd1f1f; }
 .price-lines .k-fees > i { background: #f2a531; } .price-lines .k-fee > i { background: #16191d; }
 .price-box .btn { margin-top: 4px; }
-/* каталог на телефоне: сначала страна и марка, остальные фильтры — по кнопке */
-@media (max-width: 640px) {
-  .filters.folded > div:nth-of-type(n+3) { display: none; }
-  .filters .filters-more:not([hidden]) { display: inline-flex; grid-column: 1 / -1; }
-}
-@media (min-width: 641px) { .filters .filters-more { display: none; } }
-.filters .filters-more[hidden] { display: none; }
+
 #price, #lead { scroll-margin-top: 84px; }
 
 /* админка: заявки в Telegram */
@@ -1517,3 +1511,28 @@ button.link { background: none; border: 0; padding: 0; color: var(--link); curso
 .foot-offices .addr strong { color: var(--text); font-weight: 700; }
 .foot-offices .addr small { display: block; }
 .foot-contacts .fi-tg { background: linear-gradient(160deg, #37bbfe, #007dbb); }
+
+/* переключатель «Стоянка / Список» над фильтром на главной и в каталоге */
+.view-switch { display: inline-flex; gap: 2px; padding: 3px; margin: 0 0 10px; background: #e9eef3; border-radius: 12px; }
+.view-switch a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 16px; border-radius: 9px; color: #475467;
+  font: 700 14px/1.2 Onest, system-ui, sans-serif; text-decoration: none; }
+.view-switch a:hover { color: #0f172a; text-decoration: none; }
+.view-switch a[aria-current] { background: #fff; color: #0f172a; box-shadow: 0 1px 3px rgba(16,24,40,.14); }
+.view-switch svg { width: 16px; height: 16px; flex: 0 0 auto; }
+@media (max-width: 640px) { .view-switch { display: flex; } .view-switch a { flex: 1; justify-content: center; padding: 10px 8px; } }
+
+/* каталог: тот же фильтр, что на стоянке, плюс сортировка */
+.cat-filter { grid-template-columns: minmax(0, 1.3fr) repeat(5, minmax(0, 1fr)); background: #fff; border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 12px; margin-bottom: 14px; box-shadow: 0 6px 24px rgba(16,24,40,.06); }
+.cat-filter label { color: var(--muted); }
+.cat-filter select { background: var(--bg); border-color: var(--line); color: var(--text); }
+.cat-filter.busy { opacity: .6; pointer-events: none; }
+.cat-filter .pf-result a.pf-reset { display: inline-block; text-decoration: none; }
+@media (max-width: 1000px) and (min-width: 641px) { .cat-filter { grid-template-columns: repeat(3, minmax(0, 1fr)); } .cat-filter .pf-budget { grid-column: 1 / -1; } }
+@media (max-width: 640px) {
+  .cat-filter { grid-template-columns: 1fr 1fr; padding: 10px; }
+  .cat-filter .pf-budget { grid-column: 1 / -1; }
+  .cat-filter:not(.open) { padding: 0; border: 0; box-shadow: none; background: none; }
+  .cat-filter:not(.open) .pf-result { display: none; }
+}
+@media (max-width: 640px) { .catalog-head h1 { font-size: 23px; line-height: 1.2; margin-bottom: 6px; } .catalog-head p { font-size: 14px; } }
