@@ -182,12 +182,13 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         storage.only_sources = settings.sources or None  # на сайте — только площадки из SOURCES
         srcs = sources if sources is not None else build_sources(settings)
         hub = EventHub()
-        notifier = TelegramNotifier(settings)
+        notifier = TelegramNotifier(settings, storage=storage)
         poller = Poller(settings, storage, srcs, hub, notifier)
         app.state.storage, app.state.sources, app.state.hub, app.state.poller = storage, srcs, hub, poller
         app.state.notifier = notifier
         if settings.poller_enabled:
             poller.start()
+        notifier.start()  # бот слушает /start из ссылки в админке — так подключаются чаты для заявок
         rates_task = asyncio.create_task(refresh_rates_forever()) if settings.rates_live else None
         if not settings.admin_token:
             log.warning("ADMIN_TOKEN не задан: заявки и служебные функции недоступны")
@@ -738,7 +739,10 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     async def admin_page(request: Request, status: str | None = None) -> HTMLResponse:
         require_admin(request)
         storage = storage_of(request)
-        return render(request, "admin.html", leads=storage.list_leads(status), stats=storage.lead_stats())
+        notifier = request.app.state.notifier
+        return render(request, "admin.html", leads=storage.list_leads(status), stats=storage.lead_stats(),
+                      tg=notifier.status(), tg_chats=storage.tg_chats(), tg_env_chat=notifier.manager_chat or notifier.default_chat,
+                      tg_code=notifier.join_code)
 
     @app.exception_handler(StarletteHTTPException)
     async def not_found(request: Request, exc: StarletteHTTPException):
@@ -793,6 +797,8 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             "sources": request.app.state.poller.status,
             "rates": rates.as_dict(),
             "admin_token_set": bool(settings.admin_token),
+            # куда уходят заявки: есть ли бот, сколько чатов подключено, когда ушла последняя и последняя ошибка
+            "lead_notify": request.app.state.notifier.status(),
         }
 
     @app.get("/api/listings", response_model=list[Listing])
@@ -894,6 +900,23 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
         if not sent:
             log.warning("lead #%s saved but not delivered to Telegram (check TELEGRAM_* settings)", saved.id)
         return {"ok": True, "id": saved.id}
+
+    @app.post("/api/telegram/test", dependencies=[Depends(require_admin)])
+    async def telegram_test(request: Request) -> dict[str, Any]:
+        """Проверочное сообщение во все чаты, куда уходят заявки."""
+        notifier = request.app.state.notifier
+        chats = notifier.lead_chats()
+        if not notifier.token:
+            raise HTTPException(409, "Бот не подключён: задайте TELEGRAM_BOT_TOKEN в .env")
+        if not chats:
+            raise HTTPException(409, "Нет ни одного чата: откройте ссылку «Подключить Telegram» и нажмите «Запустить»")
+        sent = [await notifier.send_text(c, "✅ Проверка: сюда будут приходить заявки с сайта.") for c in chats]
+        return {"sent": sum(sent), "chats": len(chats), "error": None if all(sent) else notifier.last_error}
+
+    @app.delete("/api/telegram/chats/{chat_id}", status_code=204, dependencies=[Depends(require_admin)])
+    async def telegram_remove_chat(request: Request, chat_id: str) -> None:
+        if not storage_of(request).remove_tg_chat(chat_id):
+            raise HTTPException(404, "Чат не найден")
 
     @app.get("/api/leads", response_model=list[Lead], dependencies=[Depends(require_admin)])
     async def list_leads(request: Request, status: LeadStatus | None = None) -> list[Lead]:

@@ -67,6 +67,12 @@ CREATE TABLE IF NOT EXISTS filters (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     data TEXT NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS tg_chats (
+    chat_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    added_at TEXT NOT NULL
+);
 """
 
 
@@ -442,6 +448,27 @@ class Storage:
             )
             self._conn.commit()
             return Lead(id=lead_id, created_at=row["created_at"], status=new_status, **data)
+
+    # --- чаты Telegram, куда приходят заявки (подключаются ссылкой из админки) ---
+
+    def add_tg_chat(self, chat_id: str, name: str) -> None:
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO tg_chats (chat_id, name, added_at) VALUES (?, ?, ?)"
+                " ON CONFLICT(chat_id) DO UPDATE SET name = excluded.name",
+                (str(chat_id), name, _now()),
+            )
+            self._conn.commit()
+
+    def remove_tg_chat(self, chat_id: str) -> bool:
+        with self._lock:
+            cur = self._conn.execute("DELETE FROM tg_chats WHERE chat_id = ?", (str(chat_id),))
+            self._conn.commit()
+            return cur.rowcount > 0
+
+    def tg_chats(self) -> list[dict]:
+        rows = self._conn.execute("SELECT chat_id, name, added_at FROM tg_chats ORDER BY added_at").fetchall()
+        return [dict(r) for r in rows]
 
     def lead_stats(self) -> dict[str, int]:
         rows = self._conn.execute("SELECT status, COUNT(*) AS n FROM leads GROUP BY status").fetchall()

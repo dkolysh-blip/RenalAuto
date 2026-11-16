@@ -1498,3 +1498,10 @@ a.rvc:hover { background: #f4f7fa; text-decoration: none; }
 @media (min-width: 641px) { .filters .filters-more { display: none; } }
 .filters .filters-more[hidden] { display: none; }
 #price, #lead { scroll-margin-top: 84px; }
+
+/* админка: заявки в Telegram */
+.tg-panel { margin-bottom: 16px; }
+.tg-panel .btn { margin: 0 6px 6px 0; }
+.tg-chats { margin: 0 0 12px; padding-left: 20px; }
+.ok-text { color: var(--ok); } .bad-text { color: var(--bad); }
+button.link { background: none; border: 0; padding: 0; color: var(--link); cursor: pointer; font: inherit; font-size: 13px; }

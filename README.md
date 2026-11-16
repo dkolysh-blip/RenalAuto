@@ -45,7 +45,9 @@ python -m renalauto
 | `/admin?token=ADMIN_TOKEN` | Заявки и их статусы (для учёта результата) |
 | `/sitemap.xml`, `/robots.txt` | Для Яндекса и Google |
 
-Заявки сохраняются в базе и сразу уходят менеджеру в Telegram (`TELEGRAM_BOT_TOKEN` + `TELEGRAM_MANAGER_CHAT_ID`).
+Заявки сохраняются в базе и сразу уходят менеджерам в Telegram: в `.env` нужен только `TELEGRAM_BOT_TOKEN`,
+получатели подключаются кнопкой «Подключить мой Telegram» на `/admin` (отключиться — `/stop` боту).
+Состояние видно в `/health` → `lead_notify`.
 
 Разведка площадок с сервера (что отдают, не блокируют ли): `docker compose exec -T renalauto python -m renalauto.probe`.
 

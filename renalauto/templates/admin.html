@@ -11,6 +11,28 @@
   <div><b>{{ stats.deal }}</b>сделки</div>
   <div><b>{{ stats.lost }}</b>отказ</div>
 </div>
+<div class="panel tg-panel">
+  <h2>Заявки в Telegram</h2>
+  {% if not tg.bot %}
+  <p><b class="bad-text">Бот не подключён</b> — заявки сохраняются только здесь, в админке. Создайте бота у @BotFather и впишите его токен в <code>TELEGRAM_BOT_TOKEN</code> в файле <code>.env</code> на сервере.</p>
+  {% else %}
+  {% if tg_chats or tg_env_chat %}
+  <p><b class="ok-text">Подключено.</b> Каждая новая заявка сразу приходит в:</p>
+  <ul class="tg-chats">
+    {% if tg_env_chat %}<li>чат <code>{{ tg_env_chat }}</code> <span class="muted small">(из настроек сервера)</span></li>{% endif %}
+    {% for c in tg_chats %}<li>{{ c.name }} <span class="muted small">с {{ c.added_at[:10] }}</span> <button type="button" class="link" data-tg-remove="{{ c.chat_id }}">отключить</button></li>{% endfor %}
+  </ul>
+  {% else %}
+  <p><b class="bad-text">Бот есть, но получателей нет</b> — заявки пока никуда не уходят.</p>
+  {% endif %}
+  <p>{% if tg.bot_username and tg_code %}<a class="btn" href="https://t.me/{{ tg.bot_username }}?start={{ tg_code }}" target="_blank" rel="noopener">Подключить мой Telegram</a>
+    <a class="btn ghost" href="https://t.me/{{ tg.bot_username }}?startgroup={{ tg_code }}" target="_blank" rel="noopener">Подключить группу</a>{% endif %}
+    <button type="button" class="btn ghost" data-tg-test>Отправить проверочное сообщение</button> <span class="small" data-tg-msg></span></p>
+  <p class="muted small">Откройте ссылку с телефона или компьютера, где установлен Telegram, и нажмите «Запустить». Ссылку можно переслать другому менеджеру — не публикуйте её.
+    {% if not tg.bot_username %}Бот ещё не ответил — обновите страницу через минуту.{% endif %}
+    {% if tg.last_error %}<br>Последняя ошибка: {{ tg.last_error }}{% endif %}</p>
+  {% endif %}
+</div>
 <div class="panel scroll-x">
 <table class="leads">
   <tr><th>#</th><th>Когда</th><th>Клиент</th><th>Машина / запрос</th><th>Статус</th></tr>
@@ -41,6 +63,18 @@ document.querySelectorAll('[data-lead-status]').forEach(sel => sel.addEventListe
     headers: {'Content-Type': 'application/json', 'X-Admin-Token': new URLSearchParams(location.search).get('token') || ''},
     body: JSON.stringify({status: sel.value})});
   sel.style.outline = res.ok ? '2px solid var(--ok)' : '2px solid var(--bad)';
+}));
+const adminHeaders = {'X-Admin-Token': new URLSearchParams(location.search).get('token') || ''};
+const tgTest = document.querySelector('[data-tg-test]'), tgMsg = document.querySelector('[data-tg-msg]');
+if (tgTest) tgTest.addEventListener('click', async () => {
+  tgMsg.textContent = 'Отправляем…';
+  const res = await fetch('/api/telegram/test', {method: 'POST', headers: adminHeaders});
+  const body = await res.json().catch(() => ({}));
+  tgMsg.textContent = res.ok ? `Отправлено в чатов: ${body.sent} из ${body.chats}` + (body.error ? ` · ${body.error}` : '') : (body.detail || 'Не удалось отправить');
+});
+document.querySelectorAll('[data-tg-remove]').forEach(b => b.addEventListener('click', async () => {
+  const res = await fetch('/api/telegram/chats/' + encodeURIComponent(b.dataset.tgRemove), {method: 'DELETE', headers: adminHeaders});
+  if (res.ok) b.closest('li').remove();
 }));
 </script>
 {% endblock %}
