@@ -36,6 +36,11 @@
       lines.innerHTML = r.lines.map(l => `<tr><th>${esc(l.title)}${l.note ? `<small>${esc(l.note)}</small>` : ''}</th>
         <td>${l.rub === null ? '—' : (l.note === 'от этой суммы' ? 'от ' : '') + rub(l.rub)}</td></tr>`).join('');
       total.textContent = (r.total_is_from ? 'от ' : '') + rub(r.total_rub);
+      const showLink = box.querySelector('a[data-calc-show]');
+      if (showLink) {
+        const b = Math.ceil(r.total_rub / 250000) * 250000;
+        showLink.href = b < 6000000 ? `/cars?budget=${b}` : '/cars';
+      }
       const parts = r.lines.filter(l => l.rub > 0), sum = parts.reduce((a, l) => a + l.rub, 0);
       bar.innerHTML = parts.map((l, i) => `<i style="flex:${l.rub} 1 0;background:${SHARE_COLORS[i % SHARE_COLORS.length]}" title="${esc(l.title)}"></i>`).join('');
       legend.innerHTML = parts.map((l, i) => `<li><i style="background:${SHARE_COLORS[i % SHARE_COLORS.length]}"></i>` +
@@ -45,9 +50,17 @@
     }
   }
   form.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 250); });
+  // ссылка «Пересчитать самому» со страницы машины приносит её параметры в адресе
+  const preset = new URLSearchParams(location.search);
+  for (const [k, v] of preset) {
+    const el = form.elements[k];
+    if (!el || !v) continue;
+    if (k === 'price') el.value = spaced(v); else el.value = v;
+  }
+  run();
   // на телефоне ручные параметры свёрнуты: их заполняет выбор марки и модели
   const more = form.querySelector('[data-calc-more]');
-  if (more && matchMedia('(max-width: 760px)').matches) more.open = false;
+  if (more && !form.closest('.calc-page') && matchMedia('(max-width: 760px)').matches) more.open = false;
   form.addEventListener('submit', e => e.preventDefault());
 
   // «Получить точный расчёт»: подставляем параметры в комментарий формы подбора
@@ -55,9 +68,16 @@
     if (!last) return;
     const p = last.params, label = s => form.querySelector(`input[name="${s}"]:checked`)?.parentElement.textContent.trim();
     const what = car.el.hidden ? '' : car.title.textContent + ', ';
-    window.RenalLead?.open({title: 'Получить точный расчёт', note: `${what}ориентировочно ${total.textContent}. Менеджер пересчитает по вашей машине и городу.`,
-      comment: `Расчёт из калькулятора: ${what}${label('country')}, ${label('engine')}, ${label('age')}, ` +
-        `${p.get('cc')} см³, ${p.get('hp')} л.с., цена ${spaced(p.get('price'))} ${p.get('currency')} — ориентировочно ${total.textContent} с растаможкой.`});
+const comment = `Расчёт из калькулятора: ${what}${label('country')}, ${label('engine')}, ${label('age')}, ` +
+        `${p.get('cc')} см³, ${p.get('hp')} л.с., цена ${spaced(p.get('price'))} ${p.get('currency')} — ориентировочно ${total.textContent} с растаможкой.`;
+    if (window.RenalLead) {
+          window.RenalLead?.open({title: 'Получить точный расчёт', note: `${what}ориентировочно ${total.textContent}. Менеджер пересчитает по вашей машине и городу.`,
+        comment});
+      } else {  // страница калькулятора: окно «Связаться» из шапки, расчёт уже вписан в вопрос
+      const dlg = document.getElementById('contact-dlg'), field = dlg?.querySelector('textarea[name=comment]');
+      if (field) field.value = comment;
+      dlg?.showModal?.();
+    }
   });
   // Марка → модель → год из свежих объявлений: подставляем страну, двигатель, объём и типичную цену за год
   const pickEl = {make: form.querySelector('[data-calc-make]'), model: form.querySelector('[data-calc-model]'),

@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% block title %}Калькулятор растаможки авто из Кореи и Китая — посчитайте цену сами | {{ company }}{% endblock %}
+{% block description %}Посчитайте сами, сколько будет стоить машина из Кореи или Китая: пошлина, утильсбор, таможенный сбор и наше вознаграждение — по действующим ставкам и курсу ЦБ, с разбором каждой строки.{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ site_url }}/calc">{% endblock %}
+{% block content %}
+<div class="crumbs"><a href="/">Главная</a> › Калькулятор</div>
+<section class="catalog-head">
+  <h1>Калькулятор: сколько машина будет стоить в России</h1>
+  <p class="muted">Считает так же, как считаем мы: пошлина, утильсбор и сборы — по действующим ставкам, курс — ЦБ на сегодня. Меняйте параметры — итог пересчитывается сразу, каждую строку можно проверить ниже.</p>
+</section>
+
+<div class="calc calc-page">
+  <form class="calc-form panel" data-calc>
+    <div class="calc-pick">
+      <div class="field"><label for="calc-make">Марка</label>
+        <select id="calc-make" data-calc-make><option value="">Все марки</option></select></div>
+      <div class="field"><label for="calc-model">Модель</label>
+        <select id="calc-model" data-calc-model disabled><option value="">Модель</option></select></div>
+      <div class="field"><label for="calc-year">Год</label>
+        <select id="calc-year" data-calc-year disabled><option value="">—</option></select></div>
+    </div>
+    <p class="calc-pick-info" data-calc-info>Выберите машину из объявлений — подставим её параметры и цену. Или задайте всё вручную ниже.</p>
+    <details class="calc-more" data-calc-more open>
+      <summary>Параметры машины</summary>
+      <div class="calc-more-body">
+        <fieldset class="seg"><legend>Откуда</legend>
+          <label><input type="radio" name="country" value="KR" checked> Корея</label>
+          <label><input type="radio" name="country" value="CN"> Китай</label>
+        </fieldset>
+        <fieldset class="seg"><legend>Двигатель</legend>
+          <label><input type="radio" name="engine" value="ice" checked> Бензин / дизель</label>
+          <label><input type="radio" name="engine" value="hybrid"> Гибрид</label>
+          <label><input type="radio" name="engine" value="ev"> Электро</label>
+        </fieldset>
+        <fieldset class="seg"><legend>Возраст</legend>
+          <label><input type="radio" name="age" value="new"> до 3 лет</label>
+          <label><input type="radio" name="age" value="mid" checked> 3–5 лет</label>
+          <label><input type="radio" name="age" value="old"> старше 5</label>
+        </fieldset>
+        <div class="calc-row">
+          <div class="field"><label for="calc-cc">Объём двигателя</label><span class="unit" data-unit="см³"><input id="calc-cc" name="cc" type="number" min="0" max="10000" step="100" value="1600" inputmode="numeric"></span></div>
+          <div class="field"><label for="calc-hp">Мощность</label><span class="unit" data-unit="л.с."><input id="calc-hp" name="hp" type="number" min="0" max="2000" value="150" inputmode="numeric"></span></div>
+        </div>
+        <div class="calc-row">
+          <div class="field"><label for="calc-price">Цена машины на площадке</label><input id="calc-price" name="price" type="text" value="1 500 000" inputmode="numeric" autocomplete="off" data-money></div>
+          <div class="field"><label for="calc-cur">Валюта</label>
+            <select id="calc-cur" name="currency"><option value="RUB">₽ рубли</option><option value="KRW">₩ воны</option><option value="CNY">¥ юани</option><option value="USD">$ доллары</option></select></div>
+        </div>
+        <p class="muted small">Мощность смотрите в объявлении или в характеристиках модели: от неё зависит утильсбор. Если не знаете — оставьте 150 л.с. и уточните у менеджера.</p>
+      </div>
+    </details>
+  </form>
+  <div class="calc-result panel" aria-live="polite">
+    <div class="cr-ticket">
+      <div class="cr-car" data-calc-car hidden><span class="cr-sprite"><img data-calc-sprite alt="" width="48" height="96"></span><span><b data-calc-car-title></b><small data-calc-car-sub></small></span></div>
+      <span class="cr-label">Итого, ориентировочно</span>
+      <b class="cr-total" data-calc-total>—</b>
+      <span class="cr-note">{% if calc_full %}С доставкой до Владивостока и оформлением документов{% else %}Плюс доставка до Владивостока и оформление документов — эти суммы зависят от машины и порта, их назовёт менеджер{% endif %}</span>
+    </div>
+    <div class="cr-bar" data-calc-bar aria-hidden="true"></div>
+    <ul class="cr-legend" data-calc-legend></ul>
+    <div class="calc-verdict" data-calc-verdict>Введите параметры машины</div>
+    <details class="cr-details" open>
+      <summary>Расчёт по строкам</summary>
+      <table class="calc-lines"><tbody data-calc-lines></tbody></table>
+    </details>
+    <button class="btn block" type="button" data-calc-cta>Проверить расчёт у менеджера</button>
+    <a class="btn ghost block calc-show" href="/cars" data-calc-show>Показать машины в этом бюджете</a>
+    <p class="muted small">Курс {{ 'ЦБ РФ' if rates_source == 'ЦБ РФ' else 'ориентировочный' }}{% if rates_date %} на {{ rates_date }}{% endif %}, ставки — {{ rules_as_of }}. Итог зависит от курса на день оплаты и ставок на дату декларации.</p>
+  </div>
+</div>
+
+<section class="panel calc-notes" id="notes">
+  <h2>Как это считается — по строкам</h2>
+  <details open>
+    <summary>Таможенная пошлина — самая большая строка</summary>
+    <p>Зависит от возраста машины и объёма двигателя, считается в евро по курсу ЦБ.</p>
+    <table class="specs">
+      <tr><th>До 3 лет</th><td>{{ duty.new_pct }} от стоимости машины, но не меньше ставки за объём: от {{ duty.new_min }} до {{ duty.new_max }} € за см³ — чем дороже машина, тем выше ставка</td></tr>
+      <tr><th>3–5 лет</th><td>только за объём: {% for limit, rate in duty.mid %}{{ limit }} — {{ rate }} €{{ ', ' if not loop.last }}{% endfor %} за см³</td></tr>
+      <tr><th>Старше 5 лет</th><td>только за объём: {% for limit, rate in duty.old %}{{ limit }} — {{ rate }} €{{ ', ' if not loop.last }}{% endfor %} за см³</td></tr>
+    </table>
+    <p class="muted small">Поэтому машины 3–5 лет обычно выгоднее всего: пошлина не зависит от цены и ниже, чем у машин старше 5 лет. Возраст таможня считает от даты выпуска до дня подачи декларации; калькулятор берёт год выпуска, так что на границе 3 и 5 лет уточните у менеджера.</p>
+  </details>
+  <details>
+    <summary>Утильсбор — почему важны 160 л.с.</summary>
+    <p>Для машины, которую вы ввозите для себя, действует льготный сбор: <b>{{ fmt(util.new) }} ₽</b> за машину до 3 лет и <b>{{ fmt(util.old) }} ₽</b> за машину старше. Льгота работает, только если мощность не больше {{ util.hp }} л.с. и объём не больше {{ (util.cc / 1000)|round(1)|string|replace('.', ',') }} л; для гибридов и электромобилей — не больше {{ util.hp_electric }} л.с.</p>
+    <p>Если мощность или объём выше, сбор считается по коммерческой шкале — от {{ fmt(util.commercial) }} ₽ и выше, в зависимости от мощности. Калькулятор в этом случае показывает сумму «от» и пишет «непроходной»: точную цифру посчитает менеджер. Такие машины мы в каталоге не показываем.</p>
+  </details>
+  <details>
+    <summary>Таможенный сбор за оформление</summary>
+    <p>Фиксированная сумма, зависит от стоимости машины: от {{ fmt(fee_range[0]) }} до {{ fmt(fee_range[1]) }} ₽.</p>
+  </details>
+  <details>
+    <summary>Доставка и документы</summary>
+    <p>Доставка до Владивостока (морем из Кореи, по суше из Китая), СБКТС, ЭПТС и услуги брокера. {% if calc_full %}В калькуляторе стоят наши обычные суммы; для конкретной машины они могут немного отличаться.{% else %}Эти суммы зависят от машины, порта и сезона, поэтому в итог калькулятора они не входят — менеджер называет их до оплаты.{% endif %} Доставка из Владивостока в ваш город считается отдельно. Все эти расходы вы оплачиваете по факту, с чеками.</p>
+  </details>
+  <details>
+    <summary>Наше вознаграждение</summary>
+    <p>Не больше {{ fmt(deal.fee) }} ₽ за машину — это не процент от её цены. В калькуляторе стоит максимум.</p>
+  </details>
+  <details>
+    <summary>Какую машину вообще можно привезти</summary>
+    <p><b>Из Кореи</b> в Россию можно вывезти машину с двигателем до 2,0 л и ценой до 50 000 $; гибриды и электромобили Корея на экспорт в Россию не выпускает. <b>Из Китая</b> машины с пробегом вывозить можно.</p>
+    <p>В каталоге и на стоянке мы показываем только машины, которые проходят эти ограничения. Правила меняются — перед бронью менеджер проверяет машину ещё раз.</p>
+  </details>
+  <details>
+    <summary>Почему итог может измениться</summary>
+    <p>Цена машины на площадке — в вонах или юанях, пошлина — в евро. Калькулятор считает по курсу ЦБ на сегодня, а платите вы по курсу на день оплаты инвойса и на день подачи декларации. Ставки пошлины и утильсбора государство тоже меняет; в калькуляторе — действующие на {{ rules_as_of }}.</p>
+  </details>
+</section>
+{% endblock %}
+{% block scripts %}<script src="/static/calc.js?v={{ asset_version }}" defer></script>{% endblock %}

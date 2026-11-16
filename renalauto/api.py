@@ -28,6 +28,7 @@ from pydantic import BaseModel, Field
 
 from . import __version__, i18n
 from .config import Settings
+from . import customs
 from .customs import TurnkeyCalc, turnkey
 from .eligibility import RULES_AS_OF, engine_kind
 from .events import EventHub
@@ -636,6 +637,23 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),
         )
 
+    @app.get("/calc", response_class=HTMLResponse, include_in_schema=False)
+    async def calc_page(request: Request) -> HTMLResponse:
+        """Калькулятор для самостоятельного расчёта; пояснения к строкам берут ставки из тех же таблиц, что и расчёт."""
+        eur = lambda x: f"{x:g}".replace(".", ",")
+        band = lambda table: [(f"до {limit / 1000:g} л".replace(".", ",") if limit != float("inf") else "больше 3 л", eur(rate))
+                              for limit, rate in table]
+        return render(
+            request, "calc.html",
+            calc_full=None not in (settings.deal_logistics_kr_rub, settings.deal_logistics_cn_rub, settings.deal_papers_rub),
+            duty=dict(new_pct="48–54 %", new_min=eur(customs.DUTY_NEW[0][2]), new_max=eur(customs.DUTY_NEW[-1][2]),
+                      mid=band(customs.DUTY_MID), old=band(customs.DUTY_OLD)),
+            util=dict(new=customs.LOW_UTIL_RUB["new"], old=customs.LOW_UTIL_RUB["old"], hp=customs.LOW_UTIL_MAX_HP,
+                      cc=customs.LOW_UTIL_MAX_CC, hp_electric=customs.LOW_UTIL_MAX_HP_ELECTRIC,
+                      commercial=customs.COMMERCIAL_UTIL_FROM_RUB),
+            fee_range=(customs.CUSTOMS_FEE[0][1], customs.CUSTOMS_FEE[-1][1]),
+        )
+
     @app.get("/api/calc", response_model=TurnkeyCalc)
     async def calc(
         price: float = Query(gt=0, le=1_000_000_000),
@@ -928,6 +946,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
     @app.get("/sitemap.xml", include_in_schema=False)
     async def sitemap(request: Request) -> Response:
         urls = [f"<url><loc>{settings.site_url}/</loc><changefreq>hourly</changefreq></url>",
+                f"<url><loc>{settings.site_url}/calc</loc></url>",
                 f"<url><loc>{settings.site_url}/vin</loc></url>",
                 f"<url><loc>{settings.site_url}/cars</loc><changefreq>hourly</changefreq></url>",
                 f"<url><loc>{settings.site_url}/privacy</loc></url>"]

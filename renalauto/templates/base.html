@@ -43,8 +43,8 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
     <nav aria-label="Разделы сайта">
       <a href="/"{{ ' class="on"'|safe if path == '/' }}>Стоянка</a>
       <a href="/cars"{{ ' class="on"'|safe if path.startswith('/cars') or path.startswith('/car/') }}>Каталог</a>
+      <a href="/calc"{{ ' class="on"'|safe if path.startswith('/calc') }}>Калькулятор</a>
       <a href="/vin"{{ ' class="on"'|safe if path.startswith('/vin') }}>Проверка VIN</a>
-      <a href="/#vydachi">Отзывы</a>
     </nav>
     <div class="contacts">
       {% if company_hotline or company_phone %}<a class="top-phone" href="tel:{{ (company_hotline or company_phone or '')|replace(' ', '')|replace('-', '')|replace('(', '')|replace(')', '') }}" data-goal="call"><b>{{ company_hotline or company_phone }}</b>{% if company_hotline %}<small>бесплатно по России</small>{% endif %}</a>{% endif %}
@@ -105,7 +105,7 @@ ym({{ ym_id }},"init",{clickmap:true,trackLinks:true,accurateTrackBounce:true,we
 </footer>
 <dialog class="contact-dlg" id="contact-dlg" aria-labelledby="contact-title">
   <button class="dialog-close" type="button" data-close aria-label="Закрыть">×</button>
-  <nav class="cdlg-nav" aria-label="Разделы сайта"><a href="/">Стоянка</a><a href="/cars">Каталог</a><a href="/vin">Проверка VIN</a><a href="/#vydachi">Отзывы</a><a href="#offices">Офисы</a></nav>
+  <nav class="cdlg-nav" aria-label="Разделы сайта"><a href="/">Стоянка</a><a href="/cars">Каталог</a><a href="/calc">Калькулятор</a><a href="/vin">Проверка VIN</a><a href="/#vydachi">Отзывы</a><a href="#offices">Офисы</a></nav>
   <div class="cdlg-grid">
     <section class="cdlg-self">
       <h2 id="contact-title">Напишите или позвоните</h2>

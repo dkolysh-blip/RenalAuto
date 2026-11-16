@@ -1608,3 +1608,22 @@ a.ts { transition: transform .12s ease; } a.ts:hover { transform: translateY(-2p
   .cdlg-back { border-left: 0; border-top: 1px solid var(--line); }
   .contact-dlg h2 { font-size: 17px; }
 }
+
+/* ---- страница калькулятора ---- */
+.cr-car[hidden] { display: none; }
+.calc-page { margin: 16px 0; gap: 20px; }
+.calc-page .calc-result { display: grid; gap: 14px; }
+.calc-page .calc-result p { margin: 0; }
+.calc-page .calc-verdict { margin: 0; }
+.calc-page .calc-verdict.ok { background: var(--ok-bg); color: var(--ok); }
+.calc-page .calc-verdict.bad { background: var(--bad-bg); color: var(--bad); }
+.calc-page a.calc-show { text-align: center; }
+.calc-notes { margin: 20px 0 8px; }
+.calc-notes h2 { font-size: 20px; margin-bottom: 6px; }
+.calc-notes details { border-top: 1px solid var(--line); padding: 12px 0; }
+.calc-notes details:first-of-type { border-top: 0; }
+.calc-notes summary { cursor: pointer; font-weight: 700; font-size: 15.5px; }
+.calc-notes details p { margin: 10px 0 0; max-width: 860px; }
+.calc-notes .specs { margin-top: 8px; }
+.calc-notes .specs th { width: 22%; }
+@media (max-width: 640px) { .calc-notes .specs th { width: 34%; } }

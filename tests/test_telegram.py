@@ -118,3 +118,28 @@ def test_telegram_link_from_settings_is_never_a_placeholder(monkeypatch):
     assert Settings().company_telegram == default
     monkeypatch.setenv("COMPANY_TELEGRAM_CHANNEL", "@ваш_канал")
     assert Settings().company_telegram_channel is None
+
+
+def test_calculator_page_explains_the_same_rates_it_uses(settings):
+    from renalauto import customs
+
+    ok_car = kb(external_id="2", title="기아 K5 1.6 터보", make="기아", model="K5", extra={"displacement": "1,598cc"})
+    client, _ = make_client(settings, [ok_car])
+    try:
+        page = client.get("/calc")
+        assert page.status_code == 200 and "data-calc" in page.text and "/static/calc.js" in page.text
+        assert '<a href="/calc" class="on">Калькулятор</a>' in page.text
+        # пояснения берут цифры из тех же таблиц, что и расчёт
+        assert f"не больше {customs.LOW_UTIL_MAX_HP} л.с." in page.text
+        assert "5 200" in page.text and "750 000" in page.text and "1 067" in page.text
+        assert "до 1,5 л — 1,7 €" in page.text and "больше 3 л — 5,7 €" in page.text
+        assert "их назовёт менеджер" in page.text  # доставка не задана в настройках — в итог не входит
+
+        r = client.get("/api/calc", params={"price": 1_500_000, "currency": "RUB", "cc": 1600, "hp": 150, "age": "mid"}).json()
+        duty = next(l["rub"] for l in r["lines"] if l["title"].startswith("Таможенная пошлина"))
+        assert duty == round(2.5 * 1600 * settings.rate_eur_rub) and r["passable"] and r["total_is_from"]
+        assert "/calc</loc>" in client.get("/sitemap.xml").text
+        # со страницы машины — ссылка в калькулятор с её параметрами
+        assert "/calc?price=" in client.get("/car/kbchachacha/2").text
+    finally:
+        client.__exit__(None, None, None)
