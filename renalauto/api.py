@@ -640,6 +640,7 @@ def create_app(settings: Settings | None = None, sources: dict[str, Source] | No
             request, "port.html", cars=cars, matched=matched, reviews=load_reviews(), share_title=share_title,
             stock=stock, stock_labels=STOCK_STATUS_LABELS,
             rail=[c for c in scene["cars"] if c.get("photo")][:RAIL_CARS],
+            base_total=storage.count_passable(),
             scene=json.dumps(scene, ensure_ascii=False).replace("</", "<\\/"),
         )
 

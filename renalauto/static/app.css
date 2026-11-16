@@ -1700,3 +1700,25 @@ button.vlad-card:hover { transform: translateY(-2px); box-shadow: 0 .8cqw 2cqw r
 .vlad-card.empty .btn { justify-self: start; height: auto; min-height: 0; padding: .5cqw 1.1cqw; font-size: .9cqw; line-height: 1.2; border-radius: .6cqw; margin-top: .2cqw; }
 .vlad-more { position: absolute; right: 6.6%; bottom: 1.2%; padding: .2cqw .6cqw; border: 0; background: none; font: 700 .85cqw/1 Onest, system-ui, sans-serif; color: var(--accent); cursor: pointer; }
 .terminal.pop-docked .vlad { opacity: .25; pointer-events: none; transition: opacity .3s; }
+
+/* --- первый экран главной: заголовок с двумя действиями слева, четыре факта справа --- */
+.port-hero.band { padding-top: 26px; }
+.port-offer.hero2 { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 20px 44px; align-items: center; }
+.port-hero .hero2 h1 { font-size: clamp(32px, 3.7vw, 52px); margin: 0 0 12px; }
+.port-hero .hero2 .hero-sub { margin: 0; font-size: 17px; font-weight: 500; line-height: 1.5; color: #475467; max-width: 540px; }
+.h2-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+.h2-cta .btn { height: 54px; padding: 0 24px; font-size: 17px; font-weight: 700; border-radius: 14px; display: inline-flex; align-items: center; gap: 8px; }
+.h2-cta .btn.ghost { font-weight: 600; }
+.port-hero .hero2 .h2-note { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); }
+.h2-facts { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.h2-facts li { display: grid; gap: 5px; align-content: start; padding: 16px 18px; background: #fff; border: 1px solid #e3e8ee; border-radius: 16px; box-shadow: 0 6px 20px rgba(15,23,42,.05); }
+.h2-facts b { font: 700 clamp(19px, 1.75vw, 25px)/1.1 Unbounded, Onest, sans-serif; color: #0f172a; white-space: nowrap; }
+.h2-facts li:first-child b { color: var(--accent); }
+.h2-facts span { font-size: 13.5px; line-height: 1.35; color: #5b6675; }
+@media (max-width: 900px) { .port-offer.hero2 { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) {
+  .port-hero .hero2 h1 { font-size: 28px; margin-bottom: 8px; }
+  .port-hero .hero2 .hero-sub { font-size: 15px; }
+  .h2-cta { margin-top: 14px; } .h2-cta .btn { flex: 1 1 100%; justify-content: center; height: 50px; font-size: 16px; }
+  .h2-facts { gap: 8px; } .h2-facts li { padding: 11px 12px; border-radius: 13px; } .h2-facts b { font-size: 17px; } .h2-facts span { font-size: 12px; }
+}
