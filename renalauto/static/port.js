@@ -5,7 +5,7 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '11';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '12';  // V — поднять после перерендера
   // Порт всегда дневной: светлая сцена продаёт лучше. Ночная подложка — только по ?night=1
   const NIGHT = new URLSearchParams(location.search).get('night') === '1';
   const PLATE = NIGHT ? '-night' : '';
@@ -93,32 +93,34 @@
   // Две раскладки: широкая (десктоп) и узкая вертикальная полоса в 2 ряда (телефон), судно внизу.
   // Каждое место: где стоит машина и три маршрута — заезд через ворота, выезд обратно и путь к рампе.
   function wideLayout() {
-    const W = 1600, H = 760, road = 56, apron = 540, quay = 600, rampX = 410, ZW = 760, COLS = 14;  // паром — у корейской стоянки
-    const rows = [[164, 214], [266, 214], [344, 394], [446, 394]];  // центр мест и их проезд
-    const zones = [{zone: 'KR', x0: 30}, {zone: 'CN', x0: 810}];
+    // Маршрут слева направо: стоянки Кореи и Китая (2 ряда × 8 крупных мест), внизу море с судном, справа — Владивосток.
+    // Те же числа — в design/blender/port.py (ROUTE): подложка отрисована под эти дороги и места.
+    const W = 1600, H = 660, road = 40, a = 276, apron = 440, quay = 478, rampX = 380, ZW = 570, COLS = 8, VX = 1200;
+    const rows = [214, 338];
+    const zones = [{zone: 'KR', x0: 30}, {zone: 'CN', x0: 610}];
     const slots = [];
     for (const z of zones) {
       const cx = z.x0 + 24;
-      for (const [sy, a] of rows) for (let i = 0; i < COLS; i++) {
-        const sx = z.x0 + 76 + i * 50;
+      for (const sy of rows) for (let i = 0; i < COLS; i++) {
+        const sx = z.x0 + 82 + i * 64;
         slots.push({
           zone: z.zone, x: sx, y: sy, col: i,
-          chip: [sx, sy + (a > sy ? 32 : -32)],  // ценник — на асфальте у въезда на место
+          chip: [sx, sy + (a > sy ? -57 : 57)],  // ценник — у дальнего края места, проезд остаётся чистым
           in: [[-60, road], [cx, road], [cx, a], [sx, a], [sx, sy]],
           out: [[sx, sy], [sx, a], [cx, a], [cx, road], [-60, road]],
-          ramp: z.zone === 'CN' ? [[sx, sy], [sx, a], [cx, a], [cx, road + 36]]  // Китай — к дороге, там забирает автовоз
-            : [[sx, sy], [sx, a], [cx, a], [cx, apron], [rampX, apron], [rampX, quay + 34]],
+          ramp: z.zone === 'CN' ? [[sx, sy], [sx, a], [cx, a], [cx, road + 30]]  // Китай — к дороге, там забирает автовоз
+            : [[sx, sy], [sx, a], [cx, a], [cx, apron], [rampX, apron], [rampX, quay + 40]],
         });
       }
     }
+    const ship = {x: 70, y: quay + 44, w: 620, h: 102};
     return {
-      W, H, slots, quay, rampX, cols: COLS, zoom: 1.9, ship: {x: 60, y: quay + 26, w: 700, h: 115},
-      cranes: [130, 690].map(x => ({x, y0: quay - 84, y1: quay + 160})), truck: road + 9,
-      zones: zones.map(z => ({zone: z.zone, title: [z.x0 + 52, 124], stats: [z.x0 + ZW - 10, 124],
-        scale: {x0: z.x0 + 76, x1: z.x0 + 76 + (COLS - 1) * 50, y: 500}})),
+      W, H, slots, quay, rampX, cols: COLS, zoom: 1.6, car: 1.7, ship, waterW: VX - 6, shipTo: VX - 16 - ship.x - ship.w,
+      cranes: [], truck: road + 9, vlad: VX,
+      zones: zones.map(z => ({zone: z.zone, title: [z.x0 + 52, 136], stats: [z.x0 + ZW - 14, 136], scale: null})),
       paint(g) {
-        g.innerHTML = `<image href="${ASSETS}/yard-wide${PLATE}.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
-          ${zones.map(z => `${flag(z.zone, z.x0 + 52, 124)}<text x="${z.x0 + 80}" y="124" class="t-zone">${z.zone === 'KR' ? 'КОРЕЯ' : 'КИТАЙ'}</text>`).join('')}
+        g.innerHTML = `<image href="${ASSETS}/yard-route.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
+          ${zones.map(z => `${flag(z.zone, z.x0 + 58, 136)}<text x="${z.x0 + 88}" y="136" class="t-zone">${z.zone === 'KR' ? 'КОРЕЯ' : 'КИТАЙ'}</text>`).join('')}
           ${barrier(28, road, 'v')}`;
       },
     };
@@ -267,7 +269,7 @@
       <radialGradient id="t-cloud"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset=".6" stop-color="#000" stop-opacity=".12"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
       <pattern id="t-glint" width="140" height="36" patternUnits="userSpaceOnUse">
         <ellipse cx="20" cy="8" rx="14" ry="1.2" fill="#fff"/><ellipse cx="88" cy="20" rx="20" ry="1.4" fill="#fff"/><ellipse cx="55" cy="31" rx="10" ry="1" fill="#fff"/></pattern>
-      <clipPath id="t-water-clip"><rect y="${L.quay + 8}" width="${L.W}" height="${L.H - L.quay}"/></clipPath>
+      <clipPath id="t-water-clip"><rect y="${L.quay + 8}" width="${L.waterW || L.W}" height="${L.H - L.quay}"/></clipPath>
       <linearGradient id="t-beam" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fff4d6" stop-opacity=".6"/><stop offset="1" stop-color="#fff4d6" stop-opacity="0"/></linearGradient>
       <radialGradient id="t-tail"><stop offset="0" stop-color="#ff2a1a" stop-opacity=".95"/><stop offset="1" stop-color="#ff2a1a" stop-opacity="0"/></radialGradient>
       <radialGradient id="t-nav-r"><stop offset="0" stop-color="#ff3b2f"/><stop offset="1" stop-color="#ff3b2f" stop-opacity="0"/></radialGradient>
@@ -294,6 +296,7 @@
       plate.addEventListener('load', () => svg.classList.add('ready'), {once: true});
       if (!PLATE) svg.classList.add('ready');
     }, {once: true});
+    paintVlad();
     if (!ship.loaded) ship.loaded = 3 + Math.floor(Math.random() * 5);
     paintShip();
     occupied = new Array(L.slots.length).fill(null);
@@ -464,6 +467,26 @@
     gShip.querySelectorAll('.deck-car').forEach((el, i) => { if (i < ship.loaded) el.setAttribute('opacity', '1'); });
   }
 
+  // Площадка Владивостока справа: выкупленные машины, которые уже здесь, стоят на трёх больших местах карточками с фото.
+  // Пусто — на первом месте короткое предложение привезти под заказ.
+  function paintVlad() {
+    root.querySelector('.vlad')?.remove();
+    root.classList.toggle('has-vlad', !!L.vlad);
+    if (!L.vlad) return;
+    const here = (DATA.stock || []).filter(c => c.status === 'vlad'), all = (DATA.stock || []).length;
+    const box = document.createElement('div');
+    box.className = 'vlad';
+    box.innerHTML = `<div class="vlad-h"><b>Владивосток</b>${here.length ? '<span>можно забрать</span>' : ''}</div>
+      ${here.slice(0, 3).map((c, i) => `<button type="button" class="vlad-card" style="--i:${i}" data-own="${c.id}">
+        ${c.photo ? `<img src="${esc(c.photo)}" alt="" loading="lazy">` : '<i></i>'}
+        <span><b>${esc(c.title)}</b><em>${c.price ? rub(c.price) + ' ₽' : 'цену назовёт менеджер'}</em><small>${c.price ? 'с растаможкой · ' : ''}подробнее ↓</small></span></button>`).join('')}
+      ${here.length ? '' : `<div class="vlad-card empty"><span><b>Привезём под заказ</b><small>${all ? 'Выкупленные машины сейчас в пути — они на судне.' : 'Подберём машину в Корее или Китае и привезём сюда.'}</small>
+        <button type="button" class="btn" data-lead-open data-goal="vlad_cta">Получить расчёт</button></span></div>`}
+      ${here.length > 3 ? `<button type="button" class="vlad-more" data-own="">Все ${here.length} в наличии ↓</button>` : ''}`;
+    box.addEventListener('click', e => { const t = e.target.closest('[data-own]'); if (t) toStock(t.dataset.own); });
+    root.appendChild(box);
+  }
+
   // Уже выкупленные машины «в пути» (их заводит менеджер) стоят на палубе: кружок с фото и подпись над судном.
   // Нажатие ведёт к карточке под схемой.
   const OWN = (DATA.stock || []).filter(c => c.status === 'transit');
@@ -489,7 +512,7 @@
           : `<circle cx="${x}" cy="${y}" r="${r}" fill="#0b5c8f"/>`}</g>`;
     }).join('');
     const n = OWN.length, text = `В пути: ${n} ${n === 1 ? 'наша машина' : n < 5 ? 'наши машины' : 'наших машин'} →`;
-    const fs = wide ? 15 : 11, w = text.length * fs * 0.6 + 22, h = fs + 14, lx = s.x + 86 * k, ly = s.y - h - (wide ? 2 : 0);
+    const fs = wide ? 15 : 11, w = text.length * fs * 0.6 + 22, h = fs + 14, lx = s.x + 86 * k, ly = s.y - h - (wide ? 4 : 0);
     g.insertAdjacentHTML('beforeend', `<g class="own-label" data-own=""><rect x="${lx}" y="${ly}" width="${w}" height="${h}" rx="${h / 2}"/>
       <text x="${lx + w / 2}" y="${ly + h / 2 + fs * 0.35}" text-anchor="middle" font-size="${fs}">${text}</text></g>`);
     g.addEventListener('click', e => { const t = e.target.closest('[data-own]'); if (t) toStock(t.dataset.own); });
@@ -534,7 +557,7 @@
   }
   function place(car, x, y, ang) {
     car.x = x; car.y = y; car.ang = ang;
-    car.g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${ang.toFixed(1)})`);
+    car.g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${ang.toFixed(1)})${L.car ? ` scale(${L.car})` : ''}`);
   }
   function parkedAngle(slot) {
     // носом от проезда — как машина заехала на место
@@ -627,7 +650,9 @@
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'chip' + (t ? '' : ' none'));
     g.setAttribute('transform', `translate(${x} ${y})`);
-    g.innerHTML = `<g class="chip-in"><rect x="-19" y="-7.5" width="38" height="15" rx="7.5"/><text y="4" text-anchor="middle">${t ? short(t) : '—'}</text></g>`;
+    g.innerHTML = L.car  // крупные места — крупный ценник с единицей: «2,1 млн»
+      ? `<g class="chip-in big"><rect x="-28" y="-10" width="56" height="20" rx="10"/><text y="4.5" text-anchor="middle">${t ? short(t) + ' млн' : 'цена —'}</text></g>`
+      : `<g class="chip-in"><rect x="-19" y="-7.5" width="38" height="15" rx="7.5"/><text y="4" text-anchor="middle">${t ? short(t) : '—'}</text></g>`;
     gChips.appendChild(g);
     car.chip = g;
   }
@@ -727,7 +752,7 @@
         ship.state = 'leaving';
         setTimeout(() => {
           window.RenalRoute?.run(0.25, 0.75, 6000);
-          moveShip(L.W + 40, 6, () => {
+          shipAway(6, () => {
             ship.loaded = 0;
             ship.x = -L.ship.x - L.ship.w - 60;
             paintShip();
@@ -751,7 +776,7 @@
     setTimeout(() => {
       if ([...cars.values()].some(c => c.state === 'ramp' || c.state === 'at-ramp')) return;
       ship.state = 'leaving';
-      moveShip(L.W + 40, 7, () => {
+      shipAway(7, () => {
         ship.loaded = 0;
         ship.x = -L.ship.x - L.ship.w - 60;
         paintShip();
@@ -764,6 +789,15 @@
     const c = [...cars.values()].filter(x => x.state === 'parked' && x.d.country === 'CN' && x !== cam.car).sort((a, b) => a.since - b.since)[0];
     if (!c || !L.truck) { truck(); return; }
     toRamp(c, () => truckPickup(c));
+  }
+  // Судно уходит: в раскладке с Владивостоком — доходит до его причала и «разгружается» (гаснет), иначе — за край сцены.
+  function shipAway(seconds, done) {
+    moveShip(L.shipTo || L.W + 40, seconds, () => {
+      const body = gShip.querySelector('.ship-body');
+      if (!L.shipTo) { done(); return; }
+      body.style.transition = 'opacity .6s'; body.style.opacity = '0';
+      setTimeout(done, 650);
+    });
   }
   function moveShip(to, seconds, done) {
     const body = gShip.querySelector('.ship-body');
@@ -795,7 +829,7 @@
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'arrival-tag');
     gTags.replaceChildren();  // одновременно — один ценник
-    g.setAttribute('transform', `translate(${car.x.toFixed(1)} ${(car.y - 34).toFixed(1)})`);
+    g.setAttribute('transform', `translate(${car.x.toFixed(1)} ${(car.y - 34 * (L.car || 1)).toFixed(1)})`);
     g.innerHTML = `<rect rx="7" height="22" y="-11"/><path d="M-5 11 L0 17 L5 11 Z"/><text y="4" text-anchor="middle">${esc(text)}</text>
       <text class="tag-sub" y="-16" text-anchor="middle">новое объявление</text>`;
     gTags.appendChild(g);
@@ -1657,9 +1691,14 @@
     const matched = DATA.match ? start.filter(d => d.title.toLowerCase().includes(DATA.match.toLowerCase())) : [];
     const rest = start.filter(d => !matched.includes(d));
     updateRange([...start, ...demoPool]);
-    const parkNow = Math.round(L.slots.length * 0.6);
-    rest.slice(0, parkNow).forEach(d => arrive(d, true));
-    queue.push(...matched.slice(0, 4), ...rest.slice(parkNow), ...matched.slice(4));
+    // сразу заполняем по 60 % мест каждой стоянки: иначе при коротких рядах одна страна занимает всё, а вторая пустует
+    const room = {KR: 0, CN: 0}, later = [];
+    for (const z of Object.keys(room)) room[z] = Math.round(L.slots.filter(sl => sl.zone === z).length * 0.6);
+    for (const d of rest) {
+      const z = d.country === 'CN' ? 'CN' : 'KR';
+      if (room[z] > 0) { room[z]--; arrive(d, true); } else later.push(d);
+    }
+    queue.push(...matched.slice(0, 4), ...later, ...matched.slice(4));
     hud();
     connect();
     if (!reduce.matches) {

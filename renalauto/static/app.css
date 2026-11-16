@@ -1672,3 +1672,31 @@ a.ts { transition: transform .12s ease; } a.ts:hover { transform: translateY(-2p
   .lot-rail .st-track { grid-auto-columns: 86%; }
 }
 @media (prefers-reduced-motion: reduce) { .lr-card, .lr-card.new, .st-card.flash { animation: none; transition: none; } }
+
+/* --- схема-маршрут: крупные ценники и площадка Владивостока справа --- */
+.terminal { container-type: inline-size; }
+.terminal .chip-in.big rect { fill: #fff; stroke: none; }
+.terminal .chip-in.big text { font: 800 11.5px/1 Onest, system-ui, sans-serif; fill: #0f172a; }
+.terminal .chip.none .chip-in.big rect { fill: rgba(255,255,255,.22); } .terminal .chip.none .chip-in.big text { fill: #fff; }
+.terminal .chip.sel .chip-in.big rect { fill: var(--accent); } .terminal .chip.sel .chip-in.big text { fill: #fff; }
+.terminal.has-vlad .t-zone { font-size: 17px; fill: #fff; } .terminal.has-vlad .t-zone-sub { font-size: 12.5px; }
+.terminal.has-vlad .t-feed { right: calc(25% + 12px); top: auto; bottom: 12px; flex-direction: column-reverse; }
+.terminal.has-vlad .terminal-hud { right: calc(25% + 12px); }
+.vlad { position: absolute; z-index: 2; left: 75.4%; right: 0; top: 0; bottom: 0; font-family: Onest, system-ui, sans-serif; color: #0f172a; }
+.vlad-h { position: absolute; left: 5%; right: 5%; top: 9.3%; height: 5%; display: flex; align-items: baseline; gap: 2.4cqw; white-space: nowrap; overflow: hidden; }
+.vlad-h b { font: 800 1.25cqw/1 Onest, system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; }
+.vlad-h b::before { content: ""; display: inline-block; width: 1.5cqw; height: 1cqw; margin-right: .6cqw; vertical-align: -.08cqw; border-radius: 2px; background: linear-gradient(#fff 33.3%, #1c57a5 33.3% 66.6%, #d52b1e 66.6%); box-shadow: 0 0 0 1px rgba(15,23,42,.15); }
+.vlad-h span { font-size: .85cqw; color: #3b4654; overflow: hidden; text-overflow: ellipsis; }
+.vlad-card { position: absolute; left: 6.6%; right: 6.6%; height: 23%; display: flex; align-items: stretch; padding: 0; border: 0; border-radius: .9cqw; overflow: hidden; background: #fff; color: inherit; font: inherit; text-align: left; cursor: pointer; box-shadow: 0 .5cqw 1.4cqw rgba(15,23,42,.28); transition: transform .2s, box-shadow .2s; }
+.vlad-card { top: calc(15.4% + var(--i, 0) * 27.6%); }
+button.vlad-card:hover { transform: translateY(-2px); box-shadow: 0 .8cqw 2cqw rgba(15,23,42,.36), 0 0 0 2px var(--accent); }
+.vlad-card img, .vlad-card > i { flex: 0 0 46%; width: 46%; object-fit: cover; background: #dfe6ec; }
+.vlad-card > span { flex: 1; min-width: 0; display: grid; align-content: center; gap: .3cqw; padding: .6cqw .9cqw; }
+.vlad-card b { font: 700 1cqw/1.2 Onest, system-ui, sans-serif; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.vlad-card em { font: 800 1.15cqw/1.2 Onest, system-ui, sans-serif; font-style: normal; }
+.vlad-card small { font-size: .78cqw; color: #5b6675; line-height: 1.3; }
+.vlad-card.empty { cursor: default; background: rgba(255,255,255,.92); }
+.vlad-card.empty > span { padding: .9cqw 1.2cqw; gap: .5cqw; }
+.vlad-card.empty .btn { justify-self: start; height: auto; min-height: 0; padding: .5cqw 1.1cqw; font-size: .9cqw; line-height: 1.2; border-radius: .6cqw; margin-top: .2cqw; }
+.vlad-more { position: absolute; right: 6.6%; bottom: 1.2%; padding: .2cqw .6cqw; border: 0; background: none; font: 700 .85cqw/1 Onest, system-ui, sans-serif; color: var(--accent); cursor: pointer; }
+.terminal.pop-docked .vlad { opacity: .25; pointer-events: none; transition: opacity .3s; }

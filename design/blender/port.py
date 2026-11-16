@@ -1,6 +1,7 @@
 """Графика сцены «Порт» для лендинга /port: вид сверху на терминал, машины и судно.
 
     python port.py yard wide   --s 64 --out yard-wide.png     # 2400×1120, подложка десктопа
+    python port.py yard route  --s 64 --out yard-route.png    # 3200×1320, подложка десктопа «маршрут»: стоянки, море, Владивосток
     python port.py yard narrow --s 64 --out yard-narrow.png   # 720×1300, подложка телефона
     python port.py yard wide --s 128 --night 1 --out yard-wide-night.png   # ночные версии (фонари, огни кранов)
     python port.py cars        --s 48 --out cars/             # спрайты машин: 4 кузова × 8 цветов
@@ -34,6 +35,9 @@ NIGHT = opts.get("--night") == "1"  # ночная подложка: фонар�
 # широкая: две зоны по 4 ряда × 14 мест; ряд = (центр мест, его проезд)
 WIDE = dict(W=1600, H=760, road=56, aisles=[214, 394], rows=[(164, 214), (266, 214), (344, 394), (446, 394)],
             apron=540, quay=600, zones=[30, 810], zone_w=760, cols=14, pitch=50)
+# маршрут: стоянки Кореи и Китая (2 ряда × 8 крупных мест), море с судном и площадка Владивостока справа
+ROUTE = dict(W=1600, H=660, road=40, aisle=276, rows=[(214, 276), (338, 276)], apron=440, quay=478,
+             zones=[30, 610], zone_w=570, cols=8, pitch=64, vlad=1200)
 NARROW = dict(W=360, H=650, lane=180, quay=556, zones=[56, 304], rows=7, pitch=30)
 SUN_DIR = (math.radians(38), 0, math.radians(-35))  # тени ложатся вправо-вниз
 
@@ -438,6 +442,65 @@ def yard_wide():
     return W, H
 
 
+def yard_route():
+    """Спокойная подложка без кранов и контейнеров: две стоянки, причал, справа — светлая площадка Владивостока."""
+    k = ROUTE
+    W, H, road, apron, quay, zw, VX, a = k["W"], k["H"], k["road"], k["apron"], k["quay"], k["zone_w"], k["vlad"], k["aisle"]
+    m_ground = noisy("ground", (0.2, 0.21, 0.225), (0.25, 0.26, 0.275), scale=0.03)
+    m_yard = noisy("yard", (0.13, 0.14, 0.155), (0.17, 0.18, 0.195), scale=0.05, stains=True)
+    m_road = noisy("road", (0.07, 0.075, 0.085), (0.1, 0.105, 0.115), scale=0.06, stains=True)
+    m_white = mat("white", (0.8, 0.8, 0.78), rough=0.7)
+    m_yellow = mat("yellow", (0.8, 0.55, 0.06), rough=0.7)
+    m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08, stains=True)
+    m_vlad = noisy("vlad", (0.5, 0.52, 0.54), (0.6, 0.62, 0.64), scale=0.05, stains=True)  # светлый бетон площадки
+    m_dark = mat("dark", (0.05, 0.05, 0.055), rough=0.5)
+    m_lamp = mat("lamp", (0.9, 0.9, 0.85), rough=0.3)
+    m_grass = noisy("grass", (0.07, 0.13, 0.06), (0.11, 0.18, 0.08), scale=0.08, bump=0.4)
+    m_red = mat("red", (0.75, 0.08, 0.06), rough=0.6)
+    ground(W, H, quay, m_ground, water_mat(), hazard_mat(), m_conc)
+
+    box(-40, -40, W + 40, 6, 0, 0.4, m_grass)
+    box(-40, road - 20, W + 40, road + 20, 0, 0.21, m_road)
+    dashes(-40, road, W + 40, road, m_white)
+    for x0 in k["zones"]:
+        cx = x0 + 24
+        x1 = x0 + 50 + k["cols"] * k["pitch"]
+        box(x0, 100, x0 + zw, 412, 0, 0.25, m_yard, bevel=0.2)
+        box(x0, a - 22, x0 + zw, a + 22, 0, 0.3, m_road)
+        dashes(x0 + 48, a, x0 + zw, a, m_yellow, w=1.4)
+        box(x0 + 6, road + 20, x0 + 42, apron - 18, 0, 0.33, m_road)
+        dashes(cx, road + 24, cx, apron - 18, m_yellow, w=1.4)
+        for sy, _ in k["rows"]:
+            for i in range(k["cols"] + 1):
+                x = x0 + 50 + i * k["pitch"]
+                paint_line(x, sy - 42, x, sy + 42, 1.8, m_white)
+            far = sy - 42 if sy < a else sy + 42
+            paint_line(x0 + 50, far, x1, far, 1.8, m_white)
+    box(-40, apron - 18, VX, apron + 18, 0, 0.36, m_road)
+    dashes(-40, apron, VX - 20, apron, m_white)
+    for x in (320, 905):
+        light_pole(x, 106, m_dark, m_lamp, h=70)
+    for x in (20, 605, 1188):
+        light_pole(x, 420, m_dark, m_lamp, h=70)
+    bx = 40
+    while bx < VX - 20:
+        bpy.ops.mesh.primitive_cylinder_add(radius=3, depth=6, location=(bx, -(quay + 2), 3))
+        bpy.context.object.data.materials.append(m_dark)
+        bx += 80
+
+    # Владивосток: площадка чуть выше причала, красная кромка со стороны моря и стоянок, три больших места под машины
+    box(VX, road + 20, W + 40, H + 60, -6, 1.2, m_vlad)
+    box(VX - 5, road + 20, VX, H + 60, -6, 1.6, m_red)
+    m_vline = mat("vline", (0.2, 0.22, 0.25), rough=0.7)
+    for i in range(3):
+        y = 96 + i * 182
+        for (x0_, y0_, x1_, y1_) in ((VX + 20, y, W - 20, y), (VX + 20, y + 164, W - 20, y + 164)):
+            paint_line(x0_, y0_, x1_, y1_, 1.8, m_vline, z=1.5)
+        paint_line(VX + 20, y, VX + 20, y + 164, 1.8, m_vline, z=1.5)
+        paint_line(W - 20, y, W - 20, y + 164, 1.8, m_vline, z=1.5)
+    return W, H
+
+
 def yard_narrow():
     k = NARROW
     W, H, lane, quay = k["W"], k["H"], k["lane"], k["quay"]
@@ -486,7 +549,7 @@ def render_yard(kind, out):
         sc.view_settings.exposure = -0.75
         sky()
         sun()
-    W, H = yard_wide() if kind == "wide" else yard_narrow()
+    W, H = yard_wide() if kind == "wide" else yard_route() if kind == "route" else yard_narrow()
     sc.render.resolution_x, sc.render.resolution_y = W * 2, H * 2
     top_camera(W / 2, -H / 2, max(W, H))
     sc.render.filepath = out
