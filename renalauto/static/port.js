@@ -5,7 +5,7 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '12';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '13';  // V — поднять после перерендера
   // Порт всегда дневной: светлая сцена продаёт лучше. Ночная подложка — только по ?night=1
   const NIGHT = new URLSearchParams(location.search).get('night') === '1';
   const PLATE = NIGHT ? '-night' : '';
@@ -209,6 +209,7 @@
       <rect class="car-glow" x="${-w / 2 - 4}" y="${-l / 2 - 4}" width="${w + 8}" height="${l + 8}" rx="7"/>
       ${NIGHT ? `<path class="beam" d="M${-w / 2 + 2} ${-l / 2 + 1} L${-w / 2 - 10} ${-l / 2 - 46} L${w / 2 + 10} ${-l / 2 - 46} L${w / 2 - 2} ${-l / 2 + 1} Z" fill="url(#t-beam)"/>` : ''}
       <image href="${ASSETS}/cars/${spriteOf(d, body)}.webp?v=${V}" x="${-SPRITE.w / 2}" y="${-SPRITE.h / 2}" width="${SPRITE.w}" height="${SPRITE.h}"/>
+      <g class="brake"><circle cx="${-w / 2 + 3}" cy="${l / 2 - 1}" r="3" fill="url(#t-tail)"/><circle cx="${w / 2 - 3}" cy="${l / 2 - 1}" r="3" fill="url(#t-tail)"/></g>
       ${NIGHT ? `<g class="tail"><circle cx="${-w / 2 + 3}" cy="${l / 2 - 1}" r="3.4" fill="url(#t-tail)"/><circle cx="${w / 2 - 3}" cy="${l / 2 - 1}" r="3.4" fill="url(#t-tail)"/></g>` : ''}`;
   }
 
@@ -581,7 +582,7 @@
     return out;
   }
   function drive(car, path, state, done) {
-    path = smooth(path);
+    path = smooth(path, L.car ? 30 : 16);  // крупные машины поворачивают по широкой дуге
     let len = 0;
     for (let i = 1; i < path.length; i++) len += Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]);
     Object.assign(car, {path, len, dist: 0, state, done});
@@ -593,14 +594,18 @@
   function finish(car) {
     const p = car.path[car.path.length - 1];
     const done = car.done;
-    car.path = null;
-    car.g.classList.remove('moving');
+    car.path = null; car.v = 0;
+    car.g.classList.remove('moving', 'braking');
     if (car.state === 'in') place(car, p[0], p[1], parkedAngle(car.slot));
     done && done();
   }
   function step(car, dt) {
-    const edge = Math.min(car.dist, car.len - car.dist);
-    car.dist = Math.min(car.len, car.dist + SPEED * dt * Math.max(0.25, Math.min(1, 0.35 + edge / 45)));
+    // плавный разгон с места и длинное торможение перед остановкой; в повороте машина сбрасывает скорость
+    const left = car.len - car.dist;
+    const want = Math.max(0.16, Math.min(1, 0.22 + car.dist / 70, 0.16 + left / 110)) * (car.turn > 0.35 ? 0.62 : 1);
+    car.v = (car.v ?? 0.16) + (want - (car.v ?? 0.16)) * Math.min(1, dt * 3.2);
+    car.dist = Math.min(car.len, car.dist + SPEED * dt * car.v);
+    car.g.classList.toggle('braking', left < 120 && left > 2);
     let rest = car.dist, i = 1;
     for (; i < car.path.length; i++) {
       const seg = Math.hypot(car.path[i][0] - car.path[i - 1][0], car.path[i][1] - car.path[i - 1][1]);
@@ -608,7 +613,8 @@
         const t = seg ? Math.min(1, rest / seg) : 1, a = car.path[i - 1], b = car.path[i];
         const target = Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI + 90;
         let delta = ((target - car.ang + 540) % 360) - 180;
-        const ang = car.ang + delta * Math.min(1, dt * 14);
+        car.turn = Math.abs(delta) / 30;
+        const ang = car.ang + delta * Math.min(1, dt * 9);
         place(car, a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, ang);
         break;
       }

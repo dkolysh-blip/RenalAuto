@@ -1776,3 +1776,7 @@ button.vlad-card:hover { transform: translateY(-2px); box-shadow: 0 .8cqw 2cqw r
 @media (max-width: 1120px) { .tw b { display: inline; } .tw { padding: 4px 12px 4px 4px; } .tw.tw-ico { padding: 4px; } }
 @media (max-width: 700px) { .tw b { display: none; } .tw { padding: 4px; } .top-write { padding: 4px; border-radius: 12px; } }
 @media (max-width: 370px) { .top-write .tw:nth-of-type(n+2) { display: none; } }
+
+/* стоп-сигналы: загораются, когда машина тормозит перед остановкой */
+.terminal .car .brake { opacity: 0; transition: opacity .18s; }
+.terminal .car.braking .brake { opacity: 1; }

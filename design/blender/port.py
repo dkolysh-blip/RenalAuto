@@ -442,46 +442,130 @@ def yard_wide():
     return W, H
 
 
+def ground_text(x, y, text, size, m, rot=0.0, z=0.46):
+    """Надпись краской на покрытии (номер места, стрелка)."""
+    bpy.ops.object.text_add(location=(x, -y, z))
+    t = bpy.context.object
+    t.data.body = text
+    t.data.size = size
+    t.data.align_x = "CENTER"
+    t.data.align_y = "CENTER"
+    t.rotation_euler.z = rot
+    t.data.materials.append(m)
+    return t
+
+
+def tree(x, y, r, m_leaf, m_trunk):
+    """Дерево сверху: крона из нескольких неровных шаров — даёт живую тень на асфальте."""
+    bpy.ops.mesh.primitive_cylinder_add(radius=r * 0.12, depth=r * 1.1, location=(x, -y, r * 0.55))
+    bpy.context.object.data.materials.append(m_trunk)
+    for _ in range(5):
+        dx, dy = random.uniform(-0.45, 0.45) * r, random.uniform(-0.45, 0.45) * r
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=3, radius=r * random.uniform(0.55, 0.8),
+                                              location=(x + dx, -(y + dy), r * random.uniform(1.0, 1.4)))
+        o = bpy.context.object
+        o.scale.z = 0.7
+        o.data.materials.append(m_leaf)
+        d = o.modifiers.new("d", "DISPLACE")
+        tex = bpy.data.textures.new("leaf", "CLOUDS")
+        tex.noise_scale = r * 0.25
+        d.texture = tex
+        d.strength = r * 0.25
+        for p_ in o.data.polygons:
+            p_.use_smooth = True
+
+
 def yard_route():
-    """Спокойная подложка без кранов и контейнеров: две стоянки, причал, справа — светлая площадка Владивостока."""
+    """Подложка-маршрут: две стоянки с живым асфальтом, причал, справа — светлая площадка Владивостока.
+
+    Без кранов и контейнеров. Детали, которые делают картинку настоящей: стыки плит, следы шин, потёртая разметка,
+    номера мест, колесоотбойники, бордюры, полоса зелени с деревьями и низкое солнце с длинными мягкими тенями.
+    """
     k = ROUTE
     W, H, road, apron, quay, zw, VX, a = k["W"], k["H"], k["road"], k["apron"], k["quay"], k["zone_w"], k["vlad"], k["aisle"]
     m_ground = noisy("ground", (0.2, 0.21, 0.225), (0.25, 0.26, 0.275), scale=0.03)
-    m_yard = noisy("yard", (0.13, 0.14, 0.155), (0.17, 0.18, 0.195), scale=0.05, stains=True)
-    m_road = noisy("road", (0.07, 0.075, 0.085), (0.1, 0.105, 0.115), scale=0.06, stains=True)
-    m_white = mat("white", (0.8, 0.8, 0.78), rough=0.7)
-    m_yellow = mat("yellow", (0.8, 0.55, 0.06), rough=0.7)
+    m_yard = noisy("yard", (0.125, 0.135, 0.15), (0.185, 0.195, 0.21), scale=0.035, stains=True)
+    m_road = noisy("road", (0.065, 0.07, 0.08), (0.105, 0.11, 0.12), scale=0.05, stains=True)
+    m_white = noisy("white", (0.5, 0.5, 0.48), (0.82, 0.82, 0.8), scale=0.6, rough=0.7, bump=0.05)      # краска местами стёрта
+    m_yellow = noisy("yellow", (0.5, 0.36, 0.08), (0.82, 0.57, 0.06), scale=0.6, rough=0.7, bump=0.05)
+    m_num = mat("num", (0.55, 0.56, 0.55), rough=0.8)
     m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08, stains=True)
-    m_vlad = noisy("vlad", (0.5, 0.52, 0.54), (0.6, 0.62, 0.64), scale=0.05, stains=True)  # светлый бетон площадки
+    m_curb = noisy("curb", (0.36, 0.36, 0.35), (0.46, 0.46, 0.45), scale=0.2)
+    m_joint = mat("joint", (0.05, 0.053, 0.06), rough=0.9)
+    m_tyre = mat("tyre", (0.055, 0.058, 0.066), rough=0.7)  # чуть темнее асфальта: накат, а не чёрная полоса
+    m_vlad = noisy("vlad", (0.47, 0.49, 0.51), (0.6, 0.62, 0.64), scale=0.04, stains=True)  # светлый бетон площадки
     m_dark = mat("dark", (0.05, 0.05, 0.055), rough=0.5)
     m_lamp = mat("lamp", (0.9, 0.9, 0.85), rough=0.3)
-    m_grass = noisy("grass", (0.07, 0.13, 0.06), (0.11, 0.18, 0.08), scale=0.08, bump=0.4)
+    m_grass = noisy("grass", (0.06, 0.12, 0.05), (0.12, 0.2, 0.08), scale=0.12, bump=0.5)
+    m_leaf = noisy("leaf", (0.04, 0.11, 0.04), (0.1, 0.2, 0.07), scale=0.3, bump=0.6)
+    m_trunk = mat("trunk", (0.1, 0.07, 0.05), rough=0.9)
     m_red = mat("red", (0.75, 0.08, 0.06), rough=0.6)
     ground(W, H, quay, m_ground, water_mat(), hazard_mat(), m_conc)
 
     box(-40, -40, W + 40, 6, 0, 0.4, m_grass)
     box(-40, road - 20, W + 40, road + 20, 0, 0.21, m_road)
     dashes(-40, road, W + 40, road, m_white)
+    for dy in (-9, 9):  # накатанные колеи на дороге
+        for off in (-3.2, 3.2):
+            box(-40, road + dy + off - 0.9, W + 40, road + dy + off + 0.9, 0.21, 0.225, m_tyre)
     for x0 in k["zones"]:
         cx = x0 + 24
         x1 = x0 + 50 + k["cols"] * k["pitch"]
-        box(x0, 100, x0 + zw, 412, 0, 0.25, m_yard, bevel=0.2)
-        box(x0, a - 22, x0 + zw, a + 22, 0, 0.3, m_road)
+        # зелёная полоса с деревьями между дорогой и стоянкой, бордюр вокруг площадки
+        box(x0 + 46, road + 22, x0 + zw, 98, 0, 1.6, m_grass, bevel=0.4)
+        box(x0 + 44, road + 20, x0 + zw + 2, 100, 0, 1.2, m_curb, bevel=0.3)
+        for i in range(6):
+            tree(x0 + 96 + i * 92 + random.uniform(-8, 8), 80 + random.uniform(-3, 3), random.uniform(11, 14), m_leaf, m_trunk)
+        box(x0 - 2, 98, x0 + zw + 2, 414, 0, 1.0, m_curb, bevel=0.3)
+        box(x0, 100, x0 + zw, 412, 0, 1.05, m_yard)
+        # стыки бетонных плит
+        for i in range(1, 9):
+            box(x0 + i * 64 - 14.4, 100, x0 + i * 64 - 13.6, 412, 1.05, 1.07, m_joint)
+        for y in (136, 172, 380):
+            box(x0, y - 0.4, x0 + zw, y + 0.4, 1.05, 1.07, m_joint)
+        box(x0, a - 22, x0 + zw, a + 22, 0, 1.1, m_road)
         dashes(x0 + 48, a, x0 + zw, a, m_yellow, w=1.4)
-        box(x0 + 6, road + 20, x0 + 42, apron - 18, 0, 0.33, m_road)
+        for dy in (-10, 10):
+            for off in (-3.4, 3.4):
+                box(x0 + 30, a + dy + off - 0.8, x0 + zw - 8, a + dy + off + 0.8, 1.1, 1.115, m_tyre)
+        box(x0 + 6, road + 20, x0 + 42, apron - 18, 0, 1.12, m_road)
         dashes(cx, road + 24, cx, apron - 18, m_yellow, w=1.4)
-        for sy, _ in k["rows"]:
-            for i in range(k["cols"] + 1):
-                x = x0 + 50 + i * k["pitch"]
-                paint_line(x, sy - 42, x, sy + 42, 1.8, m_white)
-            far = sy - 42 if sy < a else sy + 42
-            paint_line(x0 + 50, far, x1, far, 1.8, m_white)
+        for i, (sy, _) in enumerate(k["rows"]):
+            up = sy < a
+            for c in range(k["cols"] + 1):
+                x = x0 + 50 + c * k["pitch"]
+                paint_line(x, sy - 42, x, sy + 42, 1.8, m_white, z=1.14)
+            far = sy - 42 if up else sy + 42
+            paint_line(x0 + 50, far, x1, far, 1.8, m_white, z=1.14)
+            for c in range(k["cols"]):
+                sx = x0 + 82 + c * k["pitch"]
+                # колесоотбойник у дальнего края и следы шин от проезда к месту
+                wy = sy - 33 if up else sy + 33
+                box(sx - 16, wy - 1.6, sx + 16, wy + 1.6, 1.05, 2.6, m_curb, bevel=0.5)
+                for off in (-11, 11):
+                    box(sx + off - 1.3, min(sy, a) + (24 if up else 0), sx + off + 1.3, max(sy, a) - (0 if up else 24), 1.05, 1.065, m_tyre)
+                ground_text(sx, a + (-17 if up else 17), f"{i * k['cols'] + c + 1:02d}", 7.5, m_num, z=1.12)
+        # стрелки направления на проезде
+        for xx in (x0 + 150, x0 + 400):
+            ground_text(xx, a - 9, "›", 22, m_white, z=1.12)
+            ground_text(xx + 60, a + 9, "‹", 22, m_white, z=1.12)
     box(-40, apron - 18, VX, apron + 18, 0, 0.36, m_road)
     dashes(-40, apron, VX - 20, apron, m_white)
+    for dy in (-9, 9):
+        for off in (-3.2, 3.2):
+            box(-40, apron + dy + off - 0.9, VX - 10, apron + dy + off + 0.9, 0.36, 0.375, m_tyre)
+    # «зебра» у выезда на причал, напротив рампы судна
+    for i in range(7):
+        box(352 + i * 8, apron + 19, 357 + i * 8, quay - 9, 0.3, 0.33, m_white)
     for x in (320, 905):
-        light_pole(x, 106, m_dark, m_lamp, h=70)
-    for x in (20, 605, 1188):
+        light_pole(x, 104, m_dark, m_lamp, h=70)
+    for x in (16, 603, 1190):
         light_pole(x, 420, m_dark, m_lamp, h=70)
+    for x in (200, 560, 900):
+        light_pole(x, quay - 14, m_dark, m_lamp, h=60)
+    # будка охраны у въезда
+    box(60, 64, 80, 78, 0, 12, m_lamp, bevel=1)
+    box(58, 62, 82, 80, 12, 13.5, m_dark)
     bx = 40
     while bx < VX - 20:
         bpy.ops.mesh.primitive_cylinder_add(radius=3, depth=6, location=(bx, -(quay + 2), 3))
@@ -498,6 +582,7 @@ def yard_route():
             paint_line(x0_, y0_, x1_, y1_, 1.8, m_vline, z=1.5)
         paint_line(VX + 20, y, VX + 20, y + 164, 1.8, m_vline, z=1.5)
         paint_line(W - 20, y, W - 20, y + 164, 1.8, m_vline, z=1.5)
+        ground_text(W - 44, y + 146, f"B{i + 1}", 16, m_vline, z=1.5)
     return W, H
 
 
@@ -548,7 +633,14 @@ def render_yard(kind, out):
     else:
         sc.view_settings.exposure = -0.75
         sky()
-        sun()
+        s_ = sun()
+        if kind == "route":  # низкое солнце: длинные мягкие тени от столбов, деревьев и бордюров
+            s_.rotation_euler = (math.radians(42), 0, math.radians(-40))
+            s_.data.angle = math.radians(3)
+            s_.data.energy = 3.4
+            s_.data.color = (1, 0.93, 0.82)
+            sky((0.5, 0.62, 0.86), 0.5)
+            sc.view_settings.exposure = -0.55
     W, H = yard_wide() if kind == "wide" else yard_route() if kind == "route" else yard_narrow()
     sc.render.resolution_x, sc.render.resolution_y = W * 2, H * 2
     top_camera(W / 2, -H / 2, max(W, H))
@@ -559,86 +651,112 @@ def render_yard(kind, out):
 # --- машины ------------------------------------------------------------------------------
 # Метры. Нос — к −X (как в car.py), на спрайте нос смотрит вверх.
 BODIES = {
-    #        длина ширина  пояс  крыша от/до (доля длины от носа)  высота крыши
-    "sedan": (4.8, 1.86, 0.95, 0.34, 0.74, 1.44),
-    "suv": (4.6, 1.92, 1.05, 0.27, 0.93, 1.70),
-    "hatch": (3.9, 1.76, 0.95, 0.30, 0.94, 1.50),
-    "van": (5.1, 1.98, 1.05, 0.17, 0.97, 1.82),
+    #        длина ширина  пояс  стекло от/до (доля длины от носа)  высота крыши
+    "sedan": (4.8, 1.86, 0.95, 0.29, 0.86, 1.44),
+    "suv": (4.6, 1.92, 1.05, 0.25, 0.95, 1.70),
+    "hatch": (3.9, 1.76, 0.95, 0.27, 0.95, 1.50),
+    "van": (5.1, 1.98, 1.05, 0.15, 0.97, 1.82),
 }
 PAINTS = {
-    "white": ((0.86, 0.87, 0.88), 0.0), "pearl": ((0.86, 0.83, 0.76), 0.2), "silver": ((0.6, 0.62, 0.64), 0.85),
-    "grey": ((0.3, 0.31, 0.33), 0.7), "graphite": ((0.08, 0.085, 0.095), 0.6), "black": ((0.012, 0.012, 0.014), 0.2),
-    "blue": ((0.03, 0.12, 0.42), 0.6), "red": ((0.55, 0.02, 0.02), 0.3),
+    "white": ((0.72, 0.73, 0.74), 0.0), "pearl": ((0.72, 0.69, 0.62), 0.2), "silver": ((0.5, 0.52, 0.54), 0.85),
+    "grey": ((0.26, 0.27, 0.29), 0.7), "graphite": ((0.07, 0.075, 0.085), 0.6), "black": ((0.012, 0.012, 0.014), 0.2),
+    "blue": ((0.03, 0.12, 0.42), 0.6), "red": ((0.5, 0.02, 0.02), 0.3),
 }
 SPRITE_M = 6.0  # спрайт — 6 × 3 м, у всех кузовов один масштаб
+SPRITE_PX = 64 * int(opts.get("--k", 3))  # ширина спрайта: на схеме машины крупные, рендерим с запасом под чёткие экраны
 
 
 def build_car(kind, paint, glass, dark, lamp, tail):
+    """Кузов сверху: скруглённые нос и корма, лобовое и заднее стекло, узкие боковые окна, крыша в цвет кузова."""
     L, Wd, belt, r0, r1, rh = BODIES[kind]
     hl = L / 2
-    front, rear = -hl, hl
-    box_n = 6 if kind in ("suv", "van") else 5
+    front = -hl
+    boxy = kind in ("suv", "van")
 
-    def plan(x):  # сужение кузова к бамперам
-        t = min(abs(x) / hl, 0.9999)
-        return (1 - t ** 6) ** (1 / 6)
+    def cap(f, n=2.6, span=0.16):  # скругление углов у бамперов: 0 на торце, 1 дальше span от него
+        d = min(f, 1 - f) / span
+        return 1.0 if d >= 1 else (1 - (1 - d) ** n) ** (1 / n)
 
-    hood = 0.82 if kind in ("sedan", "hatch") else 0.95
+    hood = 0.84 if not boxy else 0.97
+    wide = [(0, 0.9), (0.14, 0.985), (0.3, 1.0), (0.82, 1.0), (1, 0.93)]  # нос чуть уже кормы
 
     def body(x):
         f = (x - front) / L
-        top = interp([(0, hood - 0.12), (0.12, hood), (r0, belt), (0.85, belt), (1, belt - 0.05)], f)
-        bot = 0.32
-        p = plan(x)
-        return superellipse(0, (top + bot) / 2, Wd / 2 * (0.55 + 0.45 * p), (top - bot) / 2 * (0.4 + 0.6 * p), n=box_n, tumble=0.1)
+        top = interp([(0, hood - 0.14), (0.1, hood), (r0, belt), (0.88, belt), (1, belt - 0.07)], f)
+        bot = 0.3
+        c = cap(f)
+        return superellipse(0, (top + bot) / 2, Wd / 2 * interp(wide, f) * (0.5 + 0.5 * c), (top - bot) / 2 * (0.45 + 0.55 * c),
+                            n=4.2 if boxy else 3.6, tumble=0.1)
 
-    xs = [front + L * i / 120 for i in range(121)]
+    xs = [front + L * i / 160 for i in range(161)]
     car = [loft("body", xs, body)]
     car[0].data.materials.append(paint)
 
-    g0, g1 = front + L * (r0 - 0.08), front + L * r1
-    peak0, peak1 = front + L * (r0 + 0.1), front + L * (r1 - (0.05 if kind in ("suv", "van") else 0.14))
+    # остекление: низ — по поясу, верх — крыша; лобовое длиннее заднего, у универсальных кузовов корма почти отвесная
+    g0, g1 = front + L * r0, front + L * r1
+    ws = 0.13 if not boxy else 0.115          # длина лобового стекла в долях длины
+    rw = 0.115 if kind == "sedan" else 0.05   # заднее стекло
+    p0, p1 = g0 + L * ws, g1 - L * rw
 
     def roof_z(x):
-        return interp([(g0, belt), (peak0, rh), (peak1, rh), (g1, belt + (0.25 if kind in ("suv", "van") else 0.05))], x)
+        return interp([(g0, belt - 0.01), (p0, rh), (p1, rh - 0.02), (g1, belt + (0.3 if boxy else 0.04))], x)
 
     def greenhouse(x):
-        bot = belt - 0.02
-        top = max(roof_z(x), bot + 0.01)
-        return superellipse(0, (top + bot) / 2, Wd / 2 * 0.84, (top - bot) / 2, n=6, tumble=0.32)
+        f = (x - g0) / (g1 - g0)
+        bot = belt - 0.03
+        top = max(roof_z(x), bot + 0.02)
+        return superellipse(0, (top + bot) / 2, Wd / 2 * 0.86 * (0.9 + 0.1 * cap(f, span=0.2)), (top - bot) / 2, n=5, tumble=0.3)
 
-    gx = [g0 + (g1 - g0) * i / 80 for i in range(81)]
+    gx = [g0 + (g1 - g0) * i / 100 for i in range(101)]
     gh = loft("glass", gx, greenhouse)
     gh.data.materials.append(glass)
 
-    def roof(x):
-        return superellipse(0, roof_z(x) - 0.01, Wd / 2 * 0.66, 0.03, n=4, m=24)
+    # крыша в цвет кузова: чуть шире остекления сверху, с округлыми торцами — стекло видно спереди, сзади и узкой полосой по бокам
+    ra, rb = p0 - L * 0.012, p1 + L * 0.012
 
-    rx = [peak0 + 0.05 + (peak1 - peak0 - 0.1) * i / 50 for i in range(51)]
+    def roof(x):
+        f = (x - ra) / (rb - ra)
+        return superellipse(0, roof_z(max(min(x, p1), p0)) + 0.005, Wd / 2 * 0.86 * 0.7 * 0.83 * (0.86 + 0.14 * cap(f, n=2.2, span=0.12)) / 0.83,
+                            0.075, n=2.6, m=32)
+
+    rx = [ra + (rb - ra) * i / 60 for i in range(61)]
     rf = loft("roof", rx, roof)
     rf.data.materials.append(paint)
     car += [gh, rf]
-    for side in (-1, 1):  # зеркала, фары, фонари
-        bpy.ops.mesh.primitive_cube_add(location=(g0 + 0.25, side * (Wd / 2 + 0.08), belt + 0.05))
+    if boxy:  # панорамная крыша и рейлинги
+        bpy.ops.mesh.primitive_cube_add(location=(p0 + (p1 - p0) * 0.36, 0, rh + 0.078))
         o = bpy.context.object
-        o.scale = (0.08, 0.11, 0.06)
-        o.data.materials.append(paint)
-        bpy.ops.mesh.primitive_cube_add(location=(front + 0.12, side * Wd * 0.34, hood - 0.08))
-        o2 = bpy.context.object
-        o2.scale = (0.08, 0.2, 0.05)
-        o2.data.materials.append(lamp)
-        bpy.ops.mesh.primitive_cube_add(location=(rear - 0.06, side * Wd * 0.36, belt - 0.1))
-        o3 = bpy.context.object
-        o3.scale = (0.05, 0.22, 0.05)
-        o3.data.materials.append(tail)
-        car += [o, o2, o3]
-    if kind in ("suv", "van"):  # рейлинги
+        o.scale = ((p1 - p0) * 0.26, Wd * 0.2, 0.012)
+        o.data.materials.append(glass)
+        b = o.modifiers.new("b", "BEVEL")
+        b.width = 0.06
+        b.segments = 3
+        car.append(o)
         for side in (-1, 1):
-            bpy.ops.mesh.primitive_cube_add(location=((peak0 + peak1) / 2, side * Wd * 0.3, rh + 0.03))
+            bpy.ops.mesh.primitive_cube_add(location=((p0 + p1) / 2, side * Wd * 0.262, rh + 0.05))
             o = bpy.context.object
-            o.scale = ((peak1 - peak0) / 2, 0.025, 0.025)
+            o.scale = ((p1 - p0) * 0.42, 0.022, 0.022)
             o.data.materials.append(dark)
             car.append(o)
+    for side in (-1, 1):  # зеркала, фары, фонари
+        bpy.ops.mesh.primitive_cube_add(location=(g0 + 0.3, side * (Wd / 2 + 0.07), belt + 0.04))
+        o = bpy.context.object
+        o.scale = (0.07, 0.1, 0.05)
+        o.rotation_euler.z = side * math.radians(-18)
+        o.data.materials.append(paint)
+        o.modifiers.new("b", "BEVEL").width = 0.03
+        # фары и фонари — узкие полоски, утопленные в кузов: сверху видна только кромка
+        bpy.ops.mesh.primitive_cube_add(location=(front + 0.3, side * Wd * 0.31, hood - 0.085))
+        o2 = bpy.context.object
+        o2.scale = (0.045, 0.17, 0.04)
+        o2.rotation_euler.z = side * math.radians(16)
+        o2.data.materials.append(lamp)
+        bpy.ops.mesh.primitive_cube_add(location=(hl - 0.17, side * Wd * 0.3, belt - 0.085))
+        o3 = bpy.context.object
+        o3.scale = (0.035, 0.2, 0.04)
+        o3.rotation_euler.z = side * math.radians(-9)
+        o3.data.materials.append(tail)
+        car += [o, o2, o3]
     piv = bpy.data.objects.new("car", None)
     bpy.context.collection.objects.link(piv)
     for p in car:
@@ -649,20 +767,24 @@ def build_car(kind, paint, glass, dark, lamp, tail):
 
 def render_cars(out):
     os.makedirs(out, exist_ok=True)
+    only = opts.get("--only")
     for kind in BODIES:
         for name, (color, metal) in PAINTS.items():
+            if only and f"{kind}-{name}" not in only.split(","):
+                continue
             sc = reset()
             sc.cycles.samples = SAMPLES
-            sc.render.resolution_x, sc.render.resolution_y = 64, 128
-            sky((0.75, 0.8, 0.9), 0.9)
-            s = sun(3.2)
+            sc.render.resolution_x, sc.render.resolution_y = SPRITE_PX, SPRITE_PX * 2
+            sky((0.55, 0.66, 0.9), 0.55)  # небо даёт мягкую тень вокруг кузова и блики на стёклах
+            s = sun(2.6)
             s.rotation_euler = (0, 0, 0)  # тень под машиной: спрайт поворачивается вместе с ней
-            s.data.angle = math.radians(25)
-            paint = mat("paint", color, rough=0.25, metal=metal, coat=1.0)
-            glass = mat("glass", (0.01, 0.014, 0.02), rough=0.05, metal=0.6)
+            s.data.angle = math.radians(30)
+            s.visible_glossy = False  # солнце в зените отражалось бы от крыши прямо в камеру и выбеливало её
+            paint = mat("paint", color, rough=0.3, metal=metal, coat=0.45)
+            glass = mat("glass", (0.012, 0.02, 0.03), rough=0.04, metal=0.75)
             dark = mat("dark", (0.03, 0.03, 0.032), rough=0.5)
-            lamp = mat("lamp", (0.9, 0.9, 0.88), rough=0.1, emit=(1, 0.97, 0.9), emit_s=1.5)
-            tail = mat("tail", (0.6, 0.02, 0.02), rough=0.2, emit=(1, 0.05, 0.03), emit_s=1.0)
+            lamp = mat("lamp", (0.85, 0.87, 0.9), rough=0.1, emit=(1, 0.97, 0.9), emit_s=0.5)
+            tail = mat("tail", (0.45, 0.01, 0.01), rough=0.2, emit=(1, 0.03, 0.02), emit_s=0.35)
             build_car(kind, paint, glass, dark, lamp, tail)
             bpy.ops.mesh.primitive_plane_add(size=40)
             bpy.context.object.is_shadow_catcher = True
