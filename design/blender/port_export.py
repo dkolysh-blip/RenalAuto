@@ -12,9 +12,11 @@ dst = Path(__file__).resolve().parents[2] / "renalauto" / "static" / "port"
 (dst / "cars").mkdir(parents=True, exist_ok=True)
 
 # что есть в папке рендеров — то и обновляем (можно перерендерить только подложки)
-for name in ("yard-wide", "yard-route", "yard-narrow", "yard-wide-night", "yard-narrow-night"):
+for name in ("yard-wide", "yard-route", "yard-phone", "yard-narrow", "yard-wide-night", "yard-narrow-night"):
     if (src / f"{name}.png").exists():
         Image.open(src / f"{name}.png").convert("RGB").save(dst / f"{name}.webp", quality=80, method=6)
+if (src / "truck.png").exists():
+    Image.open(src / "truck.png").save(dst / "truck.webp", quality=88, method=6)
 if (src / "ship.png").exists():
     Image.open(src / "ship.png").save(dst / "ship.webp", quality=88, method=6)
 for png in sorted((src / "cars").glob("*.png")) if (src / "cars").exists() else []:

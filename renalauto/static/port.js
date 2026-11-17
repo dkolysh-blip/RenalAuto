@@ -5,7 +5,7 @@
   const dataEl = document.getElementById('port-data');
   if (!root || !dataEl) return;
   const NS = 'http://www.w3.org/2000/svg';
-  const ASSETS = '/static/port', V = '13';  // V — поднять после перерендера
+  const ASSETS = '/static/port', V = '14';  // V — поднять после перерендера
   // Порт всегда дневной: светлая сцена продаёт лучше. Ночная подложка — только по ?night=1
   const NIGHT = new URLSearchParams(location.search).get('night') === '1';
   const PLATE = NIGHT ? '-night' : '';
@@ -116,7 +116,7 @@
     const ship = {x: 70, y: quay + 44, w: 620, h: 102};
     return {
       W, H, slots, quay, rampX, cols: COLS, zoom: 1.6, car: 1.7, ship, waterW: VX - 6, shipTo: VX - 16 - ship.x - ship.w,
-      cranes: [], truck: road + 9, vlad: VX,
+      cranes: [], truck: road, vlad: VX,
       zones: zones.map(z => ({zone: z.zone, title: [z.x0 + 52, 136], stats: [z.x0 + ZW - 14, 136], scale: null})),
       paint(g) {
         g.innerHTML = `<image href="${ASSETS}/yard-route.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
@@ -127,28 +127,30 @@
   }
 
   function narrowLayout() {
-    const W = 360, H = 650, lane = 180, quay = 556;
-    const zones = [{zone: 'KR', y0: 56}, {zone: 'CN', y0: 304}];
+    // Телефон: те же стоянки, что на компьютере, одна под другой — 2 ряда × 5 мест, въездная полоса слева, внизу причал.
+    // Те же числа — в design/blender/port.py (PHONE).
+    const W = 360, H = 690, x0 = 14, COLS = 5, apron = 570, quay = 594, rampX = 180, cx = x0 + 24;
+    const zones = [{zone: 'KR', y0: 52, a: 187, rows: [134, 240]}, {zone: 'CN', y0: 304, a: 439, rows: [386, 492]}];
     const slots = [];
-    for (const z of zones) for (let j = 0; j < 7; j++) for (const side of [-1, 1]) {
-      const sy = z.y0 + 36 + j * 30, sx = lane + side * 60;
+    for (const z of zones) for (const sy of z.rows) for (let i = 0; i < COLS; i++) {
+      const sx = x0 + 78 + i * 56, a = z.a;
       slots.push({
-        zone: z.zone, x: sx, y: sy, col: j,
-        chip: [lane + side * 110, sy],
-        in: [[lane, -50], [lane, sy], [sx, sy]],
-        out: [[sx, sy], [lane, sy], [lane, -50]],
-        ramp: z.zone === 'CN' ? [[sx, sy], [lane, sy], [lane, z.y0 + 6]] : [[sx, sy], [lane, sy], [lane, quay + 30]],
+        zone: z.zone, x: sx, y: sy, col: i,
+        chip: [sx, sy + (a > sy ? -44 : 44)],
+        in: [[cx, -60], [cx, a], [sx, a], [sx, sy]],
+        out: [[sx, sy], [sx, a], [cx, a], [cx, -60]],
+        ramp: z.zone === 'CN' ? [[sx, sy], [sx, a], [cx, a], [cx, z.y0 - 20]]  // Китай уезжает по полосе наверх
+          : [[sx, sy], [sx, a], [cx, a], [cx, apron], [rampX, apron], [rampX, quay + 30]],
       });
     }
     return {
-      W, H, slots, quay, rampX: lane, cols: 7, zoom: 1.45, ship: {x: 34, y: quay + 30, w: 292, h: 48},
-      zones: zones.map(z => ({zone: z.zone, title: [26, z.y0 + 15], stats: [W - 26, z.y0 + 15], scale: null})),
-      cranes: [28, W - 28].map(x => ({x, y0: quay - 84, y1: quay + 72})), truck: null,
+      W, H, slots, quay, rampX, cols: COLS, zoom: 1.35, car: 1.35, chipK: 0.82, ship: {x: 34, y: quay + 36, w: 292, h: 48},
+      zones: zones.map(z => ({zone: z.zone, title: [x0 + 56, z.y0 + 15], stats: [W - 22, z.y0 + 15], scale: null})),
+      cranes: [], truck: null,
       paint(g) {
-        g.innerHTML = `<image href="${ASSETS}/yard-narrow${PLATE}.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
+        g.innerHTML = `<image href="${ASSETS}/yard-phone.webp?v=${V}" width="${W}" height="${H}" preserveAspectRatio="none"/>
           ${zones.map(z => `
-            ${flag(z.zone, 26, z.y0 + 15)}<text x="53" y="${z.y0 + 15}" class="t-zone">${z.zone === 'KR' ? 'КОРЕЯ' : 'КИТАЙ'}</text>`).join('')}
-          ${barrier(lane, 26, 'h')}`;
+            ${flag(z.zone, x0 + 56, z.y0 + 15)}<text x="${x0 + 83}" y="${z.y0 + 15}" class="t-zone">${z.zone === 'KR' ? 'КОРЕЯ' : 'КИТАЙ'}</text>`).join('')}`;
       },
     };
   }
@@ -264,6 +266,7 @@
         <rect width="16" height="8" fill="#e5b53a"/><rect width="8" height="8" fill="#1d1f23"/></pattern>
       <linearGradient id="t-barrier" x1="0" y1="0" x2="0" y2="1"><stop offset=".5" stop-color="#e0251f"/><stop offset=".5" stop-color="#fff"/></linearGradient>
       <linearGradient id="t-barrier-h" x1="0" y1="0" x2="1" y2="0"><stop offset=".5" stop-color="#e0251f"/><stop offset=".5" stop-color="#fff"/></linearGradient>
+      <linearGradient id="t-foam" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity=".5"/><stop offset=".5" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
       <radialGradient id="t-wake"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
       <radialGradient id="t-dim-g" gradientUnits="userSpaceOnUse" cx="0" cy="0" r="${L.W * 0.3}">
         <stop offset=".25" stop-color="#05080c" stop-opacity="0"/><stop offset="1" stop-color="#05080c" stop-opacity=".62"/></radialGradient>
@@ -277,7 +280,8 @@
       <radialGradient id="t-nav-g"><stop offset="0" stop-color="#39ff7a"/><stop offset="1" stop-color="#39ff7a" stop-opacity="0"/></radialGradient>
       <radialGradient id="t-nav-w"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
     </defs><g class="t-yard"></g>
-    <g class="t-glints" clip-path="url(#t-water-clip)"><rect class="glint-band" x="${-L.W}" y="${L.quay}" width="${L.W * 3}" height="${L.H - L.quay}" fill="url(#t-glint)"/></g>
+    <g class="t-glints" clip-path="url(#t-water-clip)"><rect class="glint-band" x="${-L.W}" y="${L.quay}" width="${L.W * 3}" height="${L.H - L.quay}" fill="url(#t-glint)"/>
+      <rect class="glint-band b2" x="${-L.W}" y="${L.quay}" width="${L.W * 3}" height="${L.H - L.quay}" fill="url(#t-glint)" transform="translate(63 17)" opacity=".6"/></g>
     <g class="t-ship"></g><g class="t-trucks"></g><rect class="t-dim" width="${L.W}" height="${L.H}" fill="url(#t-dim-g)"/>
     <g class="t-route-layer"></g><g class="t-chips"></g><g class="t-cars"></g><g class="t-board"></g><g class="t-cranes"></g><g class="t-clouds"></g><g class="t-tags"></g>`;
     if (NIGHT) svg.classList.add('night');
@@ -328,18 +332,23 @@
         {duration: 70000 + i * 26000, iterations: Infinity, delay: -Math.random() * 60000});
     });
     svg.querySelector('.glint-band').animate([{transform: 'translateX(0)'}, {transform: 'translateX(140px)'}], {duration: 16000, iterations: Infinity});
+    svg.querySelector('.glint-band.b2')?.animate([{transform: 'translate(63px, 17px)'}, {transform: 'translate(-77px, 17px)'}], {duration: 23000, iterations: Infinity});  // вторая рябь навстречу — вода мерцает
   }
+  // Автовоз — рендер (design/blender/port.py truck): прицеп x −86…6, кабина 7…24; в кадре 128 × 32 с центром в x = −31.
+  // Масштаб — как у машин на стоянке, чтобы машина на прицепе не становилась меньше той, что стояла на месте.
+  const truckK = () => (L.car || 1) / 0.86 * 0.8;  // чуть меньше машин на стоянке: иначе автовоз шире дороги
+  const onDeck = i => `translate(${-13 - i * 29} 0) rotate(90) scale(.86)`;
   function makeTruck(mine) {
     const g = document.createElementNS(NS, 'g');
     g.setAttribute('class', 'truck');
     let load = '';
     for (let i = 0; i < 3; i++) {
       const d = i === 0 && mine ? mine : {body: pick(['sedan', 'suv', 'hatch']), color: pick(Object.values(PAINTS))};
-      load += `<g class="${i === 0 && mine ? 'mine' : ''}" transform="translate(${-14 - i * 27} 0) rotate(90) scale(.78)"${i === 0 && !mine ? ' data-free opacity="0"' : ''}>${carShape(d)}</g>`;
+      load += `<g class="${i === 0 && mine ? 'mine' : ''}" transform="${onDeck(i)}"${i === 0 && !mine ? ' data-free opacity="0"' : ''}>${carShape(d)}</g>`;
     }
-    g.innerHTML = `${NIGHT ? '<path class="beam on" d="M14 -8 L60 -16 L60 16 L14 8 Z" fill="url(#t-beam)" transform="rotate(0)"/>' : ''}
-      <rect class="trailer" x="-86" y="-11" width="92" height="22" rx="2"/><rect class="rail" x="-84" y="-8.5" width="88" height="2"/><rect class="rail" x="-84" y="6.5" width="88" height="2"/>
-      ${load}<rect class="cab" x="7" y="-10" width="17" height="20" rx="3"/><rect class="cab-glass" x="18" y="-8" width="4" height="16" rx="1"/>`;
+    g.innerHTML = `<g class="truck-in" transform="scale(${truckK().toFixed(3)})">
+      ${NIGHT ? '<path class="beam on" d="M14 -8 L60 -16 L60 16 L14 8 Z" fill="url(#t-beam)" transform="rotate(0)"/>' : ''}
+      <image href="${ASSETS}/truck.webp?v=${V}" x="-95" y="-16" width="128" height="32"/>${load}<g class="cab"></g></g>`;
     svg.querySelector('.t-trucks').appendChild(g);
     return g;
   }
@@ -347,7 +356,7 @@
     if (!L.truck || reduce.matches || document.hidden) return;
     const g = makeTruck(null);
     g.querySelector('[data-free]')?.setAttribute('opacity', '1');
-    g.animate([{transform: `translate(-140px, ${L.truck}px)`}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 12000, easing: 'linear'})
+    g.animate([{transform: `translate(-260px, ${L.truck}px)`}, {transform: `translate(${L.W + 260}px, ${L.truck}px)`}], {duration: 14000, easing: 'linear'})
       .onfinish = () => g.remove();
   }
   // Машина из Китая уезжает только автовозом: он подъезжает по дороге, машина заезжает на прицеп, автовоз уходит.
@@ -359,18 +368,19 @@
       drive(car, [end, [end[0], -60]], 'out', gone);
       return;
     }
-    const g = makeTruck(null), stop = end[0] + 40, from = `translate(-140px, ${L.truck}px)`, at = `translate(${stop}px, ${L.truck}px)`;
-    g.animate([{transform: from}, {transform: at}], {duration: 4200, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards'}).onfinish = () => {
+    // автовоз встаёт так, чтобы первое место на прицепе оказалось напротив въездной полосы
+    const g = makeTruck(null), stop = end[0] + 13 * truckK(), from = `translate(-260px, ${L.truck}px)`, at = `translate(${stop}px, ${L.truck}px)`;
+    g.animate([{transform: from}, {transform: at}], {duration: 4600, easing: 'cubic-bezier(.2,.7,.3,1)', fill: 'forwards'}).onfinish = () => {
       drive(car, [end, [end[0], L.truck]], 'board', () => {
         car.g.classList.add('boarding');
         g.querySelector('[data-free]')?.remove();  // первое место на прицепе ждало эту машину
         const mine = document.createElementNS(NS, 'g');
         mine.setAttribute('class', 'mine');
-        mine.setAttribute('transform', 'translate(-14 0) rotate(90) scale(.78)');
+        mine.setAttribute('transform', onDeck(0));
         mine.innerHTML = carShape(car.d);
-        g.insertBefore(mine, g.querySelector('.cab'));
+        g.querySelector('.truck-in').insertBefore(mine, g.querySelector('.cab'));
         setTimeout(gone, 400);
-        g.animate([{transform: at}, {transform: `translate(${L.W + 140}px, ${L.truck}px)`}], {duration: 6000, easing: 'ease-in', delay: 500, fill: 'forwards'})
+        g.animate([{transform: at}, {transform: `translate(${L.W + 260}px, ${L.truck}px)`}], {duration: 6500, easing: 'cubic-bezier(.5,0,.8,.6)', delay: 600, fill: 'forwards'})
           .onfinish = () => g.remove();
       });
     };
@@ -452,7 +462,13 @@
       marks += `<g class="deck-car" transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(90) scale(${car.toFixed(3)})" opacity="0">${carShape(d)}</g>`;
     }
     gShip.innerHTML = `<g class="ship-body">
-      <ellipse class="ship-wake" cx="${s.x + 10 * k}" cy="${s.y + s.h / 2}" rx="${90 * k}" ry="${s.h * 0.7}" fill="url(#t-wake)"/>
+      <g class="ship-wake">
+        <ellipse cx="${s.x + 6 * k}" cy="${s.y + s.h / 2}" rx="${70 * k}" ry="${s.h * 0.42}" fill="url(#t-wake)"/>
+        <path d="M${s.x + 20 * k} ${s.y + s.h * 0.2} L${s.x - 330 * k} ${s.y - s.h * 0.5} L${s.x - 330 * k} ${s.y - s.h * 0.22} Z" fill="url(#t-foam)"/>
+        <path d="M${s.x + 20 * k} ${s.y + s.h * 0.8} L${s.x - 330 * k} ${s.y + s.h * 1.5} L${s.x - 330 * k} ${s.y + s.h * 1.22} Z" fill="url(#t-foam)"/>
+        <path d="M${s.x + 10 * k} ${s.y + s.h * 0.38} L${s.x - 300 * k} ${s.y + s.h * 0.3} L${s.x - 300 * k} ${s.y + s.h * 0.7} L${s.x + 10 * k} ${s.y + s.h * 0.62} Z" fill="url(#t-foam)" opacity=".7"/>
+        <path class="bow-wave" d="M${s.x + 470 * k} ${s.y - s.h * 0.2} L${s.x + 566 * k} ${s.y + s.h / 2} L${s.x + 470 * k} ${s.y + s.h * 1.2}" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="${2.5 * k}" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
       <g class="ship-bob">
         <image href="${ASSETS}/ship.webp?v=${V}" x="${s.x - 50 * k}" y="${s.y - 30 * k}" width="${640 * k}" height="${152 * k}"/>
         ${marks}
@@ -657,7 +673,7 @@
     g.setAttribute('class', 'chip' + (t ? '' : ' none'));
     g.setAttribute('transform', `translate(${x} ${y})`);
     g.innerHTML = L.car  // крупные места — крупный ценник с единицей: «2,1 млн»
-      ? `<g class="chip-in big"><rect x="-28" y="-10" width="56" height="20" rx="10"/><text y="4.5" text-anchor="middle">${t ? short(t) + ' млн' : 'цена —'}</text></g>`
+      ? `<g class="chip-in big" ${L.chipK ? `transform="scale(${L.chipK})"` : ''}><rect x="-28" y="-10" width="56" height="20" rx="10"/><text y="4.5" text-anchor="middle">${t ? short(t) + ' млн' : 'цена —'}</text></g>`
       : `<g class="chip-in"><rect x="-19" y="-7.5" width="38" height="15" rx="7.5"/><text y="4" text-anchor="middle">${t ? short(t) : '—'}</text></g>`;
     gChips.appendChild(g);
     car.chip = g;
@@ -779,8 +795,10 @@
     // перед отходом на борт заезжают 2–3 самые давние машины
     const old = [...cars.values()].filter(c => c.state === 'parked' && c.d.country !== 'CN').sort((a, b) => a.since - b.since).slice(0, 3);
     old.forEach((c, i) => setTimeout(() => toRamp(c, () => load(c)), i * 900));
-    setTimeout(() => {
-      if ([...cars.values()].some(c => c.state === 'ramp' || c.state === 'at-ramp')) return;
+    // отходим, когда все, кто ехал к рампе, уже на борту (машины едут не спеша — фиксированной паузы не хватает)
+    const leave = (tries = 0) => {
+      if (delivering || ship.state !== 'docked') return;
+      if (tries < 40 && [...cars.values()].some(c => c.state === 'ramp' || c.state === 'at-ramp')) { setTimeout(() => leave(tries + 1), 700); return; }
       ship.state = 'leaving';
       shipAway(7, () => {
         ship.loaded = 0;
@@ -788,7 +806,8 @@
         paintShip();
         moveShip(0, 7, () => { ship.state = 'docked'; });
       });
-    }, old.length * 900 + 4500);
+    };
+    setTimeout(leave, old.length * 900 + 3000);
   }
   function truckCycle() {
     if (delivering || reduce.matches || document.hidden) return;
@@ -873,7 +892,7 @@
     gBoard.innerHTML = L.zones.map(z => {
       const here = [...cars.values()].filter(c => c.state !== 'out' && (c.d.country === 'CN' ? 'CN' : 'KR') === z.zone);
       const prices = here.map(c => c.d.turnkey).filter(Boolean);
-      const stats = `${here.length} ${word(here.length)}${prices.length ? ' · цены под ключ от ' + mln(Math.min(...prices)) : ''}`;
+      const stats = `${here.length} ${word(here.length)}${prices.length ? (L.W < 600 ? ' · от ' : ' · цены под ключ от ') + mln(Math.min(...prices)) : ''}`;
       let scale = '';
       const r = range[z.zone];
       if (z.scale && r) {
@@ -1464,7 +1483,7 @@
     while (feedQ.length > 4) feedQ.shift();  // пришла пачка — показываем последние, остальные есть в списке
     if (!feedTimer) feedTimer = setTimeout(feedPump, fresh ? 300 : 1200);
   }
-  window.RenalFeed = {add: d => chatAdd(d, {fresh: true})};  // для проверки ленты из консоли
+  window.RenalFeed = {add: d => chatAdd(d, {fresh: true}), ship: () => shipCycle(), truck: () => truck()};  // для проверки ленты из консоли
   if (feedBox) {
     // при открытии страницы — последние объявления в список, одно самое свежее — коротким сообщением
     const seed = (DATA.recent || []).slice().reverse();

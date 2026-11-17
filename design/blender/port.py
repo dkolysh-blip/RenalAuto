@@ -5,6 +5,8 @@
     python port.py yard narrow --s 64 --out yard-narrow.png   # 720×1300, подложка телефона
     python port.py yard wide --s 128 --night 1 --out yard-wide-night.png   # ночные версии (фонари, огни кранов)
     python port.py cars        --s 48 --out cars/             # спрайты машин: 4 кузова × 8 цветов
+    python port.py yard phone  --s 64 --out yard-phone.png    # 720×1300, подложка телефона в стиле «маршрута»
+    python port.py truck       --s 64 --out truck.png         # автовоз сверху
     python port.py ship        --s 64 --out ship.png
     python port_export.py                                     # → renalauto/static/port/*.webp
 
@@ -38,6 +40,9 @@ WIDE = dict(W=1600, H=760, road=56, aisles=[214, 394], rows=[(164, 214), (266, 2
 # маршрут: стоянки Кореи и Китая (2 ряда × 8 крупных мест), море с судном и площадка Владивостока справа
 ROUTE = dict(W=1600, H=660, road=40, aisle=276, rows=[(214, 276), (338, 276)], apron=440, quay=478,
              zones=[30, 610], zone_w=570, cols=8, pitch=64, vlad=1200)
+# телефон: стоянки одна под другой, въездная полоса слева, внизу причал
+PHONE = dict(W=360, H=690, x0=14, zone_w=332, cols=5, pitch=56, half=35, depth=244, apron=570, quay=594, ramp=180,
+             zones=[(52, 187, [(134, 187), (240, 187)]), (304, 439, [(386, 439), (492, 439)])])
 NARROW = dict(W=360, H=650, lane=180, quay=556, zones=[56, 304], rows=7, pitch=30)
 SUN_DIR = (math.radians(38), 0, math.radians(-35))  # тени ложатся вправо-вниз
 
@@ -208,16 +213,16 @@ def paint_line(x0, y0, x1, y1, w, m, z=0.5):
     return box(x0, y0 - w / 2, x1, y0 + w / 2, 0.42, z, m)
 
 
-def dashes(x0, y0, x1, y1, m, dash=14, gap=12, w=1.6):
+def dashes(x0, y0, x1, y1, m, dash=14, gap=12, w=1.6, z=0.5):
     if y0 == y1:
         x = x0
         while x < x1:
-            paint_line(x, y0, min(x + dash, x1), y0, w, m)
+            paint_line(x, y0, min(x + dash, x1), y0, w, m, z=z)
             x += dash + gap
     else:
         y = y0
         while y < y1:
-            paint_line(x0, y, x0, min(y + dash, y1), w, m)
+            paint_line(x0, y, x0, min(y + dash, y1), w, m, z=z)
             y += dash + gap
 
 
@@ -475,6 +480,135 @@ def tree(x, y, r, m_leaf, m_trunk):
             p_.use_smooth = True
 
 
+def lot(x0, y0, y1, a, rows, cols, pitch, half, zw, M, lane, arrows=True):
+    """Стоянка: плита с бордюром и стыками, проезд с колеями, места с номерами и колесоотбойниками, слева — въездная полоса."""
+    cx = x0 + 24
+    x1 = x0 + 50 + cols * pitch
+    box(x0 - 2, y0 - 2, x0 + zw + 2, y1 + 2, 0, 1.0, M["curb"], bevel=0.3)
+    box(x0, y0, x0 + zw, y1, 0, 1.05, M["yard"])
+    for i in range(1, cols + 1):  # стыки бетонных плит
+        box(x0 + 50 + i * pitch - 0.4, y0, x0 + 50 + i * pitch + 0.4, y1, 1.05, 1.07, M["joint"]) if i < cols else None
+    for sy, _ in rows:
+        far = sy - half - 16 if sy < a else sy + half + 16
+        if y0 + 6 < far < y1 - 6:
+            box(x0, far - 0.4, x0 + zw, far + 0.4, 1.05, 1.07, M["joint"])
+    box(x0, a - 22, x0 + zw, a + 22, 0, 1.1, M["road"])
+    dashes(x0 + 48, a, x0 + zw, a, M["yellow"], w=1.4, z=1.18)
+    for dy in (-10, 10):
+        for off in (-3.4, 3.4):
+            box(x0 + 30, a + dy + off - 0.8, x0 + zw - 8, a + dy + off + 0.8, 1.1, 1.115, M["tyre"])
+    y = lane[0] if lane else 1e9
+    while lane and y < lane[1]:  # полоса кусками: у длинной плиты шум материала растягивается и она темнеет
+        box(x0 + 6, y, x0 + 42, min(y + 90, lane[1]), 0, 1.12, M["road"])
+        y += 90
+    if lane:
+        dashes(cx, lane[0] + 4, cx, lane[1], M["yellow"], w=1.4, z=1.2)
+    for i, (sy, _) in enumerate(rows):
+        up = sy < a
+        for c in range(cols + 1):
+            x = x0 + 50 + c * pitch
+            paint_line(x, sy - half, x, sy + half, 1.8, M["white"], z=1.14)
+        far = sy - half if up else sy + half
+        paint_line(x0 + 50, far, x1, far, 1.8, M["white"], z=1.14)
+        for c in range(cols):
+            sx = x0 + 50 + pitch / 2 + c * pitch
+            wy = sy - half + 9 if up else sy + half - 9  # колесоотбойник у дальнего края
+            box(sx - pitch / 4, wy - 1.6, sx + pitch / 4, wy + 1.6, 1.05, 2.6, M["curb"], bevel=0.5)
+            for off in (-pitch * 0.17, pitch * 0.17):  # следы шин от проезда к месту
+                box(sx + off - 1.3, min(sy, a) + (24 if up else 0), sx + off + 1.3, max(sy, a) - (0 if up else 24), 1.05, 1.065, M["tyre"])
+            ground_text(sx, a + (-17 if up else 17), f"{i * cols + c + 1:02d}", 7.5, M["num"], z=1.12)
+    if arrows:  # стрелки направления на проезде
+        for xx in (x0 + zw * 0.27, x0 + zw * 0.7):
+            ground_text(xx, a - 9, "›", 22, M["white"], z=1.12)
+            ground_text(xx + 60, a + 9, "‹", 22, M["white"], z=1.12)
+
+
+def yard_phone():
+    """Подложка телефона в том же стиле, что маршрут: две стоянки одна под другой (2 ряда × 5 мест), внизу причал и море."""
+    k = PHONE
+    W, H, quay, apron, zw = k["W"], k["H"], k["quay"], k["apron"], k["zone_w"]
+    m_ground = noisy("ground", (0.2, 0.21, 0.225), (0.25, 0.26, 0.275), scale=0.03)
+    M = dict(
+        yard=noisy("yard", (0.125, 0.135, 0.15), (0.185, 0.195, 0.21), scale=0.035, stains=True),
+        road=noisy("road", (0.065, 0.07, 0.08), (0.105, 0.11, 0.12), scale=0.05, stains=True),
+        white=noisy("white", (0.5, 0.5, 0.48), (0.82, 0.82, 0.8), scale=0.6, rough=0.7, bump=0.05),
+        yellow=noisy("yellow", (0.5, 0.36, 0.08), (0.82, 0.57, 0.06), scale=0.6, rough=0.7, bump=0.05),
+        num=mat("num", (0.55, 0.56, 0.55), rough=0.8), curb=noisy("curb", (0.36, 0.36, 0.35), (0.46, 0.46, 0.45), scale=0.2),
+        joint=mat("joint", (0.05, 0.053, 0.06), rough=0.9), tyre=mat("tyre", (0.055, 0.058, 0.066), rough=0.7))
+    m_conc = noisy("concrete", (0.32, 0.32, 0.31), (0.4, 0.4, 0.39), scale=0.08, stains=True)
+    m_dark = mat("dark", (0.05, 0.05, 0.055), rough=0.5)
+    m_lamp = mat("lamp", (0.9, 0.9, 0.85), rough=0.3)
+    ground(W, H, quay, m_ground, water_mat(), hazard_mat(), m_conc)
+    x0 = k["x0"]
+    for i, (y0, a, rows) in enumerate(k["zones"]):  # полоса общая на обе стоянки — рисуем один раз, иначе плиты накладываются
+        lot(x0, y0, y0 + k["depth"], a, rows, k["cols"], k["pitch"], k["half"], zw, M, lane=(-40, apron - 18) if i == 0 else None, arrows=False)
+    box(-40, apron - 18, W + 40, apron + 18, 0, 0.36, M["road"])
+    dashes(-40, apron, W + 40, apron, M["white"])
+    for i in range(6):  # «зебра» напротив рампы судна
+        box(k["ramp"] - 24 + i * 8, apron + 19, k["ramp"] - 19 + i * 8, quay - 9, 0.3, 0.33, M["white"])
+    for x, y in ((W - 10, k["zones"][0][0] + 6), (W - 10, k["zones"][1][0] + 6), (6, apron - 24), (W - 60, quay - 14)):
+        light_pole(x, y, m_dark, m_lamp, h=60)
+    bx = 30
+    while bx < W:
+        bpy.ops.mesh.primitive_cylinder_add(radius=3, depth=6, location=(bx, -(quay + 2), 3))
+        bpy.context.object.data.materials.append(m_dark)
+        bx += 75
+    return W, H
+
+
+def render_truck(out):
+    """Автовоз сверху, нос вправо, в единицах сцены: прицеп x −86…6, кабина 7…24, ширина 22. Машины на прицепе рисует сцена."""
+    sc = reset()
+    sc.cycles.samples = SAMPLES
+    w, h = 128, 32
+    sc.render.resolution_x, sc.render.resolution_y = w * 6, h * 6
+    sky((0.55, 0.66, 0.9), 0.55)
+    s = sun(2.6)
+    s.rotation_euler = (0, 0, 0)
+    s.data.angle = math.radians(30)
+    s.visible_glossy = False
+    frame = mat("frame", (0.06, 0.065, 0.075), rough=0.5, metal=0.6)
+    steel = noisy("steel", (0.3, 0.32, 0.35), (0.42, 0.44, 0.47), scale=0.5, rough=0.45)
+    rib = mat("rib", (0.16, 0.17, 0.19), rough=0.5, metal=0.5)
+    cab = mat("cab", (0.72, 0.73, 0.74), rough=0.3, coat=0.4)
+    glass = mat("glass", (0.012, 0.02, 0.03), rough=0.04, metal=0.75)
+    red = mat("red", (0.5, 0.02, 0.02), rough=0.3)
+    amber = mat("amber", (0.8, 0.4, 0.02), rough=0.3, emit=(1, 0.5, 0.05), emit_s=0.4)
+    tail = mat("tail", (0.45, 0.01, 0.01), rough=0.2, emit=(1, 0.03, 0.02), emit_s=0.35)
+    box(-86, -10, 4, 10, 2.5, 3.5, frame, bevel=0.6)                       # рама прицепа
+    for y in (-7.2, 7.2):                                                   # колеи-аппарели под колёса
+        box(-85, y - 2.6, 3, y + 2.6, 3.5, 4.3, steel, bevel=0.2)
+        x = -83
+        while x < 2:                                                        # рифление
+            box(x, y - 2.4, x + 0.6, y + 2.4, 4.3, 4.5, rib)
+            x += 2.4
+    for x in (-84, -56, -28, 0):                                            # поперечины и стойки
+        box(x, -10.6, x + 1.4, 10.6, 3.5, 5.2, frame)
+    for y in (-10.6, 10.6):
+        box(-86, y - 0.5, 4, y + 0.5, 5.0, 5.8, frame)
+        for x in (-80, -60, -40, -20, -2):
+            box(x, y - 0.7, x + 1.2, y + 0.7, 5.8, 6.0, amber)             # габаритные огни
+    box(-87.2, -9, -86, -5, 3, 4.4, tail)
+    box(-87.2, 5, -86, 9, 3, 4.4, tail)
+    box(4, -3, 8, 3, 2.5, 4, frame)                                         # сцепка
+    box(7.5, -10.4, 24, 10.4, 2, 13, cab, bevel=1.6)                        # кабина
+    box(9, -9.2, 17.5, 9.2, 13, 14.2, cab, bevel=1.2)                       # обтекатель на крыше
+    bpy.ops.mesh.primitive_cube_add(location=(21.6, 0, 11.2))               # лобовое стекло
+    g = bpy.context.object
+    g.scale = (1.9, 9.2, 0.4)
+    g.rotation_euler.y = math.radians(38)
+    g.data.materials.append(glass)
+    box(20.4, -8.8, 23, 8.8, 12.6, 13.25, glass, bevel=0.3)                 # верх лобового стекла, видимый сверху
+    for side in (-1, 1):                                                    # зеркала и красная полоса по борту кабины
+        box(20, side * 10.4 - 0.9, 21.6, side * 10.4 + 0.9, 9, 10.2, frame)
+        box(8.5, side * 10.5 - 0.15, 18, side * 10.5 + 0.15, 6, 8, red)
+    bpy.ops.mesh.primitive_plane_add(size=600, location=(0, 0, 0))
+    bpy.context.object.is_shadow_catcher = True
+    top_camera(-31, 0, w, z=200)
+    sc.render.filepath = out
+    bpy.ops.render.render(write_still=True)
+
+
 def yard_route():
     """Подложка-маршрут: две стоянки с живым асфальтом, причал, справа — светлая площадка Владивостока.
 
@@ -508,47 +642,14 @@ def yard_route():
     for dy in (-9, 9):  # накатанные колеи на дороге
         for off in (-3.2, 3.2):
             box(-40, road + dy + off - 0.9, W + 40, road + dy + off + 0.9, 0.21, 0.225, m_tyre)
+    M = dict(yard=m_yard, road=m_road, white=m_white, yellow=m_yellow, num=m_num, curb=m_curb, joint=m_joint, tyre=m_tyre)
     for x0 in k["zones"]:
-        cx = x0 + 24
-        x1 = x0 + 50 + k["cols"] * k["pitch"]
-        # зелёная полоса с деревьями между дорогой и стоянкой, бордюр вокруг площадки
+        # зелёная полоса с деревьями между дорогой и стоянкой
         box(x0 + 46, road + 22, x0 + zw, 98, 0, 1.6, m_grass, bevel=0.4)
         box(x0 + 44, road + 20, x0 + zw + 2, 100, 0, 1.2, m_curb, bevel=0.3)
         for i in range(6):
             tree(x0 + 96 + i * 92 + random.uniform(-8, 8), 80 + random.uniform(-3, 3), random.uniform(11, 14), m_leaf, m_trunk)
-        box(x0 - 2, 98, x0 + zw + 2, 414, 0, 1.0, m_curb, bevel=0.3)
-        box(x0, 100, x0 + zw, 412, 0, 1.05, m_yard)
-        # стыки бетонных плит
-        for i in range(1, 9):
-            box(x0 + i * 64 - 14.4, 100, x0 + i * 64 - 13.6, 412, 1.05, 1.07, m_joint)
-        for y in (136, 172, 380):
-            box(x0, y - 0.4, x0 + zw, y + 0.4, 1.05, 1.07, m_joint)
-        box(x0, a - 22, x0 + zw, a + 22, 0, 1.1, m_road)
-        dashes(x0 + 48, a, x0 + zw, a, m_yellow, w=1.4)
-        for dy in (-10, 10):
-            for off in (-3.4, 3.4):
-                box(x0 + 30, a + dy + off - 0.8, x0 + zw - 8, a + dy + off + 0.8, 1.1, 1.115, m_tyre)
-        box(x0 + 6, road + 20, x0 + 42, apron - 18, 0, 1.12, m_road)
-        dashes(cx, road + 24, cx, apron - 18, m_yellow, w=1.4)
-        for i, (sy, _) in enumerate(k["rows"]):
-            up = sy < a
-            for c in range(k["cols"] + 1):
-                x = x0 + 50 + c * k["pitch"]
-                paint_line(x, sy - 42, x, sy + 42, 1.8, m_white, z=1.14)
-            far = sy - 42 if up else sy + 42
-            paint_line(x0 + 50, far, x1, far, 1.8, m_white, z=1.14)
-            for c in range(k["cols"]):
-                sx = x0 + 82 + c * k["pitch"]
-                # колесоотбойник у дальнего края и следы шин от проезда к месту
-                wy = sy - 33 if up else sy + 33
-                box(sx - 16, wy - 1.6, sx + 16, wy + 1.6, 1.05, 2.6, m_curb, bevel=0.5)
-                for off in (-11, 11):
-                    box(sx + off - 1.3, min(sy, a) + (24 if up else 0), sx + off + 1.3, max(sy, a) - (0 if up else 24), 1.05, 1.065, m_tyre)
-                ground_text(sx, a + (-17 if up else 17), f"{i * k['cols'] + c + 1:02d}", 7.5, m_num, z=1.12)
-        # стрелки направления на проезде
-        for xx in (x0 + 150, x0 + 400):
-            ground_text(xx, a - 9, "›", 22, m_white, z=1.12)
-            ground_text(xx + 60, a + 9, "‹", 22, m_white, z=1.12)
+        lot(x0, 100, 412, a, k["rows"], k["cols"], k["pitch"], 42, zw, M, lane=(road + 20, apron - 18))
     box(-40, apron - 18, VX, apron + 18, 0, 0.36, m_road)
     dashes(-40, apron, VX - 20, apron, m_white)
     for dy in (-9, 9):
@@ -634,14 +735,14 @@ def render_yard(kind, out):
         sc.view_settings.exposure = -0.75
         sky()
         s_ = sun()
-        if kind == "route":  # низкое солнце: длинные мягкие тени от столбов, деревьев и бордюров
+        if kind in ("route", "phone"):  # низкое солнце: длинные мягкие тени от столбов, деревьев и бордюров
             s_.rotation_euler = (math.radians(42), 0, math.radians(-40))
             s_.data.angle = math.radians(3)
             s_.data.energy = 3.4
             s_.data.color = (1, 0.93, 0.82)
             sky((0.5, 0.62, 0.86), 0.5)
             sc.view_settings.exposure = -0.55
-    W, H = yard_wide() if kind == "wide" else yard_route() if kind == "route" else yard_narrow()
+    W, H = yard_wide() if kind == "wide" else yard_route() if kind == "route" else yard_phone() if kind == "phone" else yard_narrow()
     sc.render.resolution_x, sc.render.resolution_y = W * 2, H * 2
     top_camera(W / 2, -H / 2, max(W, H))
     sc.render.filepath = out
@@ -859,5 +960,7 @@ if __name__ == "__main__":
         render_yard(args[1] if len(args) > 1 else "wide", opts.get("--out", "yard.png"))
     elif what == "cars":
         render_cars(opts.get("--out", "cars"))
+    elif what == "truck":
+        render_truck(opts.get("--out", "truck.png"))
     elif what == "ship":
         render_ship(opts.get("--out", "ship.png"))
